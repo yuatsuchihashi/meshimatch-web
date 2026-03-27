@@ -1,8 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { MOCK_CURRENT_USER, GENRES, ALLERGIES, DIETARY_RESTRICTIONS } from "@/lib/mockData";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
+
+// Mock connections data
+const MOCK_CONNECTIONS = [
+  { id: "c1", displayName: "たろう", mutualGroups: 2 },
+  { id: "c2", displayName: "はな", mutualGroups: 1 },
+  { id: "c3", displayName: "さくら", mutualGroups: 3 },
+  { id: "c4", displayName: "けんと", mutualGroups: 1 },
+];
 
 export default function ProfilePage() {
   const user = MOCK_CURRENT_USER;
@@ -10,8 +19,10 @@ export default function ProfilePage() {
   const [dislikedGenres, setDislikedGenres] = useState<string[]>(user.dislikedGenres);
   const [allergies, setAllergies] = useState<string[]>(user.allergies);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(user.dietaryRestrictions);
-  const [editSection, setEditSection] = useState<null | "name" | "genres" | "allergies">(null);
+  const [editSection, setEditSection] = useState<null | "name" | "genres" | "allergies" | "share">(null);
   const [nameInput, setNameInput] = useState(displayName);
+
+  const profileUrl = `https://meshimatch.app/u/${user.id}`;
 
   function toggleGenre(id: string) {
     setDislikedGenres((prev) =>
@@ -38,13 +49,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Avatar */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: 12,
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
           <div style={{ position: "relative" }}>
             <MemberAvatar name={displayName} size={80} />
             <button
@@ -76,11 +81,209 @@ export default function ProfilePage() {
       </div>
 
       <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
-        {/* Disliked Genres */}
-        <SectionCard
-          title="苦手なジャンル"
-          onEdit={() => setEditSection("genres")}
+
+        {/* User ID section */}
+        <div
+          style={{
+            backgroundColor: "var(--surface)",
+            borderRadius: 16,
+            border: "1px solid var(--border-light)",
+            padding: 16,
+          }}
         >
+          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 6 }}>
+            ユーザーID
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "monospace",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "var(--text-primary)",
+                backgroundColor: "var(--bg-secondary)",
+                borderRadius: 8,
+                padding: "8px 12px",
+                flex: 1,
+                letterSpacing: "0.05em",
+              }}
+            >
+              {user.id}
+            </div>
+            <button
+              onClick={() => {
+                navigator.clipboard?.writeText(user.id).catch(() => {});
+                alert("IDをコピーしました");
+              }}
+              style={{
+                padding: "8px 14px",
+                borderRadius: 10,
+                backgroundColor: "var(--bg-secondary)",
+                border: "1px solid var(--border)",
+                color: "var(--text-secondary)",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+            >
+              コピー
+            </button>
+          </div>
+        </div>
+
+        {/* Profile share section */}
+        <div
+          style={{
+            backgroundColor: "var(--surface)",
+            borderRadius: 16,
+            border: "1px solid var(--border-light)",
+            padding: 16,
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
+            プロフィールを共有
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              onClick={() => setEditSection("share")}
+              style={{
+                flex: 1,
+                padding: "12px 8px",
+                borderRadius: 12,
+                border: "1.5px solid var(--border)",
+                backgroundColor: "var(--bg)",
+                color: "var(--text-primary)",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span style={{ fontSize: 22 }}>📷</span>
+              QRコード
+            </button>
+            <button
+              onClick={() => alert("ID検索機能（デモ）")}
+              style={{
+                flex: 1,
+                padding: "12px 8px",
+                borderRadius: 12,
+                border: "1.5px solid var(--border)",
+                backgroundColor: "var(--bg)",
+                color: "var(--text-primary)",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span style={{ fontSize: 22 }}>🔍</span>
+              ID検索
+            </button>
+            <button
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({ title: "MeshiMatch", url: profileUrl });
+                } else {
+                  navigator.clipboard?.writeText(profileUrl).catch(() => {});
+                  alert("リンクをコピーしました");
+                }
+              }}
+              style={{
+                flex: 1,
+                padding: "12px 8px",
+                borderRadius: 12,
+                border: "1.5px solid var(--border)",
+                backgroundColor: "var(--bg)",
+                color: "var(--text-primary)",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span style={{ fontSize: 22 }}>🔗</span>
+              リンク共有
+            </button>
+          </div>
+        </div>
+
+        {/* Connections */}
+        <div
+          style={{
+            backgroundColor: "var(--surface)",
+            borderRadius: 16,
+            border: "1px solid var(--border-light)",
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 14,
+            }}
+          >
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+              コネクション
+            </div>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--primary)",
+                backgroundColor: "rgba(196,85,42,0.1)",
+                padding: "2px 10px",
+                borderRadius: 20,
+              }}
+            >
+              {MOCK_CONNECTIONS.length}人
+            </span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {MOCK_CONNECTIONS.map((conn) => (
+              <div
+                key={conn.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <MemberAvatar name={conn.displayName} size={40} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+                    {conn.displayName}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+                    共通グループ {conn.mutualGroups}件
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Disliked Genres */}
+        <SectionCard title="苦手なジャンル" onEdit={() => setEditSection("genres")}>
           {dislikedGenres.length === 0 ? (
             <EmptyChipText>設定なし</EmptyChipText>
           ) : (
@@ -98,10 +301,7 @@ export default function ProfilePage() {
         </SectionCard>
 
         {/* Allergies */}
-        <SectionCard
-          title="アレルギー・食の制限"
-          onEdit={() => setEditSection("allergies")}
-        >
+        <SectionCard title="アレルギー・食の制限" onEdit={() => setEditSection("allergies")}>
           {allergies.length === 0 && dietaryRestrictions.length === 0 ? (
             <EmptyChipText>設定なし</EmptyChipText>
           ) : (
@@ -126,7 +326,7 @@ export default function ProfilePage() {
           )}
         </SectionCard>
 
-        {/* Sign out (demo) */}
+        {/* Sign out */}
         <div
           style={{
             backgroundColor: "var(--surface)",
@@ -182,16 +382,47 @@ export default function ProfilePage() {
         </EditSheet>
       )}
 
+      {editSection === "share" && (
+        <EditSheet title="QRコード" onClose={() => setEditSection(null)}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            <div
+              style={{
+                padding: 20,
+                backgroundColor: "white",
+                borderRadius: 16,
+                boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+              }}
+            >
+              <QRCodeSVG value={profileUrl} size={180} />
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
+                {displayName}さんのプロフィール
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+                {profileUrl}
+              </div>
+            </div>
+            <button
+              className="btn-primary"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({ title: "MeshiMatch", url: profileUrl });
+                } else {
+                  navigator.clipboard?.writeText(profileUrl).catch(() => {});
+                  alert("リンクをコピーしました");
+                }
+              }}
+            >
+              リンクを共有
+            </button>
+          </div>
+        </EditSheet>
+      )}
+
       {editSection === "genres" && (
         <EditSheet title="苦手なジャンル" onClose={() => setEditSection(null)}>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 8,
-              marginBottom: 20,
-            }}
-          >
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
             {GENRES.map((g) => (
               <button
                 key={g.id}
@@ -326,11 +557,7 @@ function EditSheet({
       }}
     >
       <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundColor: "rgba(0,0,0,0.5)",
-        }}
+        style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.5)" }}
         onClick={onClose}
       />
       <div
@@ -346,14 +573,7 @@ function EditSheet({
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
           <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
         </div>
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            marginBottom: 20,
-          }}
-        >
+        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>
           {title}
         </div>
         {children}

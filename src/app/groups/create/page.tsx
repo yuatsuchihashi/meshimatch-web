@@ -2,6 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  useDraggable,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 import { GENRES, ALLERGIES, DIETARY_RESTRICTIONS } from "@/lib/mockData";
 import type { TierData, TierKey } from "@/lib/types";
 
@@ -15,6 +27,174 @@ const TIER_CONFIG = {
 
 const AREAS = ["渋谷", "新宿", "池袋", "銀座", "六本木", "恵比寿", "表参道", "下北沢", "吉祥寺", "上野"];
 
+// ─── Draggable genre chip ───
+function DraggableGenreChip({
+  id,
+  emoji,
+  name,
+  color,
+}: {
+  id: string;
+  emoji: string;
+  name: string;
+  color?: string;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        padding: "6px 12px",
+        borderRadius: 20,
+        backgroundColor: color ? color + "15" : "var(--surface)",
+        border: `1.5px solid ${color ? color + "55" : "var(--border)"}`,
+        color: color ?? "var(--text-primary)",
+        fontSize: 14,
+        fontWeight: 500,
+        cursor: "grab",
+        userSelect: "none",
+        touchAction: "none",
+        opacity: isDragging ? 0.3 : 1,
+        transform: transform
+          ? `translate(${transform.x}px, ${transform.y}px)`
+          : undefined,
+        transition: isDragging ? undefined : "opacity 0.15s",
+        boxShadow: isDragging ? "0 4px 12px rgba(0,0,0,0.15)" : undefined,
+      }}
+    >
+      {emoji} {name}
+    </div>
+  );
+}
+
+// ─── Droppable tier zone ───
+function TierDropZone({
+  tier,
+  tiers,
+  activeGenreId,
+  onRemove,
+}: {
+  tier: TierKey;
+  tiers: TierData;
+  activeGenreId: string | null;
+  onRemove: (id: string) => void;
+}) {
+  const config = TIER_CONFIG[tier];
+  const { setNodeRef, isOver } = useDroppable({ id: `tier-${tier}` });
+  const items = tiers[tier];
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        backgroundColor: isOver ? config.color + "18" : "var(--surface)",
+        borderRadius: 16,
+        border: `2px ${items.length === 0 && !isOver ? "dashed" : "solid"} ${
+          isOver ? config.color : items.length === 0 ? "var(--border)" : config.color + "55"
+        }`,
+        padding: 14,
+        marginBottom: 12,
+        transition: "all 0.15s ease",
+        minHeight: 70,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: items.length > 0 ? 10 : 0,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              backgroundColor: config.color + "20",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+            }}
+          >
+            {config.emoji}
+          </div>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: config.color }}>{config.label}</div>
+            <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{config.subtitle}</div>
+          </div>
+        </div>
+        <div
+          style={{
+            backgroundColor: config.color + "20",
+            color: config.color,
+            fontSize: 12,
+            fontWeight: 700,
+            padding: "2px 10px",
+            borderRadius: 20,
+          }}
+        >
+          {items.length}件
+        </div>
+      </div>
+
+      {items.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {items.map((id) => {
+            const g = GENRES.find((x) => x.id === id);
+            return g ? (
+              <button
+                key={id}
+                onClick={() => onRemove(id)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "6px 10px",
+                  borderRadius: 20,
+                  backgroundColor: config.color + "15",
+                  border: `1px solid ${config.color}55`,
+                  color: config.color,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
+              >
+                {g.emoji} {g.name}
+                <span style={{ fontSize: 14, opacity: 0.6 }}>×</span>
+              </button>
+            ) : null;
+          })}
+        </div>
+      )}
+
+      {isOver && activeGenreId && (
+        <div
+          style={{
+            marginTop: items.length > 0 ? 8 : 0,
+            padding: "6px 12px",
+            borderRadius: 20,
+            border: `1.5px dashed ${config.color}`,
+            color: config.color,
+            fontSize: 13,
+            opacity: 0.6,
+            display: "inline-block",
+          }}
+        >
+          ここにドロップ
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CreateGroupPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("name");
@@ -22,19 +202,34 @@ export default function CreateGroupPage() {
   const [memberInput, setMemberInput] = useState("");
   const [members, setMembers] = useState<string[]>([]);
   const [anywhereOk, setAnywhereOk] = useState(true);
-  const [departureStation, setDepartureStation] = useState("");
-  const [preferredArea, setPreferredArea] = useState("");
+  const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
   const [tiers, setTiers] = useState<TierData>({ S: [], A: [], B: [] });
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+  const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
+  );
 
   const unranked = GENRES.filter(
     (g) => !tiers.S.includes(g.id) && !tiers.A.includes(g.id) && !tiers.B.includes(g.id)
   );
   const rankedCount = tiers.S.length + tiers.A.length + tiers.B.length;
 
-  function assignToTier(genreId: string, tier: TierKey) {
+  function handleDragStart(event: DragStartEvent) {
+    setActiveGenreId(event.active.id as string);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { over, active } = event;
+    setActiveGenreId(null);
+    if (!over) return;
+    const overId = over.id as string;
+    if (!overId.startsWith("tier-")) return;
+    const tier = overId.replace("tier-", "") as TierKey;
+    const genreId = active.id as string;
     setTiers((prev) => {
-      const next = {
+      const next: TierData = {
         S: prev.S.filter((id) => id !== genreId),
         A: prev.A.filter((id) => id !== genreId),
         B: prev.B.filter((id) => id !== genreId),
@@ -42,7 +237,6 @@ export default function CreateGroupPage() {
       next[tier] = [...next[tier], genreId];
       return next;
     });
-    setSelectedGenre(null);
   }
 
   function removeFromTier(genreId: string) {
@@ -51,6 +245,12 @@ export default function CreateGroupPage() {
       A: prev.A.filter((id) => id !== genreId),
       B: prev.B.filter((id) => id !== genreId),
     }));
+  }
+
+  function toggleArea(area: string) {
+    setPreferredAreas((prev) =>
+      prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
+    );
   }
 
   function addMember() {
@@ -63,7 +263,6 @@ export default function CreateGroupPage() {
 
   function handleSubmitSurvey() {
     setStep("complete");
-    // Navigate to waiting room after a moment
     setTimeout(() => {
       router.push("/groups/mock-new/waiting");
     }, 2000);
@@ -106,20 +305,6 @@ export default function CreateGroupPage() {
             />
           </div>
 
-          <div
-            style={{
-              backgroundColor: "var(--bg-secondary)",
-              borderRadius: 14,
-              padding: 16,
-              marginBottom: 32,
-              fontSize: 14,
-              color: "var(--text-secondary)",
-              lineHeight: 1.6,
-            }}
-          >
-            📍 場所・予算はアンケートで最適化されます
-          </div>
-
           <button
             className="btn-primary"
             onClick={() => setStep("members")}
@@ -145,7 +330,6 @@ export default function CreateGroupPage() {
             一緒に行くメンバーを追加してください
           </div>
 
-          {/* Added members */}
           {members.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
               {members.map((name) => (
@@ -184,7 +368,6 @@ export default function CreateGroupPage() {
             </div>
           )}
 
-          {/* Add member input */}
           <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
             <input
               value={memberInput}
@@ -224,7 +407,6 @@ export default function CreateGroupPage() {
             </button>
           </div>
 
-          {/* Invite link */}
           <div
             style={{
               backgroundColor: "var(--surface)",
@@ -262,6 +444,8 @@ export default function CreateGroupPage() {
 
   // ─── STEP: SURVEY ───
   if (step === "survey") {
+    const activeGenre = activeGenreId ? GENRES.find((g) => g.id === activeGenreId) : null;
+
     return (
       <PageShell>
         <BackButton onClick={() => setStep("members")} />
@@ -270,7 +454,7 @@ export default function CreateGroupPage() {
             今日の気分は？ 🍽️
           </div>
           <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 24 }}>
-            食べたいジャンルをティアに分けてください
+            場所とジャンルを教えてください
           </div>
 
           {/* Location section */}
@@ -317,206 +501,144 @@ export default function CreateGroupPage() {
               </span>
             </label>
             {!anywhereOk && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <input
-                  value={departureStation}
-                  onChange={(e) => setDepartureStation(e.target.value)}
-                  placeholder="出発駅（例: 渋谷駅）"
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    border: "1.5px solid var(--border)",
-                    fontSize: 15,
-                    color: "var(--text-primary)",
-                    backgroundColor: "var(--bg)",
-                    outline: "none",
-                    width: "100%",
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
-                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-                />
-                <div>
-                  <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
-                    希望エリア（任意）
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {AREAS.map((area) => (
+              <div>
+                <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
+                  希望エリア（複数選択可）
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {AREAS.map((area) => {
+                    const selected = preferredAreas.includes(area);
+                    return (
                       <button
                         key={area}
-                        onClick={() => setPreferredArea(preferredArea === area ? "" : area)}
-                        className={`chip ${preferredArea === area ? "chip-selected" : ""}`}
-                        style={{ fontSize: 13 }}
+                        onClick={() => toggleArea(area)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "7px 12px",
+                          borderRadius: 20,
+                          border: `1.5px solid ${selected ? "var(--primary)" : "var(--border)"}`,
+                          backgroundColor: selected ? "rgba(196,85,42,0.1)" : "var(--bg)",
+                          color: selected ? "var(--primary)" : "var(--text-primary)",
+                          fontSize: 13,
+                          fontWeight: selected ? 600 : 400,
+                          cursor: "pointer",
+                        }}
                       >
+                        {selected && (
+                          <span style={{ fontSize: 11, fontWeight: 700 }}>✓</span>
+                        )}
                         {area}
                       </button>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Genre pool */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 10 }}>
-              ジャンル一覧（タップしてティアに追加）
+          {/* Genre DnD section */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
+              🍽️ ジャンルのランク付け
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {unranked.map((g) => (
-                <button
-                  key={g.id}
-                  className="chip"
-                  onClick={() => setSelectedGenre(g.id)}
-                  style={{
-                    backgroundColor:
-                      selectedGenre === g.id ? "rgba(196,85,42,0.1)" : "var(--surface)",
-                    borderColor: selectedGenre === g.id ? "var(--primary)" : "var(--border)",
-                    color: selectedGenre === g.id ? "var(--primary)" : "var(--text-primary)",
-                    fontSize: 14,
-                  }}
-                >
-                  {g.emoji} {g.name}
-                </button>
-              ))}
-              {unranked.length === 0 && (
-                <span style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
-                  全てのジャンルをランク付けしました ✓
-                </span>
-              )}
+            <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 16 }}>
+              ジャンルをドラッグ＆ドロップしてティアに分けてください
+            </div>
+            <div
+              style={{
+                fontSize: 12,
+                color: "var(--text-tertiary)",
+                backgroundColor: "var(--bg-secondary)",
+                borderRadius: 10,
+                padding: "8px 12px",
+                marginBottom: 16,
+              }}
+            >
+              💡 すべてのジャンルをランク付けする必要はありません
             </div>
           </div>
 
-          {/* Tier pickers */}
-          {(["S", "A", "B"] as TierKey[]).map((tier) => {
-            const config = TIER_CONFIG[tier];
-            const tierItems = tiers[tier];
-            return (
+          <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            {/* Unranked genres pool */}
+            {unranked.length > 0 && (
               <div
-                key={tier}
                 style={{
-                  backgroundColor: "var(--surface)",
-                  borderRadius: 16,
-                  border: `2px ${tierItems.length === 0 ? "dashed" : "solid"} ${
-                    tierItems.length === 0 ? "var(--border)" : config.color + "55"
-                  }`,
-                  padding: 14,
-                  marginBottom: 12,
-                  transition: "all 0.2s ease",
+                  backgroundColor: "var(--bg-secondary)",
+                  borderRadius: 14,
+                  padding: 12,
+                  marginBottom: 16,
                 }}
               >
-                {/* Tier header */}
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
+                  未分類（ドラッグしてティアへ）
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {unranked.map((g) => (
+                    <DraggableGenreChip key={g.id} id={g.id} emoji={g.emoji} name={g.name} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {unranked.length === 0 && (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "12px",
+                  fontSize: 13,
+                  color: "var(--secondary)",
+                  fontWeight: 600,
+                  marginBottom: 12,
+                }}
+              >
+                全てのジャンルをランク付けしました ✓
+              </div>
+            )}
+
+            {/* Tier zones */}
+            {(["S", "A", "B"] as TierKey[]).map((tier) => (
+              <TierDropZone
+                key={tier}
+                tier={tier}
+                tiers={tiers}
+                activeGenreId={activeGenreId}
+                onRemove={removeFromTier}
+              />
+            ))}
+
+            {/* Drag overlay */}
+            <DragOverlay>
+              {activeGenre ? (
                 <div
                   style={{
-                    display: "flex",
+                    display: "inline-flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: tierItems.length > 0 ? 10 : 0,
+                    gap: 4,
+                    padding: "6px 12px",
+                    borderRadius: 20,
+                    backgroundColor: "var(--surface)",
+                    border: "1.5px solid var(--primary)",
+                    color: "var(--primary)",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                    cursor: "grabbing",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 10,
-                        backgroundColor: config.color + "20",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 18,
-                      }}
-                    >
-                      {config.emoji}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: config.color }}>
-                        {config.label}
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-                        {config.subtitle}
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      backgroundColor: config.color + "20",
-                      color: config.color,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      padding: "2px 10px",
-                      borderRadius: 20,
-                    }}
-                  >
-                    {tierItems.length}件
-                  </div>
+                  {activeGenre.emoji} {activeGenre.name}
                 </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
 
-                {/* Items in tier */}
-                {tierItems.length > 0 && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {tierItems.map((id) => {
-                      const g = GENRES.find((x) => x.id === id);
-                      return g ? (
-                        <button
-                          key={id}
-                          onClick={() => removeFromTier(id)}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 4,
-                            padding: "6px 10px",
-                            borderRadius: 20,
-                            backgroundColor: config.color + "15",
-                            border: `1px solid ${config.color}55`,
-                            color: config.color,
-                            fontSize: 13,
-                            fontWeight: 500,
-                            cursor: "pointer",
-                          }}
-                        >
-                          {g.emoji} {g.name}
-                          <span style={{ fontSize: 14, opacity: 0.6 }}>×</span>
-                        </button>
-                      ) : null;
-                    })}
-                  </div>
-                )}
-
-                {/* Add button when genre is selected */}
-                {selectedGenre && (
-                  <button
-                    onClick={() => assignToTier(selectedGenre, tier)}
-                    style={{
-                      marginTop: tierItems.length > 0 ? 8 : 0,
-                      width: "100%",
-                      padding: "8px",
-                      border: `1.5px dashed ${config.color}`,
-                      borderRadius: 10,
-                      backgroundColor: config.color + "08",
-                      color: config.color,
-                      fontSize: 14,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 6,
-                    }}
-                  >
-                    ＋ ここに追加
-                  </button>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Progress */}
           <div
             style={{
               fontSize: 14,
               color: "var(--text-secondary)",
               textAlign: "center",
               marginBottom: 24,
+              marginTop: 8,
             }}
           >
             {rankedCount}/{GENRES.length} ジャンルをランク付け済み
@@ -530,85 +652,6 @@ export default function CreateGroupPage() {
             回答を送信する
           </button>
         </div>
-
-        {/* Tier picker overlay (when genre selected) */}
-        {selectedGenre && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: "var(--surface)",
-              borderRadius: "20px 20px 0 0",
-              padding: "16px 20px 40px",
-              boxShadow: "0 -4px 20px rgba(0,0,0,0.1)",
-              zIndex: 50,
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-              <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
-            </div>
-            {(() => {
-              const g = GENRES.find((x) => x.id === selectedGenre);
-              return (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", textAlign: "center" }}>
-                    {g?.emoji} {g?.name}
-                  </div>
-                  <div style={{ fontSize: 14, color: "var(--text-secondary)", textAlign: "center", marginTop: 4 }}>
-                    どのティアに入れますか？
-                  </div>
-                </div>
-              );
-            })()}
-            <div style={{ display: "flex", gap: 10 }}>
-              {(["S", "A", "B"] as TierKey[]).map((tier) => {
-                const config = TIER_CONFIG[tier];
-                return (
-                  <button
-                    key={tier}
-                    onClick={() => assignToTier(selectedGenre, tier)}
-                    style={{
-                      flex: 1,
-                      padding: "14px 8px",
-                      borderRadius: 14,
-                      backgroundColor: config.color + "15",
-                      border: `2px solid ${config.color}`,
-                      color: config.color,
-                      fontSize: 20,
-                      fontWeight: 800,
-                      cursor: "pointer",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                  >
-                    {config.emoji}
-                    <span style={{ fontSize: 15 }}>{tier}</span>
-                    <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.8 }}>{config.subtitle}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <button
-              onClick={() => setSelectedGenre(null)}
-              style={{
-                marginTop: 12,
-                width: "100%",
-                padding: "12px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--text-secondary)",
-                fontSize: 15,
-              }}
-            >
-              キャンセル
-            </button>
-          </div>
-        )}
       </PageShell>
     );
   }
