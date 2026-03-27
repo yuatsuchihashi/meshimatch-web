@@ -55,7 +55,7 @@ export interface Restaurant {
   matchScore: number;
   rating: number;
   access: string;
-  hotpepperUrl: string;
+  hotpepperUrl?: string;
   partyCapacity?: number;
   hasPrivateRoom: boolean;
   address?: string;

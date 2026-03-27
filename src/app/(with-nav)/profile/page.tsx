@@ -5,7 +5,6 @@ import { QRCodeSVG } from "qrcode.react";
 import { MOCK_CURRENT_USER, GENRES, ALLERGIES, DIETARY_RESTRICTIONS } from "@/lib/mockData";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
 
-// Mock connections data
 const MOCK_CONNECTIONS = [
   { id: "c1", displayName: "たろう", mutualGroups: 2 },
   { id: "c2", displayName: "はな", mutualGroups: 1 },
@@ -41,16 +40,24 @@ export default function ProfilePage() {
   }
 
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
-      {/* Header */}
-      <div style={{ padding: "60px 20px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", marginBottom: 20 }}>
-          プロフィール
-        </div>
+    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", paddingBottom: 80 }}>
 
-        {/* Avatar */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-          <div style={{ position: "relative" }}>
+      {/* ─── Hero Header ─── */}
+      <div
+        style={{
+          background: "linear-gradient(160deg, var(--primary) 0%, var(--primary-light) 100%)",
+          padding: "60px 20px 32px",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* decorative circles */}
+        <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.08)" }} />
+        <div style={{ position: "absolute", bottom: -20, left: 10, width: 80, height: 80, borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.06)" }} />
+
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 16 }}>
+          {/* Avatar with edit button */}
+          <div style={{ position: "relative", flexShrink: 0 }}>
             <MemberAvatar name={displayName} size={80} />
             <button
               onClick={() => { setNameInput(displayName); setEditSection("name"); }}
@@ -58,143 +65,131 @@ export default function ProfilePage() {
                 position: "absolute",
                 bottom: 0,
                 right: 0,
-                width: 26,
-                height: 26,
+                width: 28,
+                height: 28,
                 borderRadius: "50%",
-                backgroundColor: "var(--primary)",
-                color: "white",
-                border: "2px solid var(--bg)",
+                backgroundColor: "white",
+                color: "var(--primary)",
+                border: "none",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                fontSize: 12,
+                fontSize: 13,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
               }}
             >
               ✏️
             </button>
           </div>
-        </div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)" }}>
-          {displayName}
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "white", lineHeight: 1.2 }}>
+              {displayName}
+            </div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 4 }}>
+              MeshiMatchユーザー
+            </div>
+          </div>
         </div>
       </div>
 
-      <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ padding: "20px 16px", display: "flex", flexDirection: "column", gap: 24 }}>
 
-        {/* User ID section */}
-        <div
-          style={{
-            backgroundColor: "var(--surface)",
-            borderRadius: 16,
-            border: "1px solid var(--border-light)",
-            padding: 16,
-          }}
-        >
-          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 6 }}>
-            ユーザーID
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "monospace",
-                fontSize: 15,
-                fontWeight: 600,
-                color: "var(--text-primary)",
-                backgroundColor: "var(--bg-secondary)",
-                borderRadius: 8,
-                padding: "8px 12px",
-                flex: 1,
-                letterSpacing: "0.05em",
-              }}
-            >
-              {user.id}
+        {/* ─── 基本情報 ─── */}
+        <section>
+          <SectionLabel>基本情報</SectionLabel>
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            {/* User ID row */}
+            <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border-light)" }}>
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 6, fontWeight: 600, letterSpacing: "0.04em" }}>
+                ユーザーID
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div
+                  style={{
+                    flex: 1,
+                    fontFamily: "monospace",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: "var(--text-primary)",
+                    backgroundColor: "var(--bg-secondary)",
+                    borderRadius: 8,
+                    padding: "8px 12px",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  {user.id}
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard?.writeText(user.id).catch(() => {});
+                    alert("IDをコピーしました");
+                  }}
+                  style={{
+                    padding: "8px 14px",
+                    height: 40,
+                    borderRadius: 10,
+                    backgroundColor: "var(--bg-secondary)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-secondary)",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  コピー
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => {
-                navigator.clipboard?.writeText(user.id).catch(() => {});
-                alert("IDをコピーしました");
-              }}
-              style={{
-                padding: "8px 14px",
-                borderRadius: 10,
-                backgroundColor: "var(--bg-secondary)",
-                border: "1px solid var(--border)",
-                color: "var(--text-secondary)",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
-            >
-              コピー
-            </button>
-          </div>
-        </div>
 
-        {/* Profile share section */}
-        <div
-          style={{
-            backgroundColor: "var(--surface)",
-            borderRadius: 16,
-            border: "1px solid var(--border-light)",
-            padding: 16,
-          }}
-        >
-          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
-            プロフィールを共有
+            {/* Name row */}
+            <button
+              onClick={() => { setNameInput(displayName); setEditSection("name"); }}
+              style={{
+                width: "100%",
+                padding: "14px 16px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600, letterSpacing: "0.04em", marginBottom: 2 }}>
+                  表示名
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+                  {displayName}
+                </div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button
+        </section>
+
+        {/* ─── 共有方法 ─── */}
+        <section>
+          <SectionLabel>友達に共有</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+            <ShareButton
+              emoji="📷"
+              label="QRコード"
               onClick={() => setEditSection("share")}
-              style={{
-                flex: 1,
-                padding: "12px 8px",
-                borderRadius: 12,
-                border: "1.5px solid var(--border)",
-                backgroundColor: "var(--bg)",
-                color: "var(--text-primary)",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span style={{ fontSize: 22 }}>📷</span>
-              QRコード
-            </button>
-            <button
+            />
+            <ShareButton
+              emoji="🔍"
+              label="ID検索"
               onClick={() => alert("ID検索機能（デモ）")}
-              style={{
-                flex: 1,
-                padding: "12px 8px",
-                borderRadius: 12,
-                border: "1.5px solid var(--border)",
-                backgroundColor: "var(--bg)",
-                color: "var(--text-primary)",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span style={{ fontSize: 22 }}>🔍</span>
-              ID検索
-            </button>
-            <button
+            />
+            <ShareButton
+              emoji="🔗"
+              label="リンク共有"
               onClick={() => {
                 if (navigator.share) {
                   navigator.share({ title: "MeshiMatch", url: profileUrl });
@@ -203,52 +198,18 @@ export default function ProfilePage() {
                   alert("リンクをコピーしました");
                 }
               }}
-              style={{
-                flex: 1,
-                padding: "12px 8px",
-                borderRadius: 12,
-                border: "1.5px solid var(--border)",
-                backgroundColor: "var(--bg)",
-                color: "var(--text-primary)",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span style={{ fontSize: 22 }}>🔗</span>
-              リンク共有
-            </button>
+            />
           </div>
-        </div>
+        </section>
 
-        {/* Connections */}
-        <div
-          style={{
-            backgroundColor: "var(--surface)",
-            borderRadius: 16,
-            border: "1px solid var(--border-light)",
-            padding: 16,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
-          >
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
-              コネクション
-            </div>
+        {/* ─── コネクション ─── */}
+        <section>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <SectionLabel style={{ marginBottom: 0 }}>コネクション</SectionLabel>
             <span
               style={{
                 fontSize: 12,
-                fontWeight: 600,
+                fontWeight: 700,
                 color: "var(--primary)",
                 backgroundColor: "rgba(196,85,42,0.1)",
                 padding: "2px 10px",
@@ -258,17 +219,19 @@ export default function ProfilePage() {
               {MOCK_CONNECTIONS.length}人
             </span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {MOCK_CONNECTIONS.map((conn) => (
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            {MOCK_CONNECTIONS.map((conn, i) => (
               <div
                 key={conn.id}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
+                  padding: "12px 16px",
+                  borderBottom: i < MOCK_CONNECTIONS.length - 1 ? "1px solid var(--border-light)" : "none",
                 }}
               >
-                <MemberAvatar name={conn.displayName} size={40} />
+                <MemberAvatar name={conn.displayName} size={44} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
                     {conn.displayName}
@@ -277,83 +240,147 @@ export default function ProfilePage() {
                     共通グループ {conn.mutualGroups}件
                   </div>
                 </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Disliked Genres */}
-        <SectionCard title="苦手なジャンル" onEdit={() => setEditSection("genres")}>
-          {dislikedGenres.length === 0 ? (
-            <EmptyChipText>設定なし</EmptyChipText>
-          ) : (
-            <ChipRow>
-              {dislikedGenres.map((id) => {
-                const g = GENRES.find((x) => x.id === id);
-                return g ? (
-                  <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
-                    {g.emoji} {g.name}
-                  </span>
-                ) : null;
-              })}
-            </ChipRow>
-          )}
-        </SectionCard>
+        {/* ─── 食の好み ─── */}
+        <section>
+          <SectionLabel>食の好み</SectionLabel>
+          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
 
-        {/* Allergies */}
-        <SectionCard title="アレルギー・食の制限" onEdit={() => setEditSection("allergies")}>
-          {allergies.length === 0 && dietaryRestrictions.length === 0 ? (
-            <EmptyChipText>設定なし</EmptyChipText>
-          ) : (
-            <ChipRow>
-              {allergies.map((id) => {
-                const a = ALLERGIES.find((x) => x.id === id);
-                return a ? (
-                  <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
-                    {a.emoji} {a.name}
-                  </span>
-                ) : null;
-              })}
-              {dietaryRestrictions.map((id) => {
-                const r = DIETARY_RESTRICTIONS.find((x) => x.id === id);
-                return r ? (
-                  <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
-                    {r.emoji} {r.name}
-                  </span>
-                ) : null;
-              })}
-            </ChipRow>
-          )}
-        </SectionCard>
+            {/* Disliked genres */}
+            <div
+              className="card"
+              style={{
+                borderRadius: "14px 14px 0 0",
+                padding: "14px 16px",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                  苦手なジャンル
+                </div>
+                <button
+                  onClick={() => setEditSection("genres")}
+                  style={{
+                    fontSize: 13,
+                    color: "var(--primary)",
+                    fontWeight: 600,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px 8px",
+                    borderRadius: 8,
+                    backgroundColor: "rgba(196,85,42,0.08)",
+                  }}
+                >
+                  編集
+                </button>
+              </div>
+              {dislikedGenres.length === 0 ? (
+                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>設定なし</div>
+              ) : (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {dislikedGenres.map((id) => {
+                    const g = GENRES.find((x) => x.id === id);
+                    return g ? (
+                      <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
+                        {g.emoji} {g.name}
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
 
-        {/* Sign out */}
-        <div
-          style={{
-            backgroundColor: "var(--surface)",
-            borderRadius: 16,
-            border: "1px solid var(--border-light)",
-          }}
-        >
-          <button
-            style={{
-              width: "100%",
-              padding: "16px 18px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              color: "var(--text-secondary)",
-              fontSize: 15,
-            }}
-          >
-            <span>🚪</span> ログアウト（デモ）
-          </button>
-        </div>
+            {/* Allergies & dietary restrictions */}
+            <div
+              className="card"
+              style={{
+                borderRadius: "0 0 14px 14px",
+                padding: "14px 16px",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                  アレルギー・食の制限
+                </div>
+                <button
+                  onClick={() => setEditSection("allergies")}
+                  style={{
+                    fontSize: 13,
+                    color: "var(--primary)",
+                    fontWeight: 600,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px 8px",
+                    borderRadius: 8,
+                    backgroundColor: "rgba(196,85,42,0.08)",
+                  }}
+                >
+                  編集
+                </button>
+              </div>
+              {allergies.length === 0 && dietaryRestrictions.length === 0 ? (
+                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>設定なし</div>
+              ) : (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {allergies.map((id) => {
+                    const a = ALLERGIES.find((x) => x.id === id);
+                    return a ? (
+                      <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
+                        {a.emoji} {a.name}
+                      </span>
+                    ) : null;
+                  })}
+                  {dietaryRestrictions.map((id) => {
+                    const r = DIETARY_RESTRICTIONS.find((x) => x.id === id);
+                    return r ? (
+                      <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
+                        {r.emoji} {r.name}
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ─── その他 ─── */}
+        <section>
+          <SectionLabel>その他</SectionLabel>
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            <button
+              style={{
+                width: "100%",
+                padding: "16px 18px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                color: "#E05252",
+                fontSize: 15,
+                fontWeight: 600,
+              }}
+            >
+              <span style={{ fontSize: 18 }}>🚪</span>
+              ログアウト（デモ）
+            </button>
+          </div>
+        </section>
+
       </div>
 
-      {/* Edit sheets */}
+      {/* ─── Edit sheets ─── */}
       {editSection === "name" && (
         <EditSheet title="名前を変更" onClose={() => setEditSection(null)}>
           <input
@@ -371,6 +398,9 @@ export default function ProfilePage() {
               outline: "none",
             }}
             placeholder="名前を入力"
+            onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+            autoFocus
           />
           <button
             className="btn-primary"
@@ -383,25 +413,23 @@ export default function ProfilePage() {
       )}
 
       {editSection === "share" && (
-        <EditSheet title="QRコード" onClose={() => setEditSection(null)}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        <EditSheet title="QRコードで共有" onClose={() => setEditSection(null)}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
             <div
               style={{
-                padding: 20,
+                padding: 24,
                 backgroundColor: "white",
-                borderRadius: 16,
-                boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+                borderRadius: 20,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
               }}
             >
               <QRCodeSVG value={profileUrl} size={180} />
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
                 {displayName}さんのプロフィール
               </div>
-              <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-                {profileUrl}
-              </div>
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{profileUrl}</div>
             </div>
             <button
               className="btn-primary"
@@ -414,7 +442,7 @@ export default function ProfilePage() {
                 }
               }}
             >
-              リンクを共有
+              🔗 リンクを共有
             </button>
           </div>
         </EditSheet>
@@ -422,6 +450,9 @@ export default function ProfilePage() {
 
       {editSection === "genres" && (
         <EditSheet title="苦手なジャンル" onClose={() => setEditSection(null)}>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
+            苦手なジャンルをタップして選択してください
+          </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
             {GENRES.map((g) => (
               <button
@@ -441,8 +472,8 @@ export default function ProfilePage() {
 
       {editSection === "allergies" && (
         <EditSheet title="アレルギー・食の制限" onClose={() => setEditSection(null)}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 10 }}>
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
               アレルギー
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -457,8 +488,8 @@ export default function ProfilePage() {
               ))}
             </div>
           </div>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 10 }}>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
               食の制限
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -482,58 +513,58 @@ export default function ProfilePage() {
   );
 }
 
-function SectionCard({
-  title,
-  children,
-  onEdit,
-}: {
-  title: string;
-  children: React.ReactNode;
-  onEdit: () => void;
-}) {
+function SectionLabel({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div
       style={{
-        backgroundColor: "var(--surface)",
-        borderRadius: 16,
-        border: "1px solid var(--border-light)",
-        padding: 16,
+        fontSize: 12,
+        fontWeight: 700,
+        color: "var(--text-tertiary)",
+        letterSpacing: "0.06em",
+        textTransform: "uppercase",
+        marginBottom: 10,
+        paddingLeft: 4,
+        ...style,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 12,
-        }}
-      >
-        <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
-        <button
-          onClick={onEdit}
-          style={{
-            fontSize: 13,
-            color: "var(--primary)",
-            fontWeight: 600,
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          編集
-        </button>
-      </div>
       {children}
     </div>
   );
 }
 
-function ChipRow({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{children}</div>;
-}
-
-function EmptyChipText({ children }: { children: React.ReactNode }) {
-  return <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{children}</div>;
+function ShareButton({
+  emoji,
+  label,
+  onClick,
+}: {
+  emoji: string;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "16px 8px",
+        borderRadius: 14,
+        border: "1.5px solid var(--border)",
+        backgroundColor: "var(--surface)",
+        color: "var(--text-primary)",
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 8,
+        minHeight: 80,
+        transition: "background-color 0.15s",
+      }}
+    >
+      <span style={{ fontSize: 24 }}>{emoji}</span>
+      <span style={{ lineHeight: 1.2 }}>{label}</span>
+    </button>
+  );
 }
 
 function EditSheet({
@@ -565,7 +596,7 @@ function EditSheet({
           position: "relative",
           backgroundColor: "var(--bg)",
           borderRadius: "24px 24px 0 0",
-          padding: "20px 20px 40px",
+          padding: "20px 20px 48px",
           maxHeight: "85dvh",
           overflowY: "auto",
         }}
@@ -573,8 +604,29 @@ function EditSheet({
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
           <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
         </div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>
-          {title}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
+            {title}
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              backgroundColor: "var(--bg-secondary)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
+              color: "var(--text-secondary)",
+            }}
+          >
+            ✕
+          </button>
         </div>
         {children}
       </div>

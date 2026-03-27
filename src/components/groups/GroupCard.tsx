@@ -54,7 +54,7 @@ export function GroupCard({ group, isHidden, onToggleHide }: GroupCardProps) {
                 fontSize: 17,
                 fontWeight: 700,
                 color: "var(--text-primary)",
-                marginBottom: 4,
+                marginBottom: group.decidedRestaurant ? 8 : 4,
               }}
             >
               {group.name}
@@ -62,16 +62,18 @@ export function GroupCard({ group, isHidden, onToggleHide }: GroupCardProps) {
             {group.decidedRestaurant && (
               <div
                 style={{
-                  fontSize: 13,
-                  color: "var(--secondary)",
-                  fontWeight: 500,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
+                  backgroundColor: "rgba(107,122,82,0.1)",
+                  border: "1px solid rgba(107,122,82,0.3)",
+                  borderRadius: 12,
+                  padding: "8px 12px",
                 }}
               >
-                <span>✓</span>
-                {group.decidedRestaurant}
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--secondary)", marginBottom: 2 }}>
+                  🎉 ここに決まりました！
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                  {group.decidedRestaurant}
+                </div>
               </div>
             )}
           </Link>

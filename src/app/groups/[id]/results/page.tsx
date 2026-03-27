@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MOCK_GROUPS, MOCK_RESTAURANTS } from "@/lib/mockData";
 import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 import { RestaurantDetailModal } from "@/components/restaurants/RestaurantDetailModal";
-import { MemberAvatarStack } from "@/components/groups/MemberAvatar";
+import { MemberAvatarStack, MemberAvatar } from "@/components/groups/MemberAvatar";
 import type { Restaurant } from "@/lib/types";
 
 type SortMode = "match" | "rating";
@@ -15,6 +15,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("match");
   const [selectedArea, setSelectedArea] = useState<string>("all");
+  const [showMembersModal, setShowMembersModal] = useState(false);
 
   const group = MOCK_GROUPS.find((g) => g.id === id);
   const isNewGroup = !group;
@@ -89,7 +90,12 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               ))}
             </div>
           </div>
-          <MemberAvatarStack members={memberNames} size={28} />
+          <button
+            onClick={() => setShowMembersModal(true)}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          >
+            <MemberAvatarStack members={memberNames} size={28} />
+          </button>
         </div>
       </div>
 
@@ -202,6 +208,72 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         restaurant={selectedRestaurant}
         onClose={() => setSelectedRestaurant(null)}
       />
+
+      {/* Members modal */}
+      {showMembersModal && group && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 200,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+          }}
+        >
+          <div
+            style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.5)" }}
+            onClick={() => setShowMembersModal(false)}
+          />
+          <div
+            style={{
+              position: "relative",
+              backgroundColor: "var(--bg)",
+              borderRadius: "24px 24px 0 0",
+              padding: "20px 20px 40px",
+              maxHeight: "70dvh",
+              overflowY: "auto",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+              <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>
+              {group.name} のメンバー
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {group.members.map((member) => {
+                const hasResponded = group.surveyResponses.some((r) => r.memberName === member.displayName);
+                return (
+                  <div key={member.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <MemberAvatar name={member.displayName} size={40} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+                        {member.displayName}
+                        {member.role === "owner" && (
+                          <span style={{ fontSize: 11, color: "var(--primary)", marginLeft: 6 }}>幹事</span>
+                        )}
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        padding: "3px 10px",
+                        borderRadius: 20,
+                        backgroundColor: hasResponded ? "rgba(107,122,82,0.12)" : "var(--bg-secondary)",
+                        color: hasResponded ? "var(--secondary)" : "var(--text-tertiary)",
+                      }}
+                    >
+                      {hasResponded ? "回答済み" : "未回答"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

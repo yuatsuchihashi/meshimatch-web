@@ -274,13 +274,15 @@ export function RestaurantDetailModal({ restaurant, onClose }: Props) {
           {/* CTA buttons */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <a
-              href={restaurant.hotpepperUrl}
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                restaurant.name + (restaurant.address ? " " + restaurant.address : " " + restaurant.access)
+              )}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{ textDecoration: "none" }}
             >
               <button className="btn-primary" style={{ gap: 8 }}>
-                🍽️ HotPepperで予約
+                🗺️ Mapで開く
               </button>
             </a>
             <button className="btn-secondary" onClick={handleClose}>
