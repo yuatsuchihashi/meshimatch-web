@@ -8,5 +8,5 @@ export async function executeGroupSearch(_params: {
   location_text: string;
   time_slot?: "lunch" | "dinner" | "late_night";
 }) {
-  return { data: [] };
+  return { data: [], error: null };
 }

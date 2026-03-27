@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "meshimatch",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /Users/yuatsuchihashi/meshimatch && npm run dev -- --port 3002"],
+      "port": 3002
+    }
+  ]
+}
