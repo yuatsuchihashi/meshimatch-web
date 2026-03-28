@@ -1,7 +1,8 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { MOCK_GROUPS, MOCK_RESTAURANTS } from "@/lib/mockData";
 import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 import { RestaurantDetailModal } from "@/components/restaurants/RestaurantDetailModal";
@@ -10,12 +11,41 @@ import type { Restaurant } from "@/lib/types";
 
 type SortMode = "match" | "rating";
 
+const DECIDED_KEY = "meshimatch-decided";
+
 export default function ResultsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const searchParams = useSearchParams();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+
+  useEffect(() => {
+    const decidedName = searchParams.get("decided");
+    if (decidedName) {
+      const r = MOCK_RESTAURANTS.find((x) => x.name === decodeURIComponent(decidedName));
+      if (r) setSelectedRestaurant(r);
+    }
+  }, []);
   const [sortMode, setSortMode] = useState<SortMode>("match");
   const [selectedArea, setSelectedArea] = useState<string>("all");
   const [showMembersModal, setShowMembersModal] = useState(false);
+  const [decidedRestaurant, setDecidedRestaurant] = useState<string | null>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DECIDED_KEY) ?? "{}");
+      return saved[id] ?? null;
+    } catch { return null; }
+  });
+  const [showToast, setShowToast] = useState(false);
+
+  function handleDecide(restaurant: Restaurant) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DECIDED_KEY) ?? "{}");
+      saved[id] = restaurant.name;
+      localStorage.setItem(DECIDED_KEY, JSON.stringify(saved));
+    } catch { /* ignore */ }
+    setDecidedRestaurant(restaurant.name);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  }
 
   const group = MOCK_GROUPS.find((g) => g.id === id);
   const isNewGroup = !group;
@@ -136,6 +166,32 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
+      {/* 決定済みバナー */}
+      {decidedRestaurant && (
+        <div
+          style={{
+            margin: "0 20px 16px",
+            backgroundColor: "rgba(107,122,82,0.1)",
+            border: "1.5px solid rgba(107,122,82,0.4)",
+            borderRadius: 16,
+            padding: "14px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <span style={{ fontSize: 22 }}>🎉</span>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--secondary, #6B7A52)", marginBottom: 2 }}>
+              決定済み
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+              {decidedRestaurant}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sort tabs */}
       <div style={{ padding: "0 20px 16px" }}>
         <div
@@ -207,7 +263,34 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       <RestaurantDetailModal
         restaurant={selectedRestaurant}
         onClose={() => setSelectedRestaurant(null)}
+        onDecide={handleDecide}
       />
+
+      {/* 決定トースト */}
+      {showToast && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 100,
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "var(--secondary, #6B7A52)",
+            color: "white",
+            padding: "12px 24px",
+            borderRadius: 24,
+            fontSize: 15,
+            fontWeight: 700,
+            zIndex: 110,
+            whiteSpace: "nowrap",
+            boxShadow: "0 4px 16px rgba(107,122,82,0.4)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          🎉 決定しました！みんなに通知を送りました
+        </div>
+      )}
 
       {/* Members modal */}
       {showMembersModal && group && (

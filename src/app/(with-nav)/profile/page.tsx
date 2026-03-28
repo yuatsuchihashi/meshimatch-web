@@ -19,6 +19,18 @@ export default function ProfilePage() {
   const [allergies, setAllergies] = useState<string[]>(user.allergies);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(user.dietaryRestrictions);
   const [editSection, setEditSection] = useState<null | "name" | "genres" | "allergies" | "share">(null);
+  const [connectionsOpen, setConnectionsOpen] = useState(false);
+  const [connectionsVisible, setConnectionsVisible] = useState(false);
+
+  function openConnections() {
+    setConnectionsOpen(true);
+    requestAnimationFrame(() => setConnectionsVisible(true));
+  }
+
+  function closeConnections() {
+    setConnectionsVisible(false);
+    setTimeout(() => setConnectionsOpen(false), 250);
+  }
   const [nameInput, setNameInput] = useState(displayName);
 
   const profileUrl = `https://meshimatch.app/u/${user.id}`;
@@ -176,7 +188,7 @@ export default function ProfilePage() {
         {/* ─── 共有方法 ─── */}
         <section>
           <SectionLabel>友達に共有</SectionLabel>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <ShareButton
               emoji="📷"
               label="QRコード"
@@ -187,64 +199,43 @@ export default function ProfilePage() {
               label="ID検索"
               onClick={() => alert("ID検索機能（デモ）")}
             />
-            <ShareButton
-              emoji="🔗"
-              label="リンク共有"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({ title: "MeshiMatch", url: profileUrl });
-                } else {
-                  navigator.clipboard?.writeText(profileUrl).catch(() => {});
-                  alert("リンクをコピーしました");
-                }
-              }}
-            />
           </div>
         </section>
 
-        {/* ─── コネクション ─── */}
+        {/* ─── 繋がり ─── */}
         <section>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <SectionLabel style={{ marginBottom: 0 }}>コネクション</SectionLabel>
-            <span
+          <SectionLabel>繋がり</SectionLabel>
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            <button
+              onClick={openConnections}
               style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: "var(--primary)",
-                backgroundColor: "rgba(196,85,42,0.1)",
-                padding: "2px 10px",
-                borderRadius: 20,
+                width: "100%",
+                padding: "14px 16px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
               }}
             >
-              {MOCK_CONNECTIONS.length}人
-            </span>
-          </div>
-          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-            {MOCK_CONNECTIONS.map((conn, i) => (
-              <div
-                key={conn.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "12px 16px",
-                  borderBottom: i < MOCK_CONNECTIONS.length - 1 ? "1px solid var(--border-light)" : "none",
-                }}
-              >
-                <MemberAvatar name={conn.displayName} size={44} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
-                    {conn.displayName}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-                    共通グループ {conn.mutualGroups}件
-                  </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ display: "flex" }}>
+                  {MOCK_CONNECTIONS.slice(0, 4).map((conn, i) => (
+                    <div key={conn.id} style={{ marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i }}>
+                      <MemberAvatar name={conn.displayName} size={28} />
+                    </div>
+                  ))}
                 </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+                <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+                  {MOCK_CONNECTIONS.length}人
+                </span>
               </div>
-            ))}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </section>
 
@@ -379,6 +370,59 @@ export default function ProfilePage() {
         </section>
 
       </div>
+
+      {/* ─── 繋がりシート ─── */}
+      {connectionsOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+          <div
+            style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", opacity: connectionsVisible ? 1 : 0, transition: "opacity 0.2s ease" }}
+            onClick={closeConnections}
+          />
+          <div
+            style={{
+              position: "relative",
+              backgroundColor: "var(--bg)",
+              borderRadius: "24px 24px 0 0",
+              maxHeight: "75dvh",
+              overflowY: "auto",
+              transform: connectionsVisible ? "translateY(0)" : "translateY(100%)",
+              transition: "transform 0.25s cubic-bezier(0.34,1.1,0.64,1)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 0" }}>
+              <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
+            </div>
+            <div style={{ padding: "16px 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>
+                繋がり <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-tertiary)" }}>{MOCK_CONNECTIONS.length}人</span>
+              </div>
+              <button onClick={closeConnections} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-tertiary)", fontSize: 20, lineHeight: 1, padding: "4px 8px" }}>✕</button>
+            </div>
+            <div style={{ padding: "0 16px 40px" }}>
+              <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+                {MOCK_CONNECTIONS.map((conn, i) => (
+                  <div
+                    key={conn.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "14px 16px",
+                      borderBottom: i < MOCK_CONNECTIONS.length - 1 ? "1px solid var(--border-light)" : "none",
+                    }}
+                  >
+                    <MemberAvatar name={conn.displayName} size={44} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>{conn.displayName}</div>
+                      <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>共通グループ {conn.mutualGroups}件</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── Edit sheets ─── */}
       {editSection === "name" && (

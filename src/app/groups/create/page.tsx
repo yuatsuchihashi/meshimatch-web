@@ -205,6 +205,7 @@ export default function CreateGroupPage() {
   const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
   const [tiers, setTiers] = useState<TierData>({ S: [], A: [], B: [] });
   const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -268,10 +269,44 @@ export default function CreateGroupPage() {
     }, 2000);
   }
 
+  // ─── EXIT CONFIRM SHEET ───
+  if (showExitConfirm) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+        <div
+          style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={() => setShowExitConfirm(false)}
+        />
+        <div style={{ position: "relative", backgroundColor: "var(--bg)", borderRadius: "24px 24px 0 0", padding: "20px 20px 48px" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+            <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8, textAlign: "center" }}>
+            グループ作成を終了しますか？
+          </div>
+          <div style={{ fontSize: 14, color: "var(--text-secondary)", textAlign: "center", marginBottom: 28 }}>
+            入力内容はリセットされます
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button
+              onClick={() => router.push("/home")}
+              style={{ width: "100%", padding: "15px", borderRadius: 14, backgroundColor: "#E05252", color: "white", fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer" }}
+            >
+              終了する
+            </button>
+            <button className="btn-secondary" onClick={() => setShowExitConfirm(false)}>
+              続ける
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ─── STEP: NAME ───
   if (step === "name") {
     return (
-      <PageShell>
+      <PageShell onExit={() => setShowExitConfirm(true)} showExit>
         <BackButton onClick={() => router.push("/home")} />
         <div style={{ padding: "16px 20px 40px" }}>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
@@ -320,7 +355,7 @@ export default function CreateGroupPage() {
   // ─── STEP: MEMBERS ───
   if (step === "members") {
     return (
-      <PageShell>
+      <PageShell onExit={() => setShowExitConfirm(true)} showExit>
         <BackButton onClick={() => setStep("name")} />
         <div style={{ padding: "16px 20px 40px" }}>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
@@ -447,7 +482,7 @@ export default function CreateGroupPage() {
     const activeGenre = activeGenreId ? GENRES.find((g) => g.id === activeGenreId) : null;
 
     return (
-      <PageShell>
+      <PageShell onExit={() => setShowExitConfirm(true)} showExit>
         <BackButton onClick={() => setStep("members")} />
         <div style={{ padding: "16px 20px 40px" }}>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
@@ -711,9 +746,42 @@ export default function CreateGroupPage() {
   );
 }
 
-function PageShell({ children }: { children: React.ReactNode }) {
+function PageShell({
+  children,
+  showExit = false,
+  onExit,
+}: {
+  children: React.ReactNode;
+  showExit?: boolean;
+  onExit?: () => void;
+}) {
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
+    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", position: "relative" }}>
+      {showExit && onExit && (
+        <button
+          onClick={onExit}
+          style={{
+            position: "fixed",
+            top: 16,
+            right: 16,
+            zIndex: 50,
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            backgroundColor: "var(--surface)",
+            border: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "var(--text-secondary)",
+            fontSize: 18,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          }}
+        >
+          ✕
+        </button>
+      )}
       {children}
     </div>
   );

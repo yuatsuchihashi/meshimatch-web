@@ -26,9 +26,10 @@ const GENRE_GRADIENTS: Record<string, [string, string]> = {
 interface Props {
   restaurant: Restaurant | null;
   onClose: () => void;
+  onDecide?: (restaurant: Restaurant) => void;
 }
 
-export function RestaurantDetailModal({ restaurant, onClose }: Props) {
+export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) {
   const [copied, setCopied] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -273,6 +274,15 @@ export function RestaurantDetailModal({ restaurant, onClose }: Props) {
 
           {/* CTA buttons */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {onDecide && (
+              <button
+                className="btn-primary"
+                style={{ backgroundColor: "var(--secondary, #6B7A52)", gap: 8, fontSize: 16, fontWeight: 800 }}
+                onClick={() => { onDecide(restaurant); handleClose(); }}
+              >
+                🎉 このレストランに決定する
+              </button>
+            )}
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                 restaurant.name + (restaurant.address ? " " + restaurant.address : " " + restaurant.access)

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { MeshiGroup } from "@/lib/types";
 import { MemberAvatarStack, MemberAvatar } from "./MemberAvatar";
 
@@ -27,6 +28,7 @@ function getStatusBadge(group: MeshiGroup) {
 }
 
 export function GroupCard({ group, isHidden, onToggleHide }: GroupCardProps) {
+  const router = useRouter();
   const [showMembersModal, setShowMembersModal] = useState(false);
   const respondedCount = group.surveyResponses.length;
   const totalCount = group.members.length;
@@ -61,11 +63,17 @@ export function GroupCard({ group, isHidden, onToggleHide }: GroupCardProps) {
             </div>
             {group.decidedRestaurant && (
               <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/groups/${group.id}/results?decided=${encodeURIComponent(group.decidedRestaurant!)}`);
+                }}
                 style={{
                   backgroundColor: "rgba(107,122,82,0.1)",
                   border: "1px solid rgba(107,122,82,0.3)",
                   borderRadius: 12,
                   padding: "8px 12px",
+                  cursor: "pointer",
                 }}
               >
                 <div style={{ fontSize: 11, fontWeight: 700, color: "var(--secondary)", marginBottom: 2 }}>

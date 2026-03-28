@@ -271,6 +271,26 @@ export const MOCK_RESTAURANTS: Restaurant[] = [
   },
 ];
 
+// group-4: 招待経由で参加するグループ（初期は非表示、参加後にホームに表示）
+export const MOCK_GROUP_4: MeshiGroup = {
+  id: "group-4",
+  name: "金曜飲み",
+  inviteCode: "FRI2024",
+  status: "active",
+  members: [
+    { id: "m10", displayName: "りょう", role: "owner", hasSurvey: true },
+    { id: "m11", displayName: "みく", role: "member", hasSurvey: true },
+    { id: "m12", displayName: "そうた", role: "member", hasSurvey: false },
+    { id: "m13", displayName: "あい", role: "member", hasSurvey: true },
+  ],
+  surveyResponses: [
+    { id: "r10", memberName: "りょう", tierS: ["G009"], tierA: ["G005"], tierB: [], departureStation: "六本木駅", preferredArea: "六本木", submittedAt: new Date("2024-12-10") },
+    { id: "r11", memberName: "みく", tierS: ["G003"], tierA: ["G009"], tierB: ["G001"], departureStation: "六本木駅", preferredArea: "六本木", submittedAt: new Date("2024-12-10") },
+    { id: "r12", memberName: "あい", tierS: ["G009"], tierA: ["G003"], tierB: [], departureStation: "六本木駅", preferredArea: null, submittedAt: new Date("2024-12-10") },
+  ],
+  resolvedAreas: ["六本木"],
+};
+
 export const MOCK_INVITATIONS: Invitation[] = [
   {
     id: "inv-1",
