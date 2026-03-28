@@ -25,6 +25,7 @@ function timeAgo(date: Date): string {
 export default function HomePage() {
   const router = useRouter();
   const [showArchived, setShowArchived] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
   const [hiddenGroupIds, setHiddenGroupIds] = useState<Set<string>>(new Set());
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
@@ -57,7 +58,9 @@ export default function HomePage() {
 
   const user = MOCK_CURRENT_USER;
   const joinedExtra = joinedGroupIds.includes("group-4") ? [MOCK_GROUP_4] : [];
-  const activeGroups = mergeDecided([...MOCK_GROUPS.filter((g) => g.status === "active"), ...joinedExtra]);
+  const allActiveGroups = mergeDecided([...MOCK_GROUPS.filter((g) => g.status === "active"), ...joinedExtra]);
+  const visibleActiveGroups = allActiveGroups.filter((g) => !hiddenGroupIds.has(g.id));
+  const hiddenActiveGroups = allActiveGroups.filter((g) => hiddenGroupIds.has(g.id));
   const archivedGroups = mergeDecided(MOCK_GROUPS.filter((g) => g.status === "archived"));
 
   function toggleHide(groupId: string) {
@@ -207,21 +210,66 @@ export default function HomePage() {
           <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
             進行中のグループ
           </div>
-          {activeGroups.length === 0 ? (
+          {visibleActiveGroups.length === 0 ? (
             <EmptyState />
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {activeGroups.map((group) => (
+              {visibleActiveGroups.map((group) => (
                 <GroupCard
                   key={group.id}
                   group={group}
-                  isHidden={hiddenGroupIds.has(group.id)}
                   onToggleHide={() => toggleHide(group.id)}
                 />
               ))}
             </div>
           )}
         </div>
+
+        {/* Hidden Groups */}
+        {hiddenActiveGroups.length > 0 && (
+          <div>
+            <button
+              onClick={() => setShowHidden(!showHidden)}
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                color: "var(--text-secondary)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 0",
+                marginBottom: showHidden ? 12 : 0,
+              }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                style={{ transform: showHidden ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s ease" }}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+              非表示のグループ ({hiddenActiveGroups.length}件)
+            </button>
+            {showHidden && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {hiddenActiveGroups.map((group) => (
+                  <GroupCard
+                    key={group.id}
+                    group={group}
+                    onRestore={() => toggleHide(group.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Archived Groups */}
         {archivedGroups.length > 0 && (
@@ -261,8 +309,6 @@ export default function HomePage() {
                   <GroupCard
                     key={group.id}
                     group={group}
-                    isHidden={hiddenGroupIds.has(group.id)}
-                    onToggleHide={() => toggleHide(group.id)}
                   />
                 ))}
               </div>
