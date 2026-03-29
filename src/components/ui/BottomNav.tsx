@@ -3,24 +3,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const tabs = [
-  {
-    href: "/home",
-    label: "ホーム",
-    iconLine: "/icons/house_line.svg",
-    iconFill: "/icons/house_fill.svg",
-  },
-  {
-    href: "/profile",
-    label: "プロフィール",
-    iconLine: "/icons/me_line.svg",
-    iconFill: "/icons/me_fill.svg",
-  },
-];
+import { useLocale } from "@/lib/i18n";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { t } = useLocale();
+
+  const tabs = [
+    {
+      href: "/home",
+      label: t("nav.home"),
+      iconLine: "/icons/house_line.svg",
+      iconFill: "/icons/house_fill.svg",
+    },
+    {
+      href: "/profile",
+      label: t("nav.profile"),
+      iconLine: "/icons/me_line.svg",
+      iconFill: "/icons/me_fill.svg",
+    },
+  ];
 
   return (
     <nav

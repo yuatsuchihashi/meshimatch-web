@@ -59,7 +59,7 @@ export interface MeshiGroup {
   id: string;
   name: string;
   inviteCode: string;
-  status: "active" | "archived";
+  status: "active" | "archived" | "decided" | "all_responded" | "completed";
   members: GroupMember[];
   surveyResponses: SurveyResponse[];
   resolvedAreas: string[];

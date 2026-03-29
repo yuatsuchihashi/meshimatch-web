@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import { useLocale } from "@/lib/i18n";
 
 interface GroupData {
   id: string;
@@ -15,6 +16,7 @@ interface GroupData {
 export default function WaitingRoomPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { t } = useLocale();
   const [group, setGroup] = useState<GroupData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -42,7 +44,6 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
     }
 
     fetchGroup();
-    // 10秒ごとにポーリング
     const interval = setInterval(fetchGroup, 10000);
     return () => clearInterval(interval);
   }, [id]);
@@ -52,7 +53,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
       <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
           <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", marginBottom: 12 }} />
-          <div style={{ fontSize: 14 }}>読み込み中...</div>
+          <div style={{ fontSize: 14 }}>{t("common.loading")}</div>
         </div>
       </div>
     );
@@ -63,8 +64,8 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
       <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
           <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-tertiary)", marginBottom: 12 }}>!</div>
-          <div style={{ fontSize: 16, fontWeight: 600 }}>グループが見つかりません</div>
-          <Link href="/home" style={{ color: "var(--primary)", fontSize: 14, marginTop: 8, display: "block" }}>ホームに戻る</Link>
+          <div style={{ fontSize: 16, fontWeight: 600 }}>{t("waiting.groupNotFound")}</div>
+          <Link href="/home" style={{ color: "var(--primary)", fontSize: 14, marginTop: 8, display: "block" }}>{t("waiting.backToHomeLink")}</Link>
         </div>
       </div>
     );
@@ -81,7 +82,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
   function handleShareLink() {
     const url = `${window.location.origin}/invite/${group!.invite_code}`;
     navigator.clipboard.writeText(url);
-    alert("招待リンクをコピーしました！");
+    alert(t("waiting.linkCopied"));
   }
 
   return (
@@ -104,7 +105,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          ホームに戻る
+          {t("waiting.backToHome")}
         </Link>
 
         <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
@@ -136,14 +137,14 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
             </span>
           </div>
           <div style={{ fontSize: 14, color: "var(--text-secondary)", fontWeight: 500 }}>
-            回答件数
+            {t("waiting.responseCount")}
           </div>
         </div>
 
         {/* Members list */}
         <div className="card" style={{ padding: 16 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>
-            メンバー
+            {t("waiting.members")}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {group.members.map((member) => (
@@ -173,7 +174,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
                     {member.display_name}
                   </div>
                   {member.role === "owner" && (
-                    <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>幹事</div>
+                    <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{t("waiting.organizer")}</div>
                   )}
                 </div>
                 <div
@@ -191,14 +192,14 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      回答済み
+                      {t("waiting.answered")}
                     </>
                   ) : (
                     <>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      未回答
+                      {t("waiting.notAnswered")}
                     </>
                   )}
                 </div>
@@ -209,7 +210,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
 
         {/* Share button */}
         <button className="btn-secondary" onClick={handleShareLink}>
-          招待リンクを共有
+          {t("waiting.shareInviteLink")}
         </button>
 
         {/* Search button */}
@@ -219,7 +220,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
             onClick={handleSearch}
             disabled={!canSearch}
           >
-            お店を検索する
+            {t("waiting.searchRestaurants")}
           </button>
           {!canSearch && (
             <div
@@ -230,7 +231,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
                 marginTop: 8,
               }}
             >
-              回答が必要です
+              {t("waiting.responseNeeded")}
             </div>
           )}
         </div>

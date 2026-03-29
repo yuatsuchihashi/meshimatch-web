@@ -5,8 +5,10 @@ import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassInput } from "@/components/ui/GlassInput";
 import Link from "next/link";
 import { useActionState } from "react";
+import { useLocale } from "@/lib/i18n";
 
 export default function SignupPage() {
+  const { t } = useLocale();
   const [state, formAction, pending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
       const result = await signUp(formData);
@@ -18,8 +20,8 @@ export default function SignupPage() {
   return (
     <form action={formAction} className="glass-strong p-8 max-w-sm w-full flex flex-col gap-5">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-white">新規登録</h1>
-        <p className="text-white/60 text-sm mt-1">アカウントを作成しよう</p>
+        <h1 className="text-2xl font-bold text-white">{t("auth.signup.title")}</h1>
+        <p className="text-white/60 text-sm mt-1">{t("auth.signup.subtitle")}</p>
       </div>
 
       {state?.error && (
@@ -32,15 +34,15 @@ export default function SignupPage() {
         id="display_name"
         name="display_name"
         type="text"
-        label="表示名"
-        placeholder="あなたの名前"
+        label={t("auth.signup.displayName")}
+        placeholder={t("auth.signup.displayNamePlaceholder")}
         required
       />
       <GlassInput
         id="email"
         name="email"
         type="email"
-        label="メールアドレス"
+        label={t("auth.signup.email")}
         placeholder="you@example.com"
         required
       />
@@ -48,20 +50,20 @@ export default function SignupPage() {
         id="password"
         name="password"
         type="password"
-        label="パスワード"
-        placeholder="8文字以上"
+        label={t("auth.signup.password")}
+        placeholder={t("auth.signup.passwordPlaceholder")}
         minLength={8}
         required
       />
 
       <GlassButton type="submit" variant="accent" size="lg" disabled={pending}>
-        {pending ? "登録中..." : "登録する"}
+        {pending ? t("auth.signup.submitting") : t("auth.signup.submit")}
       </GlassButton>
 
       <p className="text-white/60 text-sm text-center">
-        アカウントをお持ちの方は{" "}
+        {t("auth.signup.hasAccount")}{" "}
         <Link href="/login" className="text-white underline font-medium">
-          ログイン
+          {t("auth.signup.login")}
         </Link>
       </p>
     </form>

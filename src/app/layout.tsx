@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import { LocaleProviderWrapper } from "@/components/LocaleProviderWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja">
       <body className={`${geistSans.variable} antialiased`}>
-        {children}
+        <LocaleProviderWrapper>{children}</LocaleProviderWrapper>
       </body>
     </html>
   );

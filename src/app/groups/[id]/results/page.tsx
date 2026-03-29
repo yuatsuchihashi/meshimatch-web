@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/lib/hooks/useUser";
-import { useGroups } from "@/lib/hooks/useGroups";
 import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 import { RestaurantDetailModal } from "@/components/restaurants/RestaurantDetailModal";
 import { MemberAvatarStack, MemberAvatar } from "@/components/groups/MemberAvatar";
+import { useLocale } from "@/lib/i18n";
 import type { Restaurant } from "@/lib/types";
 
 type SortMode = "match" | "rating";
@@ -16,8 +16,8 @@ type SortMode = "match" | "rating";
 export default function ResultsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { t } = useLocale();
   const { userId } = useUser();
-  const { deleteGroup, leaveGroup } = useGroups(userId);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("match");
   const [selectedArea, setSelectedArea] = useState<string>("all");
@@ -39,7 +39,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     async function fetchResults() {
       const supabase = createClient();
 
-      // グループ情報取得
       const { data: group } = await supabase
         .from("groups")
         .select(`
@@ -61,7 +60,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         setMembers(m);
         setMemberNames(m.map((x: { displayName: string }) => x.displayName));
 
-        // 自分のロールを特定
         if (userId) {
           const myMember = (group.group_members ?? []).find(
             (mem: { profile_id: string }) => mem.profile_id === userId
@@ -76,7 +74,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         }
       }
 
-      // マッチング結果をAPIから取得
       try {
         const res = await fetch(`/api/groups/results?group_id=${id}&sort=${sortMode}`);
         const data = await res.json();
@@ -121,7 +118,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       const supabase = createClient();
 
       if (action === "delete") {
-        // 幹事のみ: 関連データを順番に削除してからグループ本体を削除
         const { error: e1 } = await supabase.from("decisions").delete().eq("group_id", id);
         if (e1) console.error("decisions delete:", e1);
         const { error: e2 } = await supabase.from("survey_responses").delete().eq("group_id", id);
@@ -139,7 +135,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
           return;
         }
       } else {
-        // メンバー: 自分のアンケート回答とメンバーシップを削除
         const myMembership = await supabase
           .from("group_members")
           .select("id")
@@ -163,12 +158,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         }
       }
 
-      if (action === "delete") {
-        deleteGroup(id);
-      } else {
-        leaveGroup(id);
-      }
-      router.push("/home");
+      window.location.href = "/home";
     } catch (err) {
       console.error("Group action failed:", err);
       alert("エラーが発生しました");
@@ -182,7 +172,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
           <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", marginBottom: 12 }} />
-          <div style={{ fontSize: 14 }}>結果を取得中...</div>
+          <div style={{ fontSize: 14 }}>{t("results.loading")}</div>
         </div>
       </div>
     );
@@ -219,7 +209,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          ホームに戻る
+          {t("results.backToHome")}
         </Link>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
@@ -252,7 +242,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             >
               <MemberAvatarStack members={memberNames} size={28} />
             </button>
-            {/* グループメニューボタン */}
             {myRole && (
               <div style={{ position: "relative" }}>
                 <button
@@ -316,7 +305,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
                         )}
                       </svg>
-                      {myRole === "owner" ? "グループを削除" : "グループを退出"}
+                      {myRole === "owner" ? t("results.deleteGroupMenu") : t("results.leaveGroupMenu")}
                     </button>
                   </div>
                 )}
@@ -347,7 +336,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 whiteSpace: "nowrap",
               }}
             >
-              {area === "all" ? "すべて" : area}
+              {area === "all" ? t("results.filterAll") : area}
             </button>
           ))}
         </div>
@@ -369,7 +358,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         >
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "var(--success)", marginBottom: 2 }}>
-              決定済み
+              {t("results.decided")}
             </div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
               {decidedRestaurant}
@@ -381,7 +370,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       {/* Sort tabs */}
       <div style={{ padding: "0 20px 16px" }}>
         <div style={{ display: "inline-flex", backgroundColor: "var(--bg-secondary)", borderRadius: 12, padding: 4, gap: 4 }}>
-          {([["match", "一致度"], ["rating", "評価"]] as [SortMode, string][]).map(([mode, label]) => (
+          {([["match", t("results.matchScore")], ["rating", t("results.rating")]] as [SortMode, string][]).map(([mode, label]) => (
             <button
               key={mode}
               onClick={() => setSortMode(mode)}
@@ -402,7 +391,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
           ))}
         </div>
         <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 8 }}>
-          {sortedRestaurants.length}件の結果
+          {t("results.resultCount", { count: sortedRestaurants.length })}
         </div>
       </div>
 
@@ -410,7 +399,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 14 }}>
         {sortedRestaurants.length === 0 ? (
           <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-secondary)", fontSize: 15 }}>
-            {restaurants.length === 0 ? "HotPepper APIキーが設定されていないか、該当するお店が見つかりませんでした" : "このエリアのお店が見つかりませんでした"}
+            {restaurants.length === 0 ? t("results.noResultsApi") : t("results.noResultsArea")}
           </div>
         ) : (
           sortedRestaurants.map((restaurant, i) => (
@@ -450,7 +439,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             gap: 8,
           }}
         >
-          決定しました！
+          {t("results.decidedToast")}
         </div>
       )}
 
@@ -494,12 +483,10 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               </svg>
             </div>
             <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
-              {showConfirmDialog === "delete" ? "グループを削除しますか？" : "グループを退出しますか？"}
+              {showConfirmDialog === "delete" ? t("results.deleteGroup") : t("results.leaveGroup")}
             </div>
             <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24, lineHeight: 1.5 }}>
-              {showConfirmDialog === "delete"
-                ? "この操作は取り消せません。グループのデータ（メンバー・アンケート回答・決定情報）がすべて削除されます。"
-                : "グループから退出すると、あなたのアンケート回答も削除されます。再度参加するには招待が必要です。"}
+              {showConfirmDialog === "delete" ? t("results.deleteGroupDesc") : t("results.leaveGroupDesc")}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button
@@ -517,7 +504,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   cursor: "pointer",
                 }}
               >
-                キャンセル
+                {t("common.cancel")}
               </button>
               <button
                 onClick={() => handleGroupAction(showConfirmDialog)}
@@ -535,7 +522,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   opacity: actionLoading ? 0.7 : 1,
                 }}
               >
-                {actionLoading ? "処理中..." : showConfirmDialog === "delete" ? "削除する" : "退出する"}
+                {actionLoading ? t("common.processing") : showConfirmDialog === "delete" ? t("results.deleteConfirm") : t("results.leaveConfirm")}
               </button>
             </div>
           </div>
@@ -563,7 +550,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
             </div>
             <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>
-              {groupName} のメンバー
+              {t("results.groupMembers", { group: groupName })}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {members.map((member) => (
@@ -573,7 +560,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
                       {member.displayName}
                       {member.role === "owner" && (
-                        <span style={{ fontSize: 11, color: "var(--primary)", marginLeft: 6 }}>幹事</span>
+                        <span style={{ fontSize: 11, color: "var(--primary)", marginLeft: 6 }}>{t("results.organizer")}</span>
                       )}
                     </div>
                   </div>
@@ -587,7 +574,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                       color: member.hasSurvey ? "var(--success)" : "var(--text-tertiary)",
                     }}
                   >
-                    {member.hasSurvey ? "回答済み" : "未回答"}
+                    {member.hasSurvey ? t("results.answered") : t("results.notAnswered")}
                   </span>
                 </div>
               ))}

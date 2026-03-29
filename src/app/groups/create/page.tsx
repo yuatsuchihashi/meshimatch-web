@@ -18,15 +18,10 @@ import { GENRES } from "@/lib/mockData";
 import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { nanoid } from "@/lib/utils/nanoid";
+import { useLocale } from "@/lib/i18n";
 import type { TierData, TierKey } from "@/lib/types";
 
 type Step = "name" | "members" | "survey" | "complete";
-
-const TIER_CONFIG = {
-  S: { label: "Tier S", emoji: "", subtitle: "めっちゃ食べたい", color: "var(--primary)" },
-  A: { label: "Tier A", emoji: "", subtitle: "食べたい", color: "var(--warning)" },
-  B: { label: "Tier B", emoji: "", subtitle: "まぁいいよ", color: "var(--text-tertiary)" },
-};
 
 const AREAS = ["渋谷", "新宿", "池袋", "銀座", "六本木", "恵比寿", "表参道", "下北沢", "吉祥寺", "上野"];
 
@@ -81,13 +76,22 @@ function TierDropZone({
   tiers,
   activeGenreId,
   onRemove,
+  label,
+  subtitle,
+  color,
+  dropHereText,
+  itemCountText,
 }: {
   tier: TierKey;
   tiers: TierData;
   activeGenreId: string | null;
   onRemove: (id: string) => void;
+  label: string;
+  subtitle: string;
+  color: string;
+  dropHereText: string;
+  itemCountText: string;
 }) {
-  const config = TIER_CONFIG[tier];
   const { setNodeRef, isOver } = useDroppable({ id: `tier-${tier}` });
   const items = tiers[tier];
 
@@ -95,10 +99,10 @@ function TierDropZone({
     <div
       ref={setNodeRef}
       style={{
-        backgroundColor: isOver ? config.color + "18" : "var(--surface)",
+        backgroundColor: isOver ? color + "18" : "var(--surface)",
         borderRadius: 16,
         border: `2px ${items.length === 0 && !isOver ? "dashed" : "solid"} ${
-          isOver ? config.color : items.length === 0 ? "var(--border)" : config.color + "55"
+          isOver ? color : items.length === 0 ? "var(--border)" : color + "55"
         }`,
         padding: 14,
         marginBottom: 12,
@@ -120,31 +124,30 @@ function TierDropZone({
               width: 36,
               height: 36,
               borderRadius: 10,
-              backgroundColor: config.color + "20",
+              backgroundColor: color + "20",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 18,
             }}
           >
-            {config.emoji}
           </div>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: config.color }}>{config.label}</div>
-            <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{config.subtitle}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color }}>{label}</div>
+            <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{subtitle}</div>
           </div>
         </div>
         <div
           style={{
-            backgroundColor: config.color + "20",
-            color: config.color,
+            backgroundColor: color + "20",
+            color,
             fontSize: 12,
             fontWeight: 700,
             padding: "2px 10px",
             borderRadius: 20,
           }}
         >
-          {items.length}件
+          {itemCountText}
         </div>
       </div>
 
@@ -162,9 +165,9 @@ function TierDropZone({
                   gap: 4,
                   padding: "6px 10px",
                   borderRadius: 20,
-                  backgroundColor: config.color + "15",
-                  border: `1px solid ${config.color}55`,
-                  color: config.color,
+                  backgroundColor: color + "15",
+                  border: `1px solid ${color}55`,
+                  color,
                   fontSize: 13,
                   fontWeight: 500,
                   cursor: "pointer",
@@ -184,14 +187,14 @@ function TierDropZone({
             marginTop: items.length > 0 ? 8 : 0,
             padding: "6px 12px",
             borderRadius: 20,
-            border: `1.5px dashed ${config.color}`,
-            color: config.color,
+            border: `1.5px dashed ${color}`,
+            color,
             fontSize: 13,
             opacity: 0.6,
             display: "inline-block",
           }}
         >
-          ここにドロップ
+          {dropHereText}
         </div>
       )}
     </div>
@@ -200,6 +203,7 @@ function TierDropZone({
 
 export default function CreateGroupPage() {
   const router = useRouter();
+  const { t } = useLocale();
   const { user, userId } = useUser();
   const [step, setStep] = useState<Step>("name");
   const [groupName, setGroupName] = useState("");
@@ -212,6 +216,12 @@ export default function CreateGroupPage() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [createdGroupId, setCreatedGroupId] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string>("");
+
+  const TIER_CONFIG: Record<TierKey, { label: string; subtitle: string; color: string }> = {
+    S: { label: "Tier S", subtitle: t("createGroup.tierS"), color: "var(--primary)" },
+    A: { label: "Tier A", subtitle: t("createGroup.tierA"), color: "var(--warning)" },
+    B: { label: "Tier B", subtitle: t("createGroup.tierB"), color: "var(--text-tertiary)" },
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -276,7 +286,6 @@ export default function CreateGroupPage() {
       const supabase = createClient();
       const code = nanoid(8);
 
-      // 1. グループ作成
       const { data: group, error: groupError } = await supabase
         .from("groups")
         .insert({
@@ -295,7 +304,6 @@ export default function CreateGroupPage() {
       setCreatedGroupId(group.id);
       setInviteCode(code);
 
-      // 2. 自分をownerとして追加
       const { data: member } = await supabase
         .from("group_members")
         .insert({
@@ -307,7 +315,6 @@ export default function CreateGroupPage() {
         .select()
         .single();
 
-      // 3. サーベイ回答を送信
       if (member) {
         await supabase.from("survey_responses").insert({
           group_id: group.id,
@@ -346,20 +353,20 @@ export default function CreateGroupPage() {
             <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
           </div>
           <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8, textAlign: "center" }}>
-            グループ作成を終了しますか？
+            {t("createGroup.exitTitle")}
           </div>
           <div style={{ fontSize: 14, color: "var(--text-secondary)", textAlign: "center", marginBottom: 28 }}>
-            入力内容はリセットされます
+            {t("createGroup.exitDesc")}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button
               onClick={() => router.push("/home")}
               style={{ width: "100%", padding: "15px", borderRadius: 14, backgroundColor: "#E05252", color: "white", fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer" }}
             >
-              終了する
+              {t("createGroup.exitConfirm")}
             </button>
             <button className="btn-secondary" onClick={() => setShowExitConfirm(false)}>
-              続ける
+              {t("createGroup.continue")}
             </button>
           </div>
         </div>
@@ -371,23 +378,23 @@ export default function CreateGroupPage() {
   if (step === "name") {
     return (
       <PageShell onExit={() => setShowExitConfirm(true)} showExit>
-        <BackButton onClick={() => router.push("/home")} />
+        <BackButton onClick={() => router.push("/home")} label={t("common.back")} />
         <div style={{ padding: "16px 20px 40px" }}>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
-            グループを作ろう
+            {t("createGroup.step1Title")}
           </div>
           <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 32 }}>
-            メンバーの好みを合わせて、みんながハッピーなお店を見つけましょう
+            {t("createGroup.step1Desc")}
           </div>
 
           <div style={{ marginBottom: 32 }}>
             <label style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 8 }}>
-              グループ名
+              {t("createGroup.groupName")}
             </label>
             <input
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              placeholder="例: ゼミ飲み会"
+              placeholder={t("createGroup.groupNamePlaceholder")}
               style={{
                 width: "100%",
                 padding: "14px 16px",
@@ -409,7 +416,7 @@ export default function CreateGroupPage() {
             onClick={() => setStep("members")}
             disabled={!groupName.trim()}
           >
-            次へ
+            {t("common.next")}
           </button>
         </div>
       </PageShell>
@@ -420,13 +427,13 @@ export default function CreateGroupPage() {
   if (step === "members") {
     return (
       <PageShell onExit={() => setShowExitConfirm(true)} showExit>
-        <BackButton onClick={() => setStep("name")} />
+        <BackButton onClick={() => setStep("name")} label={t("common.back")} />
         <div style={{ padding: "16px 20px 40px" }}>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
-            メンバーを追加
+            {t("createGroup.step2Title")}
           </div>
           <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 24 }}>
-            一緒に行くメンバーを追加してください
+            {t("createGroup.step2Desc")}
           </div>
 
           {members.length > 0 && (
@@ -472,7 +479,7 @@ export default function CreateGroupPage() {
               value={memberInput}
               onChange={(e) => setMemberInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addMember()}
-              placeholder="名前を入力"
+              placeholder={t("createGroup.namePlaceholder")}
               style={{
                 flex: 1,
                 padding: "14px 16px",
@@ -502,7 +509,7 @@ export default function CreateGroupPage() {
                 opacity: !memberInput.trim() ? 0.4 : 1,
               }}
             >
-              追加
+              {t("common.add")}
             </button>
           </div>
 
@@ -516,10 +523,10 @@ export default function CreateGroupPage() {
             }}
           >
             <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
-              招待リンクを共有
+              {t("createGroup.shareInviteLink")}
             </div>
             <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-              リンクを共有してメンバーを招待できます
+              {t("createGroup.shareInviteLinkDesc")}
             </div>
             <button
               className="btn-secondary"
@@ -527,10 +534,10 @@ export default function CreateGroupPage() {
               onClick={() => {
                 const url = `${window.location.origin}/invite/${inviteCode || "preview"}`;
                 navigator.clipboard.writeText(url);
-                alert("招待リンクをコピーしました！");
+                alert(t("createGroup.linkCopied"));
               }}
             >
-              リンクをコピー
+              {t("createGroup.copyLink")}
             </button>
           </div>
 
@@ -538,7 +545,7 @@ export default function CreateGroupPage() {
             className="btn-primary"
             onClick={() => setStep("survey")}
           >
-            次へ（アンケートに回答する）
+            {t("createGroup.nextSurvey")}
           </button>
         </div>
       </PageShell>
@@ -551,13 +558,13 @@ export default function CreateGroupPage() {
 
     return (
       <PageShell onExit={() => setShowExitConfirm(true)} showExit>
-        <BackButton onClick={() => setStep("members")} />
+        <BackButton onClick={() => setStep("members")} label={t("common.back")} />
         <div style={{ padding: "16px 20px 40px" }}>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
-            今日の気分は？
+            {t("createGroup.surveyTitle")}
           </div>
           <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 24 }}>
-            場所とジャンルを教えてください
+            {t("createGroup.surveyDesc")}
           </div>
 
           {/* Location section */}
@@ -571,7 +578,7 @@ export default function CreateGroupPage() {
             }}
           >
             <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
-              場所
+              {t("createGroup.location")}
             </div>
             <label
               style={{
@@ -600,13 +607,13 @@ export default function CreateGroupPage() {
                 {anywhereOk && <span style={{ color: "white", fontSize: 13, fontWeight: 700 }}>✓</span>}
               </div>
               <span style={{ fontSize: 15, color: "var(--text-primary)" }}>
-                場所はなんでもいい
+                {t("createGroup.anywhereOk")}
               </span>
             </label>
             {!anywhereOk && (
               <div>
                 <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
-                  希望エリア（複数選択可）
+                  {t("createGroup.preferredAreas")}
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {AREAS.map((area) => {
@@ -644,10 +651,10 @@ export default function CreateGroupPage() {
           {/* Genre DnD section */}
           <div style={{ marginBottom: 8 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
-              ジャンルのランク付け
+              {t("createGroup.genreRanking")}
             </div>
             <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 16 }}>
-              ジャンルをドラッグ＆ドロップしてティアに分けてください
+              {t("createGroup.dragDropHint")}
             </div>
             <div
               style={{
@@ -659,7 +666,7 @@ export default function CreateGroupPage() {
                 marginBottom: 16,
               }}
             >
-              すべてのジャンルをランク付けする必要はありません
+              {t("createGroup.notAllRequired")}
             </div>
           </div>
 
@@ -675,7 +682,7 @@ export default function CreateGroupPage() {
                 }}
               >
                 <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
-                  未分類（ドラッグしてティアへ）
+                  {t("createGroup.unranked")}
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {unranked.map((g) => (
@@ -695,7 +702,7 @@ export default function CreateGroupPage() {
                   marginBottom: 12,
                 }}
               >
-                全てのジャンルをランク付けしました ✓
+                {t("createGroup.allRanked")}
               </div>
             )}
 
@@ -707,6 +714,11 @@ export default function CreateGroupPage() {
                 tiers={tiers}
                 activeGenreId={activeGenreId}
                 onRemove={removeFromTier}
+                label={TIER_CONFIG[tier].label}
+                subtitle={TIER_CONFIG[tier].subtitle}
+                color={TIER_CONFIG[tier].color}
+                dropHereText={t("createGroup.dropHere")}
+                itemCountText={t("createGroup.itemCount", { count: tiers[tier].length })}
               />
             ))}
 
@@ -744,7 +756,7 @@ export default function CreateGroupPage() {
               marginTop: 8,
             }}
           >
-            {rankedCount}/{GENRES.length} ジャンルをランク付け済み
+            {t("createGroup.rankedCount", { count: rankedCount, total: GENRES.length })}
           </div>
 
           <button
@@ -752,7 +764,7 @@ export default function CreateGroupPage() {
             onClick={handleSubmitSurvey}
             disabled={rankedCount === 0}
           >
-            回答を送信する
+            {t("createGroup.submitSurvey")}
           </button>
         </div>
       </PageShell>
@@ -791,11 +803,12 @@ export default function CreateGroupPage() {
           </svg>
         </div>
         <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
-          回答完了！
+          {t("createGroup.completeTitle")}
         </div>
         <div style={{ fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.6 }}>
-          みんなの回答を待っています。<br />
-          全員が回答したらお店を検索します。
+          {t("createGroup.completeDesc").split("\n").map((line, i) => (
+            <span key={i}>{line}{i === 0 && <br />}</span>
+          ))}
         </div>
         <div
           style={{
@@ -817,7 +830,7 @@ export default function CreateGroupPage() {
               animation: "spin 0.8s linear infinite",
             }}
           />
-          待機室に移動中...
+          {t("createGroup.movingToWaiting")}
         </div>
       </div>
     </PageShell>
@@ -865,7 +878,7 @@ function PageShell({
   );
 }
 
-function BackButton({ onClick }: { onClick: () => void }) {
+function BackButton({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <div style={{ padding: "56px 20px 0" }}>
       <button
@@ -886,7 +899,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
-        戻る
+        {label}
       </button>
     </div>
   );

@@ -2,20 +2,22 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-const MESSAGES = [
-  "みんなの好みを分析中...",
-  "ティアランキングを集計中...",
-  "エリアを特定中...",
-  "レストランを検索中...",
-  "一致度を計算中...",
-];
+import { useLocale } from "@/lib/i18n";
 
 export default function SearchingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { t } = useLocale();
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
+
+  const MESSAGES = [
+    t("searching.msg0"),
+    t("searching.msg1"),
+    t("searching.msg2"),
+    t("searching.msg3"),
+    t("searching.msg4"),
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -57,7 +59,6 @@ export default function SearchingPage({ params }: { params: Promise<{ id: string
     >
       {/* Animated search icon with pulse rings */}
       <div style={{ position: "relative", marginBottom: 40 }}>
-        {/* Pulse rings */}
         {[1, 2, 3].map((i) => (
           <div
             key={i}
@@ -72,7 +73,6 @@ export default function SearchingPage({ params }: { params: Promise<{ id: string
             }}
           />
         ))}
-        {/* Search icon */}
         <div
           className="animate-spin-slow"
           style={{
@@ -144,7 +144,7 @@ export default function SearchingPage({ params }: { params: Promise<{ id: string
         {MESSAGES[messageIndex]}
       </div>
       <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-        AIがベストマッチを探しています
+        {t("searching.aiSearching")}
       </div>
     </div>
   );

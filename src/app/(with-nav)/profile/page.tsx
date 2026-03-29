@@ -8,6 +8,8 @@ import { MemberAvatar } from "@/components/groups/MemberAvatar";
 import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { signOut } from "@/actions/auth";
+import { useLocale } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 
 interface Connection {
   id: string;
@@ -16,6 +18,7 @@ interface Connection {
 }
 
 export default function ProfilePage() {
+  const { t, locale, setLocale } = useLocale();
   const { user, userId, loading, refresh } = useUser();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [displayName, setDisplayName] = useState("");
@@ -108,7 +111,7 @@ export default function ProfilePage() {
       <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
           <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", margin: "0 auto 12px" }} />
-          <div style={{ fontSize: 14 }}>読み込み中...</div>
+          <div style={{ fontSize: 14 }}>{t("common.loading")}</div>
         </div>
       </div>
     );
@@ -161,7 +164,7 @@ export default function ProfilePage() {
               {displayName}
             </div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
-              MeshiMatchユーザー
+              {t("profile.subtitle")}
             </div>
           </div>
         </div>
@@ -171,11 +174,11 @@ export default function ProfilePage() {
 
         {/* 基本情報 */}
         <section>
-          <SectionLabel>基本情報</SectionLabel>
+          <SectionLabel>{t("profile.basicInfo")}</SectionLabel>
           <div className="card" style={{ padding: 0, overflow: "hidden" }}>
             <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border-light)" }}>
               <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 6, fontWeight: 600, letterSpacing: "0.04em" }}>
-                ユーザーID
+                {t("profile.userId")}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div
@@ -196,7 +199,7 @@ export default function ProfilePage() {
                 <button
                   onClick={() => {
                     navigator.clipboard?.writeText(userId ?? "").catch(() => {});
-                    alert("IDをコピーしました");
+                    alert(t("profile.idCopied"));
                   }}
                   style={{
                     padding: "8px 14px",
@@ -215,7 +218,7 @@ export default function ProfilePage() {
                   }}
                 >
                   <Image src="/icons/copy_line.svg" alt="" width={14} height={14} style={{ filter: "brightness(0) saturate(100%) invert(45%) sepia(10%) saturate(500%) hue-rotate(210deg)" }} />
-                  コピー
+                  {t("common.copy")}
                 </button>
               </div>
             </div>
@@ -236,7 +239,7 @@ export default function ProfilePage() {
             >
               <div style={{ textAlign: "left" }}>
                 <div style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600, letterSpacing: "0.04em", marginBottom: 2 }}>
-                  表示名
+                  {t("profile.displayName")}
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
                   {displayName}
@@ -249,24 +252,24 @@ export default function ProfilePage() {
 
         {/* 共有方法 */}
         <section>
-          <SectionLabel>友達に共有</SectionLabel>
+          <SectionLabel>{t("profile.shareWithFriends")}</SectionLabel>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <ShareButton
               icon="/icons/code_reader_line.svg"
-              label="QRコード"
+              label={t("profile.qrCode")}
               onClick={() => setEditSection("share")}
             />
             <ShareButton
               icon="/icons/search_line.svg"
-              label="ID検索"
-              onClick={() => alert("ID検索機能（デモ）")}
+              label={t("profile.idSearch")}
+              onClick={() => alert(t("profile.idSearchDemo"))}
             />
           </div>
         </section>
 
         {/* 繋がり */}
         <section>
-          <SectionLabel>繋がり</SectionLabel>
+          <SectionLabel>{t("profile.connections")}</SectionLabel>
           <div className="card" style={{ padding: 0, overflow: "hidden" }}>
             <button
               onClick={openConnections}
@@ -291,7 +294,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
                 <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
-                  {connections.length}人
+                  {t("profile.connectionCount", { count: connections.length })}
                 </span>
               </div>
               <Image src="/icons/arrow_right_line.svg" alt="" width={16} height={16} style={{ filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)" }} />
@@ -301,12 +304,12 @@ export default function ProfilePage() {
 
         {/* 食の好み */}
         <section>
-          <SectionLabel>食の好み</SectionLabel>
+          <SectionLabel>{t("profile.foodPreferences")}</SectionLabel>
           <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <div className="card" style={{ borderRadius: "14px 14px 0 0", padding: "14px 16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
-                  苦手なジャンル
+                  {t("profile.dislikedGenres")}
                 </div>
                 <button
                   onClick={() => setEditSection("genres")}
@@ -322,11 +325,11 @@ export default function ProfilePage() {
                     backgroundColor: "rgba(204,119,85,0.08)",
                   }}
                 >
-                  編集
+                  {t("common.edit")}
                 </button>
               </div>
               {dislikedGenres.length === 0 ? (
-                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>設定なし</div>
+                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{t("common.notSet")}</div>
               ) : (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {dislikedGenres.map((id) => {
@@ -344,7 +347,7 @@ export default function ProfilePage() {
             <div className="card" style={{ borderRadius: "0 0 14px 14px", padding: "14px 16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
-                  アレルギー・食の制限
+                  {t("profile.allergies")}
                 </div>
                 <button
                   onClick={() => setEditSection("allergies")}
@@ -360,11 +363,11 @@ export default function ProfilePage() {
                     backgroundColor: "rgba(204,119,85,0.08)",
                   }}
                 >
-                  編集
+                  {t("common.edit")}
                 </button>
               </div>
               {allergies.length === 0 ? (
-                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>設定なし</div>
+                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{t("common.notSet")}</div>
               ) : (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {allergies.map((id) => {
@@ -383,8 +386,38 @@ export default function ProfilePage() {
 
         {/* その他 */}
         <section>
-          <SectionLabel>その他</SectionLabel>
+          <SectionLabel>{t("profile.other")}</SectionLabel>
           <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+
+            {/* 言語切り替え */}
+            <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border-light)" }}>
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600, letterSpacing: "0.04em", marginBottom: 10 }}>
+                {t("profile.language")}
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {(["ja", "en"] as Locale[]).map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => setLocale(lang)}
+                    style={{
+                      flex: 1,
+                      padding: "9px 12px",
+                      borderRadius: 10,
+                      border: `1.5px solid ${locale === lang ? "var(--primary)" : "var(--border)"}`,
+                      backgroundColor: locale === lang ? "rgba(204,119,85,0.1)" : "var(--surface)",
+                      color: locale === lang ? "var(--primary)" : "var(--text-secondary)",
+                      fontSize: 14,
+                      fontWeight: locale === lang ? 700 : 500,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {lang === "ja" ? t("profile.japanese") : t("profile.english")}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <button
               onClick={() => signOut()}
               style={{
@@ -408,7 +441,7 @@ export default function ProfilePage() {
                 height={18}
                 style={{ filter: "brightness(0) saturate(100%) invert(15%) sepia(70%) saturate(2000%) hue-rotate(350deg)" }}
               />
-              ログアウト
+              {t("profile.logout")}
             </button>
           </div>
         </section>
@@ -438,7 +471,7 @@ export default function ProfilePage() {
             </div>
             <div style={{ padding: "16px 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>
-                繋がり <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-tertiary)" }}>{connections.length}人</span>
+                {t("profile.connectionsTitle")} <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-tertiary)" }}>{t("profile.connectionCount", { count: connections.length })}</span>
               </div>
               <button onClick={closeConnections} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-tertiary)", fontSize: 20, lineHeight: 1, padding: "4px 8px" }}>✕</button>
             </div>
@@ -458,7 +491,7 @@ export default function ProfilePage() {
                     <MemberAvatar name={conn.displayName} size={44} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>{conn.displayName}</div>
-                      <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>共通グループ {conn.mutualGroups}件</div>
+                      <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{t("profile.mutualGroups", { count: conn.mutualGroups })}</div>
                     </div>
                   </div>
                 ))}
@@ -470,7 +503,7 @@ export default function ProfilePage() {
 
       {/* Edit sheets */}
       {editSection === "name" && (
-        <EditSheet title="名前を変更" onClose={() => setEditSection(null)}>
+        <EditSheet title={t("profile.editName")} onClose={() => setEditSection(null)}>
           <input
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
@@ -485,7 +518,7 @@ export default function ProfilePage() {
               marginBottom: 16,
               outline: "none",
             }}
-            placeholder="名前を入力"
+            placeholder={t("profile.namePlaceholder")}
             onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
             onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
             autoFocus
@@ -495,13 +528,13 @@ export default function ProfilePage() {
             onClick={() => { setDisplayName(nameInput); saveProfile({ display_name: nameInput }); setEditSection(null); }}
             disabled={!nameInput.trim()}
           >
-            保存
+            {t("common.save")}
           </button>
         </EditSheet>
       )}
 
       {editSection === "share" && (
-        <EditSheet title="QRコードで共有" onClose={() => setEditSection(null)}>
+        <EditSheet title={t("profile.shareQR")} onClose={() => setEditSection(null)}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
             <div
               style={{
@@ -515,7 +548,7 @@ export default function ProfilePage() {
             </div>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
-                {displayName}さんのプロフィール
+                {t("profile.profileOf", { name: displayName })}
               </div>
               <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{profileUrl}</div>
             </div>
@@ -526,20 +559,20 @@ export default function ProfilePage() {
                   navigator.share({ title: "MeshiMatch", url: profileUrl });
                 } else {
                   navigator.clipboard?.writeText(profileUrl).catch(() => {});
-                  alert("リンクをコピーしました");
+                  alert(t("profile.linkCopied"));
                 }
               }}
             >
-              リンクを共有
+              {t("profile.shareLink")}
             </button>
           </div>
         </EditSheet>
       )}
 
       {editSection === "genres" && (
-        <EditSheet title="苦手なジャンル" onClose={() => setEditSection(null)}>
+        <EditSheet title={t("profile.dislikedGenres")} onClose={() => setEditSection(null)}>
           <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-            苦手なジャンルをタップして選択してください
+            {t("profile.dislikedGenresHint")}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
             {GENRES.map((g) => (
@@ -553,16 +586,16 @@ export default function ProfilePage() {
             ))}
           </div>
           <button className="btn-primary" onClick={() => { saveProfile({ disliked_genres: dislikedGenres }); setEditSection(null); }}>
-            完了
+            {t("common.done")}
           </button>
         </EditSheet>
       )}
 
       {editSection === "allergies" && (
-        <EditSheet title="アレルギー・食の制限" onClose={() => setEditSection(null)}>
+        <EditSheet title={t("profile.allergies")} onClose={() => setEditSection(null)}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
-              アレルギー
+              {t("profile.allergyTitle")}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {ALLERGIES.map((a) => (
@@ -577,7 +610,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <button className="btn-primary" onClick={() => { saveProfile({ allergies }); setEditSection(null); }}>
-            完了
+            {t("common.done")}
           </button>
         </EditSheet>
       )}

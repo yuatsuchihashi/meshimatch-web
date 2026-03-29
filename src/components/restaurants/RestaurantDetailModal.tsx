@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { Restaurant } from "@/lib/types";
 import { MatchScoreBar } from "@/components/ui/MatchScoreBar";
+import { useLocale } from "@/lib/i18n";
 
 const GENRE_GRADIENTS: Record<string, [string, string]> = {
   G001: ["#C4552A", "#E8734A"],
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) {
+  const { t } = useLocale();
   const [copied, setCopied] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -153,7 +155,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
               }}
             >
               <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-                一致度
+                {t("restaurantDetail.matchScore")}
               </span>
               <span style={{ fontSize: 20, fontWeight: 800, color: scoreColor }}>
                 {percent}%
@@ -175,17 +177,17 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
             {[
               {
                 icon: "★",
-                label: "評価",
+                label: t("restaurantDetail.rating"),
                 value: `${restaurant.rating.toFixed(1)} / 5.0`,
               },
               {
                 icon: "→",
-                label: "アクセス",
+                label: t("restaurantDetail.access"),
                 value: restaurant.access,
               },
               restaurant.address && {
                 icon: "○",
-                label: "住所",
+                label: t("restaurantDetail.address"),
                 value: restaurant.address,
                 action: (
                   <button
@@ -203,29 +205,29 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
                       flexShrink: 0,
                     }}
                   >
-                    {copied ? "コピー済み" : "コピー"}
+                    {copied ? t("common.copied") : t("common.copy")}
                   </button>
                 ),
               },
               restaurant.phoneNumber && {
                 icon: "☎",
-                label: "電話",
+                label: t("restaurantDetail.phone"),
                 value: restaurant.phoneNumber,
               },
               restaurant.openHours && {
                 icon: "◷",
-                label: "営業時間",
+                label: t("restaurantDetail.openHours"),
                 value: restaurant.openHours,
               },
               {
                 icon: "□",
-                label: "個室",
-                value: restaurant.hasPrivateRoom ? "あり" : "なし",
+                label: t("restaurantDetail.privateRoom"),
+                value: restaurant.hasPrivateRoom ? t("restaurantDetail.yes") : t("restaurantDetail.no"),
               },
               restaurant.partyCapacity && {
                 icon: "⊕",
-                label: "収容人数",
-                value: `最大${restaurant.partyCapacity}名`,
+                label: t("restaurantDetail.capacity"),
+                value: t("restaurantDetail.capacityValue", { n: String(restaurant.partyCapacity) }),
               },
             ]
               .filter(Boolean)
@@ -279,7 +281,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
                 style={{ backgroundColor: "var(--success)", gap: 8, fontSize: 16, fontWeight: 800 }}
                 onClick={() => { onDecide(restaurant); handleClose(); }}
               >
-                このレストランに決定する
+                {t("restaurantDetail.decide")}
               </button>
             )}
             <a
@@ -291,11 +293,11 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
               style={{ textDecoration: "none" }}
             >
               <button className="btn-primary" style={{ gap: 8 }}>
-                Mapで開く
+                {t("restaurantDetail.openMap")}
               </button>
             </a>
             <button className="btn-secondary" onClick={handleClose}>
-              閉じる
+              {t("common.close")}
             </button>
           </div>
         </div>
@@ -318,7 +320,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
             zIndex: 110,
           }}
         >
-          住所をコピーしました
+          {t("restaurantDetail.addressCopied")}
         </div>
       )}
     </div>

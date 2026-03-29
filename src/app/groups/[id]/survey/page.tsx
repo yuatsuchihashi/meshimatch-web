@@ -6,6 +6,7 @@ import Link from "next/link";
 import { GENRES } from "@/lib/mockData";
 import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
+import { useLocale } from "@/lib/i18n";
 import type { TierData, TierKey } from "@/lib/types";
 import type { Genre } from "@/lib/types";
 import {
@@ -22,20 +23,7 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 
-const TIER_CONFIG = {
-  S: { label: "Tier S", emoji: "", subtitle: "めっちゃ食べたい", color: "var(--primary)" },
-  A: { label: "Tier A", emoji: "", subtitle: "食べたい", color: "var(--warning)" },
-  B: { label: "Tier B", emoji: "", subtitle: "まぁいいよ", color: "var(--text-tertiary)" },
-};
-
 const AREAS = ["渋谷", "新宿", "池袋", "銀座", "六本木", "恵比寿", "表参道", "下北沢", "吉祥寺", "上野"];
-
-const SUBMIT_MESSAGES = [
-  "回答を送信中...",
-  "グループに参加中...",
-  "メンバーに通知中...",
-  "準備完了！",
-];
 
 // ---- Draggable genre chip ----
 function GenreChip({ genre, color, size = "md" }: { genre: Genre; color?: string; size?: "sm" | "md" }) {
@@ -70,7 +58,7 @@ function GenreChip({ genre, color, size = "md" }: { genre: Genre; color?: string
 }
 
 // ---- Droppable unranked pool ----
-function UnrankedPool({ unranked }: { unranked: Genre[] }) {
+function UnrankedPool({ unranked, allRankedText }: { unranked: Genre[]; allRankedText: string }) {
   const { setNodeRef, isOver } = useDroppable({ id: "unranked" });
   return (
     <div
@@ -86,7 +74,7 @@ function UnrankedPool({ unranked }: { unranked: Genre[] }) {
     >
       {unranked.length === 0 ? (
         <span style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
-          全てのジャンルをランク付けしました ✓
+          {allRankedText}
         </span>
       ) : (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -100,7 +88,23 @@ function UnrankedPool({ unranked }: { unranked: Genre[] }) {
 }
 
 // ---- Droppable tier zone ----
-function TierZone({ tier, config, items }: { tier: TierKey; config: (typeof TIER_CONFIG)[TierKey]; items: string[] }) {
+function TierZone({
+  tier,
+  label,
+  subtitle,
+  color,
+  items,
+  dragHereText,
+  itemCountText,
+}: {
+  tier: TierKey;
+  label: string;
+  subtitle: string;
+  color: string;
+  items: string[];
+  dragHereText: string;
+  itemCountText: string;
+}) {
   const { setNodeRef, isOver } = useDroppable({ id: tier });
   return (
     <div
@@ -108,27 +112,26 @@ function TierZone({ tier, config, items }: { tier: TierKey; config: (typeof TIER
       style={{
         borderRadius: 16,
         border: `2px ${items.length === 0 && !isOver ? "dashed" : "solid"} ${
-          isOver ? config.color : items.length === 0 ? "var(--border)" : config.color + "55"
+          isOver ? color : items.length === 0 ? "var(--border)" : color + "55"
         }`,
         padding: 14,
         marginBottom: 12,
         minHeight: 80,
         transition: "all 0.15s ease",
-        backgroundColor: isOver ? config.color + "08" : "var(--surface)",
+        backgroundColor: isOver ? color + "08" : "var(--surface)",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: items.length > 0 ? 10 : 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: config.color + "20", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
-            {config.emoji}
+          <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: color + "20", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
           </div>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: config.color }}>{config.label}</div>
-            <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{config.subtitle}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color }}>{label}</div>
+            <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{subtitle}</div>
           </div>
         </div>
-        <div style={{ backgroundColor: config.color + "20", color: config.color, fontSize: 12, fontWeight: 700, padding: "2px 10px", borderRadius: 20 }}>
-          {items.length}件
+        <div style={{ backgroundColor: color + "20", color, fontSize: 12, fontWeight: 700, padding: "2px 10px", borderRadius: 20 }}>
+          {itemCountText}
         </div>
       </div>
 
@@ -136,12 +139,12 @@ function TierZone({ tier, config, items }: { tier: TierKey; config: (typeof TIER
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {items.map((id) => {
             const g = GENRES.find((x) => x.id === id);
-            return g ? <GenreChip key={id} genre={g} color={config.color} size="sm" /> : null;
+            return g ? <GenreChip key={id} genre={g} color={color} size="sm" /> : null;
           })}
         </div>
       ) : (
         <div style={{ textAlign: "center", color: "var(--text-tertiary)", fontSize: 13, paddingTop: 2 }}>
-          ここにドラッグ
+          {dragHereText}
         </div>
       )}
     </div>
@@ -149,7 +152,7 @@ function TierZone({ tier, config, items }: { tier: TierKey; config: (typeof TIER
 }
 
 // ---- Submitting animation screen ----
-function SubmittingScreen({ onDone }: { onDone: () => void }) {
+function SubmittingScreen({ onDone, messages, processingText }: { onDone: () => void; messages: string[]; processingText: string }) {
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
 
@@ -167,14 +170,14 @@ function SubmittingScreen({ onDone }: { onDone: () => void }) {
     }, 60);
 
     const msgInterval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % SUBMIT_MESSAGES.length);
+      setMessageIndex((prev) => (prev + 1) % messages.length);
     }, 900);
 
     return () => {
       clearInterval(interval);
       clearInterval(msgInterval);
     };
-  }, [onDone]);
+  }, [onDone, messages.length]);
 
   const percent = Math.round(progress * 100);
 
@@ -242,10 +245,10 @@ function SubmittingScreen({ onDone }: { onDone: () => void }) {
         className="animate-fade-in"
         style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}
       >
-        {SUBMIT_MESSAGES[messageIndex]}
+        {messages[messageIndex]}
       </div>
       <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-        グループへの参加を処理しています
+        {processingText}
       </div>
     </div>
   );
@@ -255,7 +258,21 @@ function SubmittingScreen({ onDone }: { onDone: () => void }) {
 export default function SurveyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: groupId } = use(params);
   const router = useRouter();
+  const { t } = useLocale();
   const { user, userId } = useUser();
+
+  const TIER_CONFIG: Record<TierKey, { label: string; subtitle: string; color: string }> = {
+    S: { label: "Tier S", subtitle: t("survey.tierS"), color: "var(--primary)" },
+    A: { label: "Tier A", subtitle: t("survey.tierA"), color: "var(--warning)" },
+    B: { label: "Tier B", subtitle: t("survey.tierB"), color: "var(--text-tertiary)" },
+  };
+
+  const SUBMIT_MESSAGES = [
+    t("survey.submitting0"),
+    t("survey.submitting1"),
+    t("survey.submitting2"),
+    t("survey.submitting3"),
+  ];
 
   const [groupName, setGroupName] = useState("グループ");
   const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
@@ -263,7 +280,6 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
   const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
-  // グループ名を取得
   useEffect(() => {
     async function fetchGroup() {
       const supabase = createClient();
@@ -330,7 +346,6 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
     try {
       const supabase = createClient();
 
-      // 自分がまだメンバーでなければ参加
       const { data: existingMember } = await supabase
         .from("group_members")
         .select("id")
@@ -355,7 +370,6 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
       }
 
       if (memberId) {
-        // サーベイ送信
         await supabase.from("survey_responses").upsert(
           {
             group_id: groupId,
@@ -369,7 +383,6 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
           { onConflict: "group_id,member_id" }
         );
 
-        // has_survey を true に
         await supabase
           .from("group_members")
           .update({ has_survey: true })
@@ -381,7 +394,13 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
   }
 
   if (submitted) {
-    return <SubmittingScreen onDone={() => router.push("/home")} />;
+    return (
+      <SubmittingScreen
+        onDone={() => router.push("/home")}
+        messages={SUBMIT_MESSAGES}
+        processingText={t("survey.processingGroup")}
+      />
+    );
   }
 
   return (
@@ -391,22 +410,22 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          戻る
+          {t("common.back")}
         </Link>
       </div>
 
       <div style={{ padding: "8px 20px 40px" }}>
         <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
-          今日の気分は？
+          {t("survey.title")}
         </div>
         <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20 }}>
-          {groupName} · ジャンルをドラッグしてティアに分けてください
+          {t("survey.subtitle", { group: groupName })}
         </div>
 
-        {/* 希望エリア（複数選択） */}
+        {/* 希望エリア */}
         <div style={{ backgroundColor: "var(--surface)", borderRadius: 16, padding: 16, border: "1px solid var(--border-light)", marginBottom: 20 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>希望エリア</div>
-          <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 12 }}>複数選択OK・未選択の場合はどこでもOK</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>{t("survey.preferredAreas")}</div>
+          <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 12 }}>{t("survey.preferredAreasHint")}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {AREAS.map((area) => (
               <button
@@ -425,13 +444,22 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
-              ジャンル一覧
+              {t("survey.genreList")}
             </div>
-            <UnrankedPool unranked={unranked} />
+            <UnrankedPool unranked={unranked} allRankedText={t("survey.allRanked")} />
           </div>
 
           {(["S", "A", "B"] as TierKey[]).map((tier) => (
-            <TierZone key={tier} tier={tier} config={TIER_CONFIG[tier]} items={tiers[tier]} />
+            <TierZone
+              key={tier}
+              tier={tier}
+              label={TIER_CONFIG[tier].label}
+              subtitle={TIER_CONFIG[tier].subtitle}
+              color={TIER_CONFIG[tier].color}
+              items={tiers[tier]}
+              dragHereText={t("survey.dragHere")}
+              itemCountText={t("survey.itemCount", { count: tiers[tier].length })}
+            />
           ))}
 
           <DragOverlay dropAnimation={null}>
@@ -444,11 +472,11 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
         </DndContext>
 
         <div style={{ fontSize: 14, color: "var(--text-secondary)", textAlign: "center", marginBottom: 24 }}>
-          {rankedCount}/{GENRES.length} ジャンルをランク付け済み
+          {t("survey.rankedCount", { count: rankedCount, total: GENRES.length })}
         </div>
 
         <button className="btn-primary" onClick={handleSubmit} disabled={rankedCount === 0}>
-          回答を送信する
+          {t("survey.submit")}
         </button>
       </div>
     </div>

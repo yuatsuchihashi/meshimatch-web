@@ -3,10 +3,12 @@
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useLocale } from "@/lib/i18n";
 
 export default function InvitePage({ params }: { params: Promise<{ id: string }> }) {
   const { id: inviteCode } = use(params);
   const router = useRouter();
+  const { t } = useLocale();
   const [groupName, setGroupName] = useState("グループ");
   const [memberCount, setMemberCount] = useState(0);
   const [groupId, setGroupId] = useState<string | null>(null);
@@ -50,10 +52,10 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
       <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, textAlign: "center" }}>
         <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-tertiary)", marginBottom: 12 }}>!</div>
         <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
-          グループが見つかりません
+          {t("invite.groupNotFound")}
         </div>
         <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          招待リンクが無効です
+          {t("invite.invalidLink")}
         </div>
       </div>
     );
@@ -95,13 +97,13 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
         }}
       >
         <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 4 }}>
-          グループに招待されました
+          {t("invite.invited")}
         </div>
         <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
           {groupName}
         </div>
         <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 28 }}>
-          {memberCount}人が参加中
+          {t("invite.members", { count: String(memberCount) })}
         </div>
 
         <div
@@ -114,11 +116,10 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
           }}
         >
           <div style={{ fontSize: 13, fontWeight: 600, color: "var(--primary)", marginBottom: 6 }}>
-            アンケートに答えてね
+            {t("invite.surveyHint")}
           </div>
           <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
-            好きな食べ物のジャンルをティア分けするだけ！
-            AIがみんなの好みに合うお店を提案します。
+            {t("invite.surveyDesc")}
           </div>
         </div>
 
@@ -127,11 +128,11 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
           onClick={handleGoToSurvey}
           style={{ width: "100%", fontSize: 16 }}
         >
-          アンケートに答える →
+          {t("invite.answerSurvey")}
         </button>
 
         <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 16 }}>
-          ログインが必要です
+          {t("invite.loginRequired")}
         </div>
       </div>
     </div>

@@ -9,11 +9,18 @@ import { useGroups } from "@/lib/hooks/useGroups";
 import { createClient } from "@/lib/supabase/client";
 import { GroupCard } from "@/components/groups/GroupCard";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
+import { useLocale } from "@/lib/i18n";
 import type { Invitation, MeshiGroup } from "@/lib/types";
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date, locale: string): string {
   const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60000);
+  if (locale === "en") {
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  }
   if (mins < 60) return `${mins}分前`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}時間前`;
@@ -22,6 +29,7 @@ function timeAgo(date: Date): string {
 
 export default function HomePage() {
   const router = useRouter();
+  const { t, locale } = useLocale();
   const { user, userId, loading: userLoading } = useUser();
   const { groups, loading: groupsLoading, refresh: refreshGroups } = useGroups(userId);
   const [showArchived, setShowArchived] = useState(false);
@@ -31,7 +39,6 @@ export default function HomePage() {
   const [notifVisible, setNotifVisible] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
 
-  // 招待通知を取得
   useEffect(() => {
     if (!userId) return;
     async function fetchInvitations() {
@@ -116,7 +123,7 @@ export default function HomePage() {
       <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
           <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", margin: "0 auto 12px" }} />
-          <div style={{ fontSize: 14 }}>読み込み中...</div>
+          <div style={{ fontSize: 14 }}>{t("common.loading")}</div>
         </div>
       </div>
     );
@@ -135,14 +142,13 @@ export default function HomePage() {
       >
         <div>
           <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 4 }}>
-            こんにちは、
+            {t("home.greeting")}
           </div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)" }}>
-            {user?.displayName ?? "ユーザー"}さん
+            {user?.displayName ?? "ユーザー"}{t("home.greetingSuffix")}
           </div>
         </div>
 
-        {/* 通知ボタン */}
         <button
           onClick={openNotifications}
           style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer" }}
@@ -161,7 +167,7 @@ export default function HomePage() {
           >
             <Image
               src="/icons/notification_line.svg"
-              alt="通知"
+              alt={t("home.notifications")}
               width={22}
               height={22}
               style={{
@@ -230,10 +236,10 @@ export default function HomePage() {
             </div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 700, color: "white", marginBottom: 4 }}>
-                グループを作ろう
+                {t("home.createGroup")}
               </div>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
-                みんなで行くお店をAIが提案
+                {t("home.createGroupDesc")}
               </div>
             </div>
             <div style={{ marginLeft: "auto", color: "rgba(255,255,255,0.5)" }}>
@@ -251,7 +257,7 @@ export default function HomePage() {
         {/* Active Groups */}
         <div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
-            進行中のグループ
+            {t("home.activeGroups")}
           </div>
           {visibleActiveGroups.length === 0 ? (
             <EmptyState />
@@ -298,7 +304,7 @@ export default function HomePage() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
-              非表示のグループ ({hiddenActiveGroups.length}件)
+              {t("home.hiddenGroups", { count: hiddenActiveGroups.length })}
             </button>
             {showHidden && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -344,7 +350,7 @@ export default function HomePage() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
-              過去のグループ ({archivedGroups.length})
+              {t("home.archivedGroups", { count: archivedGroups.length })}
             </button>
             {showArchived && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -404,7 +410,7 @@ export default function HomePage() {
                 alignItems: "center",
               }}
             >
-              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>通知</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>{t("home.notifications")}</div>
               <button
                 onClick={closeNotifications}
                 style={{
@@ -440,10 +446,10 @@ export default function HomePage() {
                     style={{ filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)", opacity: 0.5 }}
                   />
                   <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-secondary)" }}>
-                    通知はありません
+                    {t("home.noNotifications")}
                   </div>
                   <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
-                    グループに招待されるとここに表示されます
+                    {t("home.noNotificationsHint")}
                   </div>
                 </div>
               ) : (
@@ -454,10 +460,10 @@ export default function HomePage() {
                         <MemberAvatar name={inv.inviterName} size={40} />
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
-                            <span style={{ color: "var(--primary)" }}>{inv.inviterName}</span>さんから招待
+                            {t("home.invitedBy", { name: inv.inviterName })}
                           </div>
                           <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2 }}>
-                            {timeAgo(inv.createdAt)}
+                            {timeAgo(inv.createdAt, locale)}
                           </div>
                         </div>
                       </div>
@@ -480,7 +486,7 @@ export default function HomePage() {
                         style={{ height: 46, fontSize: 15 }}
                         onClick={() => handleAcceptInvitation(inv)}
                       >
-                        参加してアンケートに回答する
+                        {t("home.joinSurvey")}
                       </button>
                     </div>
                   ))}
@@ -495,6 +501,7 @@ export default function HomePage() {
 }
 
 function EmptyState() {
+  const { t } = useLocale();
   return (
     <div
       style={{
@@ -514,10 +521,10 @@ function EmptyState() {
         style={{ filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)", opacity: 0.4 }}
       />
       <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-secondary)" }}>
-        グループがありません
+        {t("home.noGroups")}
       </div>
       <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
-        「グループを作ろう」から始めてみましょう
+        {t("home.noGroupsHint")}
       </div>
     </div>
   );
