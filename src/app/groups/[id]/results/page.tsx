@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/lib/hooks/useUser";
+import { useGroups } from "@/lib/hooks/useGroups";
 import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 import { RestaurantDetailModal } from "@/components/restaurants/RestaurantDetailModal";
 import { MemberAvatarStack, MemberAvatar } from "@/components/groups/MemberAvatar";
@@ -16,6 +17,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   const { id } = use(params);
   const router = useRouter();
   const { userId } = useUser();
+  const { deleteGroup, leaveGroup } = useGroups(userId);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("match");
   const [selectedArea, setSelectedArea] = useState<string>("all");
@@ -161,7 +163,12 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         }
       }
 
-      window.location.href = "/home";
+      if (action === "delete") {
+        deleteGroup(id);
+      } else {
+        leaveGroup(id);
+      }
+      router.push("/home");
     } catch (err) {
       console.error("Group action failed:", err);
       alert("エラーが発生しました");
