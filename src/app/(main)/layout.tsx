@@ -1,4 +1,4 @@
-import { GlassBottomNav } from "@/components/ui/GlassBottomNav";
+import { BottomNav } from "@/components/ui/BottomNav";
 
 export default function MainLayout({
   children,
@@ -6,9 +6,9 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-mesh-subtle min-h-dvh pb-20">
+    <div style={{ minHeight: "100dvh", paddingBottom: "calc(60px + env(safe-area-inset-bottom))" }}>
       {children}
-      <GlassBottomNav />
+      <BottomNav />
     </div>
   );
 }

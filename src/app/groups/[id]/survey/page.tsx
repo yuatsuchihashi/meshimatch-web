@@ -3,7 +3,9 @@
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { MOCK_GROUPS, GENRES } from "@/lib/mockData";
+import { GENRES } from "@/lib/mockData";
+import { useUser } from "@/lib/hooks/useUser";
+import { createClient } from "@/lib/supabase/client";
 import type { TierData, TierKey } from "@/lib/types";
 import type { Genre } from "@/lib/types";
 import {
@@ -21,9 +23,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const TIER_CONFIG = {
-  S: { label: "Tier S", emoji: "🔥", subtitle: "めっちゃ食べたい", color: "var(--primary)" },
-  A: { label: "Tier A", emoji: "👍", subtitle: "食べたい", color: "var(--warning)" },
-  B: { label: "Tier B", emoji: "😐", subtitle: "まぁいいよ", color: "var(--text-tertiary)" },
+  S: { label: "Tier S", emoji: "", subtitle: "めっちゃ食べたい", color: "var(--primary)" },
+  A: { label: "Tier A", emoji: "", subtitle: "食べたい", color: "var(--warning)" },
+  B: { label: "Tier B", emoji: "", subtitle: "まぁいいよ", color: "var(--text-tertiary)" },
 };
 
 const AREAS = ["渋谷", "新宿", "池袋", "銀座", "六本木", "恵比寿", "表参道", "下北沢", "吉祥寺", "上野"];
@@ -34,8 +36,6 @@ const SUBMIT_MESSAGES = [
   "メンバーに通知中...",
   "準備完了！",
 ];
-
-const JOINED_KEY = "meshimatch-joined-groups";
 
 // ---- Draggable genre chip ----
 function GenreChip({ genre, color, size = "md" }: { genre: Genre; color?: string; size?: "sm" | "md" }) {
@@ -79,7 +79,7 @@ function UnrankedPool({ unranked }: { unranked: Genre[] }) {
         minHeight: 56,
         borderRadius: 12,
         padding: "8px 4px",
-        backgroundColor: isOver ? "rgba(196,85,42,0.05)" : "transparent",
+        backgroundColor: isOver ? "rgba(204,119,85,0.05)" : "transparent",
         border: isOver ? "2px dashed var(--primary)" : "2px dashed transparent",
         transition: "all 0.15s ease",
       }}
@@ -201,7 +201,7 @@ function SubmittingScreen({ onDone }: { onDone: () => void }) {
             width: 80,
             height: 80,
             borderRadius: "50%",
-            backgroundColor: "rgba(196,85,42,0.12)",
+            backgroundColor: "rgba(204,119,85,0.12)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -209,7 +209,16 @@ function SubmittingScreen({ onDone }: { onDone: () => void }) {
             zIndex: 1,
           }}
         >
-          <span style={{ fontSize: 36 }}>🍽️</span>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              border: "4px solid var(--border-light)",
+              borderTop: "4px solid var(--primary)",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+            }}
+          />
         </div>
       </div>
 
@@ -244,16 +253,29 @@ function SubmittingScreen({ onDone }: { onDone: () => void }) {
 
 // ---- Main page ----
 export default function SurveyPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+  const { id: groupId } = use(params);
   const router = useRouter();
+  const { user, userId } = useUser();
 
-  const group = MOCK_GROUPS.find((g) => g.id === id);
-  const groupName = group?.name ?? "グループ";
-
+  const [groupName, setGroupName] = useState("グループ");
   const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
   const [tiers, setTiers] = useState<TierData>({ S: [], A: [], B: [] });
   const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  // グループ名を取得
+  useEffect(() => {
+    async function fetchGroup() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("groups")
+        .select("name")
+        .eq("id", groupId)
+        .single();
+      if (data) setGroupName(data.name);
+    }
+    fetchGroup();
+  }, [groupId]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -301,14 +323,61 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
     }
   }
 
-  function handleSubmit() {
-    try {
-      const joined: string[] = JSON.parse(localStorage.getItem(JOINED_KEY) ?? "[]");
-      if (!joined.includes(id)) {
-        localStorage.setItem(JOINED_KEY, JSON.stringify([...joined, id]));
-      }
-    } catch { /* ignore */ }
+  async function handleSubmit() {
+    if (!userId) return;
     setSubmitted(true);
+
+    try {
+      const supabase = createClient();
+
+      // 自分がまだメンバーでなければ参加
+      const { data: existingMember } = await supabase
+        .from("group_members")
+        .select("id")
+        .eq("group_id", groupId)
+        .eq("profile_id", userId)
+        .maybeSingle();
+
+      let memberId = existingMember?.id;
+
+      if (!memberId) {
+        const { data: newMember } = await supabase
+          .from("group_members")
+          .insert({
+            group_id: groupId,
+            profile_id: userId,
+            display_name: user?.displayName ?? "ゲスト",
+            role: "member",
+          })
+          .select()
+          .single();
+        memberId = newMember?.id;
+      }
+
+      if (memberId) {
+        // サーベイ送信
+        await supabase.from("survey_responses").upsert(
+          {
+            group_id: groupId,
+            member_id: memberId,
+            tier_s: tiers.S,
+            tier_a: tiers.A,
+            tier_b: tiers.B,
+            disliked: [],
+            preferred_areas: preferredAreas,
+          },
+          { onConflict: "group_id,member_id" }
+        );
+
+        // has_survey を true に
+        await supabase
+          .from("group_members")
+          .update({ has_survey: true })
+          .eq("id", memberId);
+      }
+    } catch (err) {
+      console.error("Survey submission error:", err);
+    }
   }
 
   if (submitted) {
@@ -328,7 +397,7 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
 
       <div style={{ padding: "8px 20px 40px" }}>
         <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
-          今日の気分は？ 🍽️
+          今日の気分は？
         </div>
         <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20 }}>
           {groupName} · ジャンルをドラッグしてティアに分けてください
@@ -336,7 +405,7 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
 
         {/* 希望エリア（複数選択） */}
         <div style={{ backgroundColor: "var(--surface)", borderRadius: 16, padding: 16, border: "1px solid var(--border-light)", marginBottom: 20 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>📍 希望エリア</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>希望エリア</div>
           <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 12 }}>複数選択OK・未選択の場合はどこでもOK</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {AREAS.map((area) => (
@@ -367,7 +436,7 @@ export default function SurveyPage({ params }: { params: Promise<{ id: string }>
 
           <DragOverlay dropAnimation={null}>
             {activeGenre && (
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "8px 14px", borderRadius: 20, backgroundColor: "var(--primary)", color: "white", fontSize: 14, fontWeight: 600, boxShadow: "0 8px 24px rgba(196,85,42,0.4)", cursor: "grabbing", userSelect: "none" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "8px 14px", borderRadius: 20, backgroundColor: "var(--primary)", color: "white", fontSize: 14, fontWeight: 600, boxShadow: "0 8px 24px rgba(204,119,85,0.3)", cursor: "grabbing", userSelect: "none" }}>
                 {activeGenre.emoji} {activeGenre.name}
               </div>
             )}

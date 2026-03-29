@@ -1,45 +1,87 @@
 "use client";
 
-import { use } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MOCK_GROUPS } from "@/lib/mockData";
-import { MemberAvatarStack } from "@/components/groups/MemberAvatar";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+
+interface GroupData {
+  id: string;
+  name: string;
+  invite_code: string;
+  members: { id: string; display_name: string; role: string; has_survey: boolean }[];
+}
 
 export default function WaitingRoomPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const [group, setGroup] = useState<GroupData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const group = MOCK_GROUPS.find((g) => g.id === id) ?? {
-    id,
-    name: "新しいグループ",
-    inviteCode: "XXXX",
-    status: "active" as const,
-    members: [
-      { id: "m1", displayName: "ゆあ", role: "owner" as const, hasSurvey: true },
-    ],
-    surveyResponses: [
-      {
-        id: "r1",
-        memberName: "ゆあ",
-        tierS: ["G005"],
-        tierA: ["G001"],
-        tierB: [],
-        departureStation: "渋谷駅",
-        preferredArea: "渋谷",
-        submittedAt: new Date(),
-      },
-    ],
-    resolvedAreas: ["渋谷"],
-  };
+  useEffect(() => {
+    async function fetchGroup() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("groups")
+        .select(`
+          id, name, invite_code,
+          group_members (id, display_name, role, has_survey)
+        `)
+        .eq("id", id)
+        .single();
 
-  const respondedCount = group.surveyResponses.length;
+      if (data) {
+        setGroup({
+          id: data.id,
+          name: data.name,
+          invite_code: data.invite_code,
+          members: data.group_members ?? [],
+        });
+      }
+      setLoading(false);
+    }
+
+    fetchGroup();
+    // 10秒ごとにポーリング
+    const interval = setInterval(fetchGroup, 10000);
+    return () => clearInterval(interval);
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
+          <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", marginBottom: 12 }} />
+          <div style={{ fontSize: 14 }}>読み込み中...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!group) {
+    return (
+      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-tertiary)", marginBottom: 12 }}>!</div>
+          <div style={{ fontSize: 16, fontWeight: 600 }}>グループが見つかりません</div>
+          <Link href="/home" style={{ color: "var(--primary)", fontSize: 14, marginTop: 8, display: "block" }}>ホームに戻る</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const respondedCount = group.members.filter((m) => m.has_survey).length;
   const totalCount = group.members.length;
-  const respondedNames = group.surveyResponses.map((r) => r.memberName);
-  const canSearch = respondedCount >= 2;
+  const canSearch = respondedCount >= 1;
 
   function handleSearch() {
     router.push(`/groups/${id}/searching`);
+  }
+
+  function handleShareLink() {
+    const url = `${window.location.origin}/invite/${group!.invite_code}`;
+    navigator.clipboard.writeText(url);
+    alert("招待リンクをコピーしました！");
   }
 
   return (
@@ -68,25 +110,6 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
         <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
           {group.name}
         </div>
-
-        {/* Area chips */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {group.resolvedAreas.map((area) => (
-            <span
-              key={area}
-              style={{
-                fontSize: 13,
-                backgroundColor: "rgba(196,85,42,0.1)",
-                color: "var(--primary)",
-                borderRadius: 20,
-                padding: "4px 12px",
-                fontWeight: 600,
-              }}
-            >
-              📍 {area}
-            </span>
-          ))}
-        </div>
       </div>
 
       <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
@@ -102,7 +125,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "rgba(196,85,42,0.08)",
+              backgroundColor: "rgba(204,119,85,0.08)",
             }}
           >
             <span style={{ fontSize: 32, fontWeight: 800, color: "var(--primary)" }}>
@@ -123,80 +146,70 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
             メンバー
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {group.members.map((member) => {
-              const responded = respondedNames.includes(member.displayName);
-              return (
+            {group.members.map((member) => (
+              <div
+                key={member.id}
+                style={{ display: "flex", alignItems: "center", gap: 12 }}
+              >
                 <div
-                  key={member.id}
                   style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
                     display: "flex",
                     alignItems: "center",
-                    gap: 12,
+                    justifyContent: "center",
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: 15,
+                    flexShrink: 0,
                   }}
                 >
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: 15,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {member.displayName.charAt(0)}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
-                      {member.displayName}
-                    </div>
-                    {member.role === "owner" && (
-                      <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>幹事</div>
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: responded ? "var(--secondary)" : "var(--text-tertiary)",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                  >
-                    {responded ? (
-                      <>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        回答済み
-                      </>
-                    ) : (
-                      <>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        未回答
-                      </>
-                    )}
-                  </div>
+                  {member.display_name.charAt(0)}
                 </div>
-              );
-            })}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+                    {member.display_name}
+                  </div>
+                  {member.role === "owner" && (
+                    <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>幹事</div>
+                  )}
+                </div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: member.has_survey ? "var(--success)" : "var(--text-tertiary)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  {member.has_survey ? (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      回答済み
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      未回答
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Share button */}
-        <button
-          className="btn-secondary"
-          onClick={() => alert("招待リンクをコピーしました！（デモ）")}
-        >
-          🔗 招待リンクを共有
+        <button className="btn-secondary" onClick={handleShareLink}>
+          招待リンクを共有
         </button>
 
         {/* Search button */}
@@ -206,7 +219,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
             onClick={handleSearch}
             disabled={!canSearch}
           >
-            🔍 お店を検索する
+            お店を検索する
           </button>
           {!canSearch && (
             <div
@@ -217,7 +230,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
                 marginTop: 8,
               }}
             >
-              2名以上の回答が必要です
+              回答が必要です
             </div>
           )}
         </div>

@@ -1,32 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #C4552A;
-  --primary-light: #E8734A;
-  --secondary: #6B7A52;
-  --bg: #FAF7F2;
-  --bg-secondary: #F2EDE4;
+  /* ── New 5-color palette ── */
+  --primary: #CC7755;          /* salmon – main accent, buttons, CTA */
+  --primary-light: #D4916F;    /* lighter salmon */
+  --secondary: #2D2B55;        /* navy – headings, strong text */
+  --accent: #CC7755;           /* salmon alias */
+  --accent-light: #D4916F;
+
+  --bg: #FAF8F4;               /* warm white */
+  --bg-secondary: #F0EBDF;     /* cream tint */
   --surface: #FFFFFF;
-  --text-primary: #2A2017;
-  --text-secondary: #9A8B78;
-  --text-tertiary: #B8A898;
-  --border: #E6DDD2;
-  --border-light: #F0E8DE;
-  --warning: #D4920A;
+  --surface-hover: #F8F6F2;
+
+  --text-primary: #2D2B55;     /* navy */
+  --text-secondary: #6B6896;   /* muted navy */
+  --text-tertiary: #9996B8;    /* light purple-grey */
+
+  --border: #E2DDD4;
+  --border-light: #EFEBE4;
+
+  --warning: #F5CC44;          /* gold – ratings, warnings */
+  --danger: #8B1A1A;           /* maroon – errors, destructive */
+  --success: #4A8A5A;          /* green – completed states */
 }
 
 @theme inline {
   --color-primary: var(--primary);
   --color-primary-light: var(--primary-light);
   --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
   --color-bg: var(--bg);
   --color-bg-secondary: var(--bg-secondary);
   --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-tertiary: var(--text-tertiary);
   --color-border: var(--border);
+  --color-border-light: var(--border-light);
   --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
   --font-sans: var(--font-geist-sans);
 }
 
@@ -42,7 +58,34 @@ body {
 
 ::-webkit-scrollbar { width: 0; height: 0; }
 
-/* Buttons */
+/* ── Utility classes (replacing undefined glass/bg-mesh) ── */
+.bg-mesh {
+  background: linear-gradient(160deg, var(--secondary) 0%, #1E1C3E 100%);
+}
+.bg-mesh-subtle {
+  background-color: var(--bg);
+}
+
+.glass {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+}
+.glass-strong {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 20px;
+}
+.glass-dark {
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+}
+
+/* ── Buttons ── */
 .btn-primary {
   display: flex; align-items: center; justify-content: center;
   width: 100%; height: 54px;
@@ -67,13 +110,15 @@ body {
 .btn-secondary:active { transform: scale(0.97); }
 .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
+/* ── Card ── */
 .card {
   background: var(--surface);
   border-radius: 20px;
   border: 1px solid var(--border-light);
-  box-shadow: 0 2px 8px rgba(42,32,23,0.06);
+  box-shadow: 0 2px 8px rgba(45,43,85,0.05);
 }
 
+/* ── Chips ── */
 .chip {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 6px 14px; border-radius: 20px;
@@ -84,11 +129,12 @@ body {
   white-space: nowrap; user-select: none;
 }
 .chip-selected {
-  background: rgba(196,85,42,0.1);
+  background: rgba(204,119,85,0.1);
   border-color: var(--primary);
   color: var(--primary);
 }
 
+/* ── Animations ── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }

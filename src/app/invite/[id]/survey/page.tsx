@@ -2,7 +2,9 @@
 
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MOCK_GROUPS, GENRES, ALLERGIES, DIETARY_RESTRICTIONS } from "@/lib/mockData";
+import { GENRES, ALLERGIES, DIETARY_RESTRICTIONS } from "@/lib/mockData";
+import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@/lib/hooks/useUser";
 import type { TierData, TierKey } from "@/lib/types";
 import type { Genre } from "@/lib/types";
 import {
@@ -20,9 +22,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const TIER_CONFIG = {
-  S: { label: "Tier S", emoji: "🔥", subtitle: "めっちゃ食べたい", color: "var(--primary)" },
-  A: { label: "Tier A", emoji: "👍", subtitle: "食べたい", color: "var(--warning)" },
-  B: { label: "Tier B", emoji: "😐", subtitle: "まぁいいよ", color: "var(--text-tertiary)" },
+  S: { label: "Tier S", emoji: "", subtitle: "めっちゃ食べたい", color: "var(--primary)" },
+  A: { label: "Tier A", emoji: "", subtitle: "食べたい", color: "var(--warning)" },
+  B: { label: "Tier B", emoji: "", subtitle: "まぁいいよ", color: "var(--text-tertiary)" },
 };
 
 const AREAS = ["渋谷", "新宿", "池袋", "銀座", "六本木", "恵比寿", "表参道", "下北沢", "吉祥寺", "上野"];
@@ -79,7 +81,7 @@ function UnrankedPool({ unranked }: { unranked: Genre[] }) {
         minHeight: 56,
         borderRadius: 12,
         padding: "8px 4px",
-        backgroundColor: isOver ? "rgba(196,85,42,0.05)" : "transparent",
+        backgroundColor: isOver ? "rgba(204,119,85,0.05)" : "transparent",
         border: isOver ? "2px dashed var(--primary)" : "2px dashed transparent",
         transition: "all 0.15s ease",
       }}
@@ -181,17 +183,19 @@ function TierZone({
 export default function GuestSurveyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { userId } = useUser();
 
-  const group = MOCK_GROUPS.find((g) => g.id === id);
-  const groupName = group?.name ?? "グループ";
+  const [groupName, setGroupName] = useState("グループ");
+  const [groupId, setGroupId] = useState<string | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   const [step, setStep] = useState<Step>("name");
   const [guestName, setGuestName] = useState("");
   const [allergies, setAllergies] = useState<string[]>([]);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [anywhereOk, setAnywhereOk] = useState(true);
-  const [departureStation, setDepartureStation] = useState("");
   const [preferredArea, setPreferredArea] = useState("");
   const [tiers, setTiers] = useState<TierData>({ S: [], A: [], B: [] });
   const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
@@ -200,6 +204,41 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } })
   );
+
+  // 招待コードからグループ情報を取得
+  useEffect(() => {
+    async function fetchGroup() {
+      const supabase = createClient();
+
+      // 招待コードでグループを検索
+      const { data } = await supabase
+        .from("groups")
+        .select("id, name")
+        .eq("invite_code", id)
+        .single();
+
+      if (data) {
+        setGroupId(data.id);
+        setGroupName(data.name);
+      } else {
+        // 招待コードではなくグループIDで直接アクセスの場合
+        const { data: directGroup } = await supabase
+          .from("groups")
+          .select("id, name")
+          .eq("id", id)
+          .single();
+
+        if (directGroup) {
+          setGroupId(directGroup.id);
+          setGroupName(directGroup.name);
+        } else {
+          setNotFound(true);
+        }
+      }
+      setPageLoading(false);
+    }
+    fetchGroup();
+  }, [id]);
 
   // localStorageから前回の設定を読み込む
   useEffect(() => {
@@ -219,12 +258,12 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
     } catch { /* ignore */ }
   }
 
-  function toggleAllergy(id: string) {
-    setAllergies((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  function toggleAllergy(aid: string) {
+    setAllergies((prev) => prev.includes(aid) ? prev.filter((x) => x !== aid) : [...prev, aid]);
   }
 
-  function toggleDietary(id: string) {
-    setDietaryRestrictions((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  function toggleDietary(did: string) {
+    setDietaryRestrictions((prev) => prev.includes(did) ? prev.filter((x) => x !== did) : [...prev, did]);
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -241,16 +280,16 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
 
     if (dest === "unranked") {
       setTiers((prev) => ({
-        S: prev.S.filter((id) => id !== genreId),
-        A: prev.A.filter((id) => id !== genreId),
-        B: prev.B.filter((id) => id !== genreId),
+        S: prev.S.filter((x) => x !== genreId),
+        A: prev.A.filter((x) => x !== genreId),
+        B: prev.B.filter((x) => x !== genreId),
       }));
     } else if (["S", "A", "B"].includes(dest)) {
       setTiers((prev) => {
         const next = {
-          S: prev.S.filter((id) => id !== genreId),
-          A: prev.A.filter((id) => id !== genreId),
-          B: prev.B.filter((id) => id !== genreId),
+          S: prev.S.filter((x) => x !== genreId),
+          A: prev.A.filter((x) => x !== genreId),
+          B: prev.B.filter((x) => x !== genreId),
         };
         next[dest as TierKey] = [...next[dest as TierKey], genreId];
         return next;
@@ -258,10 +297,87 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
+    if (!groupId) return;
     savePrefs();
-    setStep("done");
-    setTimeout(() => router.push(`/groups/${id}/waiting`), 2500);
+    setSubmitting(true);
+
+    try {
+      const supabase = createClient();
+
+      // 1. メンバーを追加 or 既存メンバーを取得
+      let memberId: string | null = null;
+
+      if (userId) {
+        // ログイン済みユーザー: profile_idで既存メンバーか確認
+        const { data: existing } = await supabase
+          .from("group_members")
+          .select("id")
+          .eq("group_id", groupId)
+          .eq("profile_id", userId)
+          .single();
+
+        if (existing) {
+          memberId = existing.id;
+          // 名前を更新
+          await supabase.from("group_members").update({ display_name: guestName }).eq("id", memberId);
+        }
+      }
+
+      if (!memberId) {
+        // 新規メンバーとして追加
+        const { data: newMember } = await supabase
+          .from("group_members")
+          .insert({
+            group_id: groupId,
+            display_name: guestName,
+            role: "member",
+            profile_id: userId ?? null,
+          })
+          .select("id")
+          .single();
+
+        memberId = newMember?.id ?? null;
+      }
+
+      if (!memberId) {
+        console.error("Failed to create/find member");
+        setSubmitting(false);
+        return;
+      }
+
+      // 2. サーベイをAPI経由で送信
+      const res = await fetch("/api/groups/survey", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          groupId,
+          memberId,
+          tierS: tiers.S,
+          tierA: tiers.A,
+          tierB: tiers.B,
+          disliked: [],
+          preferredAreas: preferredArea ? [preferredArea] : [],
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("Survey submit failed:", await res.text());
+      }
+
+      // 3. プロフィールにアレルギー情報を保存（ログイン済みの場合）
+      if (userId) {
+        await supabase.from("profiles").update({
+          allergies,
+        }).eq("id", userId);
+      }
+
+      setStep("done");
+      setTimeout(() => router.push(`/groups/${groupId}/waiting`), 2500);
+    } catch (err) {
+      console.error("Submit error:", err);
+      setSubmitting(false);
+    }
   }
 
   const unranked = GENRES.filter(
@@ -270,12 +386,38 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
   const rankedCount = tiers.S.length + tiers.A.length + tiers.B.length;
   const activeGenre = activeGenreId ? GENRES.find((x) => x.id === activeGenreId) : null;
 
+  // ---- LOADING ----
+  if (pageLoading) {
+    return (
+      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%" }} />
+      </div>
+    );
+  }
+
+  // ---- NOT FOUND ----
+  if (notFound) {
+    return (
+      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, textAlign: "center" }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-tertiary)", marginBottom: 12 }}>!</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
+          グループが見つかりません
+        </div>
+        <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          招待リンクが無効です
+        </div>
+      </div>
+    );
+  }
+
   // ---- DONE ----
   if (step === "done") {
     return (
       <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, textAlign: "center" }}>
-        <div style={{ width: 80, height: 80, borderRadius: "50%", backgroundColor: "rgba(107,122,82,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, marginBottom: 20 }}>
-          ✅
+        <div style={{ width: 80, height: 80, borderRadius: "50%", backgroundColor: "rgba(74,138,90,0.12)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </div>
         <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
           {guestName}さん、回答完了！
@@ -295,7 +437,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
         <div style={{ maxWidth: 480, margin: "0 auto" }}>
           <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 4 }}>{groupName}</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
-            はじめまして！👋
+            はじめまして！
           </div>
           <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 32 }}>
             グループのみんなに表示される名前を教えてください
@@ -343,7 +485,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
           <BackButton onClick={() => setStep("name")} />
 
           <div style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
-            食の制限・アレルギー 🚫
+            食の制限・アレルギー
           </div>
           <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 4 }}>{guestName}さん</div>
           <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24 }}>
@@ -352,7 +494,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
 
           {/* アレルギー */}
           <div style={{ backgroundColor: "var(--surface)", borderRadius: 20, padding: "20px", border: "1px solid var(--border-light)", marginBottom: 16 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>🤧 アレルギー</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>アレルギー</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {ALLERGIES.map((a) => {
                 const selected = allergies.includes(a.id);
@@ -364,7 +506,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
                       display: "inline-flex", alignItems: "center", gap: 4,
                       padding: "8px 14px", borderRadius: 20, fontSize: 14,
                       cursor: "pointer",
-                      backgroundColor: selected ? "rgba(196,85,42,0.12)" : "var(--bg)",
+                      backgroundColor: selected ? "rgba(204,119,85,0.12)" : "var(--bg)",
                       border: `1.5px solid ${selected ? "var(--primary)" : "var(--border)"}`,
                       color: selected ? "var(--primary)" : "var(--text-primary)",
                       fontWeight: selected ? 600 : 400,
@@ -379,7 +521,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
 
           {/* 食の制限 */}
           <div style={{ backgroundColor: "var(--surface)", borderRadius: 20, padding: "20px", border: "1px solid var(--border-light)", marginBottom: 28 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>🥗 食の制限</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>食の制限</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {DIETARY_RESTRICTIONS.map((d) => {
                 const selected = dietaryRestrictions.includes(d.id);
@@ -391,7 +533,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
                       display: "inline-flex", alignItems: "center", gap: 4,
                       padding: "8px 14px", borderRadius: 20, fontSize: 14,
                       cursor: "pointer",
-                      backgroundColor: selected ? "rgba(196,85,42,0.12)" : "var(--bg)",
+                      backgroundColor: selected ? "rgba(204,119,85,0.12)" : "var(--bg)",
                       border: `1.5px solid ${selected ? "var(--primary)" : "var(--border)"}`,
                       color: selected ? "var(--primary)" : "var(--text-primary)",
                       fontWeight: selected ? 600 : 400,
@@ -429,7 +571,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
 
       <div style={{ padding: "8px 20px 40px" }}>
         <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
-          今日の気分は？ 🍽️
+          今日の気分は？
         </div>
         <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 4 }}>
           {guestName}さん・{groupName}
@@ -437,7 +579,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
 
         {/* アレルギー・制限サマリー */}
         {(allergies.length > 0 || dietaryRestrictions.length > 0) && (
-          <div style={{ backgroundColor: "rgba(196,85,42,0.06)", borderRadius: 12, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ backgroundColor: "rgba(204,119,85,0.06)", borderRadius: 12, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontSize: 13, color: "var(--primary)", fontWeight: 600 }}>除外:</span>
             {allergies.map((aId) => {
               const a = ALLERGIES.find((x) => x.id === aId);
@@ -456,7 +598,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
 
         {/* 場所 */}
         <div style={{ backgroundColor: "var(--surface)", borderRadius: 16, padding: 16, border: "1px solid var(--border-light)", marginBottom: 20 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>📍 希望エリア</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>希望エリア</div>
           <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 12 }}>未選択の場合はどこでもOK</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {AREAS.map((area) => (
@@ -496,7 +638,7 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
                   padding: "8px 14px", borderRadius: 20,
                   backgroundColor: "var(--primary)", color: "white",
                   fontSize: 14, fontWeight: 600,
-                  boxShadow: "0 8px 24px rgba(196,85,42,0.4)",
+                  boxShadow: "0 8px 24px rgba(204,119,85,0.3)",
                   cursor: "grabbing",
                   userSelect: "none",
                 }}
@@ -511,8 +653,12 @@ export default function GuestSurveyPage({ params }: { params: Promise<{ id: stri
           {rankedCount}/{GENRES.length} ジャンルをランク付け済み
         </div>
 
-        <button className="btn-primary" onClick={handleSubmit} disabled={rankedCount === 0}>
-          回答を送信する
+        <button
+          className="btn-primary"
+          onClick={handleSubmit}
+          disabled={rankedCount === 0 || submitting}
+        >
+          {submitting ? "送信中..." : "回答を送信する"}
         </button>
 
         <StepDots current="survey" />

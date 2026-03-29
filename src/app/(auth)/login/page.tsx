@@ -35,7 +35,6 @@ export default function LoginPage() {
         label="メールアドレス"
         placeholder="you@example.com"
         required
-        className="text-white placeholder:text-white/30"
       />
       <GlassInput
         id="password"
@@ -44,7 +43,6 @@ export default function LoginPage() {
         label="パスワード"
         placeholder="••••••••"
         required
-        className="text-white placeholder:text-white/30"
       />
 
       <GlassButton type="submit" variant="accent" size="lg" disabled={pending}>
@@ -53,7 +51,7 @@ export default function LoginPage() {
 
       <p className="text-white/60 text-sm text-center">
         アカウントがない方は{" "}
-        <Link href="/signup" className="text-accent-light underline">
+        <Link href="/signup" className="text-white underline font-medium">
           新規登録
         </Link>
       </p>

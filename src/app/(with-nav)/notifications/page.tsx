@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MOCK_INVITATIONS } from "@/lib/mockData";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
+import { useUser } from "@/lib/hooks/useUser";
+import { createClient } from "@/lib/supabase/client";
+
+interface InvitationData {
+  id: string;
+  groupId: string;
+  groupName: string;
+  inviterName: string;
+  memberCount: number;
+  createdAt: Date;
+}
 
 function timeAgo(date: Date): string {
   const diff = Date.now() - date.getTime();
@@ -15,11 +25,94 @@ function timeAgo(date: Date): string {
 }
 
 export default function NotificationsPage() {
-  const [invitations, setInvitations] = useState(MOCK_INVITATIONS);
+  const { userId } = useUser();
+  const [invitations, setInvitations] = useState<InvitationData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  function handleAccept(id: string) {
-    // In real app: navigate to survey. Here just remove it.
-    setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    async function fetchInvitations() {
+      const supabase = createClient();
+
+      const { data } = await supabase
+        .from("invitations")
+        .select(`
+          id,
+          group_id,
+          created_at,
+          groups (
+            id,
+            name,
+            group_members (id, display_name, role)
+          )
+        `)
+        .eq("invitee_id", userId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (data) {
+        const mapped: InvitationData[] = data
+          .filter((inv: Record<string, unknown>) => inv.groups)
+          .map((inv: Record<string, unknown>) => {
+            const group = inv.groups as { id: string; name: string; group_members: { id: string; display_name: string; role: string }[] };
+            const owner = group.group_members?.find(
+              (m: { role: string }) => m.role === "owner"
+            );
+            return {
+              id: inv.id as string,
+              groupId: group.id,
+              groupName: group.name,
+              inviterName: owner?.display_name ?? "不明",
+              memberCount: group.group_members?.length ?? 0,
+              createdAt: new Date(inv.created_at as string),
+            };
+          });
+        setInvitations(mapped);
+      }
+      setLoading(false);
+    }
+
+    fetchInvitations();
+  }, [userId]);
+
+  async function handleAccept(invitationId: string, groupId: string) {
+    if (!userId) return;
+    const supabase = createClient();
+
+    // 招待を承認
+    await supabase
+      .from("invitations")
+      .update({ status: "accepted" })
+      .eq("id", invitationId);
+
+    // グループメンバーに追加
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", userId)
+      .single();
+
+    await supabase.from("group_members").insert({
+      group_id: groupId,
+      profile_id: userId,
+      display_name: profile?.display_name ?? "ユーザー",
+      role: "member",
+    });
+
+    // UIから削除
+    setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+  }
+
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%" }} />
+      </div>
+    );
   }
 
   return (
@@ -110,27 +203,11 @@ export default function NotificationsPage() {
                       marginBottom: 8,
                     }}
                   >
-                    <span style={{ fontSize: 16 }}>🍽️</span>
                     <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>
                       {inv.groupName}
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {inv.areaNames.map((area) => (
-                      <span
-                        key={area}
-                        style={{
-                          fontSize: 12,
-                          backgroundColor: "var(--surface)",
-                          color: "var(--text-secondary)",
-                          borderRadius: 8,
-                          padding: "3px 10px",
-                          fontWeight: 500,
-                        }}
-                      >
-                        📍 {area}
-                      </span>
-                    ))}
                     <span
                       style={{
                         fontSize: 12,
@@ -141,7 +218,7 @@ export default function NotificationsPage() {
                         fontWeight: 500,
                       }}
                     >
-                      👥 {inv.memberCount}名
+                      {inv.memberCount}名
                     </span>
                   </div>
                 </div>
@@ -149,7 +226,7 @@ export default function NotificationsPage() {
                 {/* Accept button */}
                 <Link
                   href={`/groups/${inv.groupId}/survey`}
-                  onClick={() => handleAccept(inv.id)}
+                  onClick={() => handleAccept(inv.id, inv.groupId)}
                   style={{ textDecoration: "none" }}
                 >
                   <button className="btn-primary" style={{ height: 46, fontSize: 15 }}>

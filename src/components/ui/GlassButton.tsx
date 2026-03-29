@@ -17,13 +17,13 @@ export function GlassButton({
   ...props
 }: GlassButtonProps) {
   const variantClasses = {
-    default: "glass hover:bg-white/30 active:bg-white/40 text-foreground",
+    default: "glass hover:bg-white/30 active:bg-white/40 text-white",
     accent:
-      "bg-accent hover:bg-accent-light active:bg-indigo-600 text-white border border-indigo-400/30 shadow-lg shadow-indigo-500/20",
+      "bg-primary hover:opacity-90 active:opacity-80 text-white border border-primary-light/30 shadow-lg shadow-primary/20",
     danger:
-      "bg-danger hover:bg-red-500 active:bg-red-600 text-white border border-red-400/30",
+      "bg-danger hover:opacity-90 active:opacity-80 text-white border border-red-400/30",
     ghost:
-      "bg-transparent hover:bg-white/10 active:bg-white/20 text-foreground border-none shadow-none",
+      "bg-transparent hover:bg-white/10 active:bg-white/20 text-white border-none shadow-none",
   };
 
   const sizeClasses = {

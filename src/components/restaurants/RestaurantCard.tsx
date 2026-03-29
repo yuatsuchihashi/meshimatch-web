@@ -8,23 +8,23 @@ interface RestaurantCardProps {
   onClick: (r: Restaurant) => void;
 }
 
-const GENRE_GRADIENTS: Record<string, [string, string]> = {
-  G001: ["#C4552A", "#E8734A"],
-  G002: ["#5B8A9A", "#7AAFC4"],
-  G003: ["#9A6B4A", "#C48A6B"],
-  G004: ["#C4552A", "#D47A2A"],
-  G005: ["#8A3A2A", "#C45A3A"],
-  G006: ["#C43A3A", "#E85A5A"],
-  G007: ["#4A8A5A", "#6AAA7A"],
-  G008: ["#6B7A52", "#8FA367"],
-  G009: ["#4A5A8A", "#6A7AAA"],
-  G010: ["#8A4A6B", "#AA6A8B"],
-  G013: ["#8A6B3A", "#AA8B5A"],
-  G014: ["#C4552A", "#E87A4A"],
-  G016: ["#6B3A2A", "#8B5A4A"],
-  G017: ["#2A6B8A", "#4A8BAA"],
-  G018: ["#4A3A8A", "#6A5AAA"],
-  G019: ["#6B2A2A", "#8B4A4A"],
+const GENRE_COLORS: Record<string, string> = {
+  G001: "#CC7755",
+  G002: "#6B6896",
+  G003: "#8B6A4A",
+  G004: "#CC7755",
+  G005: "#8B1A1A",
+  G006: "#A03030",
+  G007: "#4A8A5A",
+  G008: "#6B6896",
+  G009: "#2D2B55",
+  G010: "#8A6B3A",
+  G013: "#8A6B3A",
+  G014: "#CC7755",
+  G016: "#6B3A2A",
+  G017: "#2D6B8A",
+  G018: "#2D2B55",
+  G019: "#8B1A1A",
 };
 
 function StarRating({ rating }: { rating: number }) {
@@ -57,7 +57,7 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
-  const [g1, g2] = GENRE_GRADIENTS[restaurant.genreId] ?? ["#9A8B78", "#B8A898"];
+  const genreColor = GENRE_COLORS[restaurant.genreId] ?? "var(--text-secondary)";
 
   return (
     <div
@@ -65,75 +65,31 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
       style={{ overflow: "hidden", cursor: "pointer" }}
       onClick={() => onClick(restaurant)}
     >
-      {/* Photo area */}
+      {/* Compact genre bar instead of large gradient hero */}
       <div
         style={{
-          height: 140,
-          background: `linear-gradient(135deg, ${g1}, ${g2})`,
-          position: "relative",
-          display: "flex",
-          alignItems: "flex-end",
-          padding: "12px 14px",
+          height: 6,
+          backgroundColor: genreColor,
+          borderRadius: "20px 20px 0 0",
         }}
-      >
-        {/* Genre label */}
-        <div
-          style={{
-            backgroundColor: "rgba(0,0,0,0.35)",
-            color: "white",
-            fontSize: 13,
-            fontWeight: 600,
-            borderRadius: 8,
-            padding: "3px 10px",
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          {restaurant.genre}
-        </div>
-
-        {/* Badges top-right */}
-        <div
-          style={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            alignItems: "flex-end",
-          }}
-        >
-          <ScoreBadge score={restaurant.matchScore} />
-          {restaurant.hasPrivateRoom && (
-            <div
-              style={{
-                backgroundColor: "rgba(0,0,0,0.4)",
-                color: "white",
-                fontSize: 11,
-                fontWeight: 600,
-                padding: "3px 8px",
-                borderRadius: 20,
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              個室あり
-            </div>
-          )}
-        </div>
-      </div>
+      />
 
       {/* Content */}
       <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-        {/* Name */}
-        <div
-          style={{
-            fontSize: 17,
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            lineHeight: 1.3,
-          }}
-        >
-          {restaurant.name}
+        {/* Header: Name + Score badge */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+          <div
+            style={{
+              fontSize: 17,
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              lineHeight: 1.3,
+              flex: 1,
+            }}
+          >
+            {restaurant.name}
+          </div>
+          <ScoreBadge score={restaurant.matchScore} />
         </div>
 
         {/* Genre & Budget chips */}
@@ -162,6 +118,20 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
           >
             {restaurant.budget}
           </span>
+          {restaurant.hasPrivateRoom && (
+            <span
+              style={{
+                fontSize: 12,
+                backgroundColor: "rgba(45,43,85,0.08)",
+                color: "var(--secondary)",
+                borderRadius: 8,
+                padding: "3px 10px",
+                fontWeight: 500,
+              }}
+            >
+              個室あり
+            </span>
+          )}
         </div>
 
         {/* Match score bar */}

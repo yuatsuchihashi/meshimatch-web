@@ -119,8 +119,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
           }}
         >
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 40 }}>🍽️</div>
-            <div style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, fontWeight: 600, marginTop: 4 }}>
+            <div style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, fontWeight: 600 }}>
               {restaurant.genre}
             </div>
           </div>
@@ -175,17 +174,17 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
           >
             {[
               {
-                icon: "⭐",
+                icon: "★",
                 label: "評価",
                 value: `${restaurant.rating.toFixed(1)} / 5.0`,
               },
               {
-                icon: "🚶",
+                icon: "→",
                 label: "アクセス",
                 value: restaurant.access,
               },
               restaurant.address && {
-                icon: "📍",
+                icon: "○",
                 label: "住所",
                 value: restaurant.address,
                 action: (
@@ -199,7 +198,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
                       cursor: "pointer",
                       padding: "2px 8px",
                       borderRadius: 8,
-                      backgroundColor: "rgba(196,85,42,0.08)",
+                      backgroundColor: "rgba(204,119,85,0.08)",
                       fontWeight: 600,
                       flexShrink: 0,
                     }}
@@ -209,22 +208,22 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
                 ),
               },
               restaurant.phoneNumber && {
-                icon: "📞",
+                icon: "☎",
                 label: "電話",
                 value: restaurant.phoneNumber,
               },
               restaurant.openHours && {
-                icon: "🕐",
+                icon: "◷",
                 label: "営業時間",
                 value: restaurant.openHours,
               },
               {
-                icon: "🚪",
+                icon: "□",
                 label: "個室",
                 value: restaurant.hasPrivateRoom ? "あり" : "なし",
               },
               restaurant.partyCapacity && {
-                icon: "👥",
+                icon: "⊕",
                 label: "収容人数",
                 value: `最大${restaurant.partyCapacity}名`,
               },
@@ -277,10 +276,10 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
             {onDecide && (
               <button
                 className="btn-primary"
-                style={{ backgroundColor: "var(--secondary, #6B7A52)", gap: 8, fontSize: 16, fontWeight: 800 }}
+                style={{ backgroundColor: "var(--success)", gap: 8, fontSize: 16, fontWeight: 800 }}
                 onClick={() => { onDecide(restaurant); handleClose(); }}
               >
-                🎉 このレストランに決定する
+                このレストランに決定する
               </button>
             )}
             <a
@@ -292,7 +291,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
               style={{ textDecoration: "none" }}
             >
               <button className="btn-primary" style={{ gap: 8 }}>
-                🗺️ Mapで開く
+                Mapで開く
               </button>
             </a>
             <button className="btn-secondary" onClick={handleClose}>

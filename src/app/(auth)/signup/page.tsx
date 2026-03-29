@@ -35,7 +35,6 @@ export default function SignupPage() {
         label="表示名"
         placeholder="あなたの名前"
         required
-        className="text-white placeholder:text-white/30"
       />
       <GlassInput
         id="email"
@@ -44,7 +43,6 @@ export default function SignupPage() {
         label="メールアドレス"
         placeholder="you@example.com"
         required
-        className="text-white placeholder:text-white/30"
       />
       <GlassInput
         id="password"
@@ -54,7 +52,6 @@ export default function SignupPage() {
         placeholder="8文字以上"
         minLength={8}
         required
-        className="text-white placeholder:text-white/30"
       />
 
       <GlassButton type="submit" variant="accent" size="lg" disabled={pending}>
@@ -63,7 +60,7 @@ export default function SignupPage() {
 
       <p className="text-white/60 text-sm text-center">
         アカウントをお持ちの方は{" "}
-        <Link href="/login" className="text-accent-light underline">
+        <Link href="/login" className="text-white underline font-medium">
           ログイン
         </Link>
       </p>

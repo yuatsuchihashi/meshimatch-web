@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -7,20 +8,14 @@ const tabs = [
   {
     href: "/home",
     label: "ホーム",
-    icon: (active: boolean) => (
-      <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H15v-6h-6v6H3.75A.75.75 0 013 21V9.75z" />
-      </svg>
-    ),
+    iconLine: "/icons/house_line.svg",
+    iconFill: "/icons/house_fill.svg",
   },
   {
     href: "/profile",
     label: "プロフィール",
-    icon: (active: boolean) => (
-      <svg width="24" height="24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? 0 : 2} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-      </svg>
-    ),
+    iconLine: "/icons/me_line.svg",
+    iconFill: "/icons/me_fill.svg",
   },
 ];
 
@@ -35,7 +30,7 @@ export function BottomNav() {
         left: 0,
         right: 0,
         backgroundColor: "var(--surface)",
-        borderTop: "1px solid var(--border)",
+        borderTop: "1px solid var(--border-light)",
         display: "flex",
         paddingBottom: "env(safe-area-inset-bottom)",
         zIndex: 50,
@@ -63,7 +58,17 @@ export function BottomNav() {
               transition: "color 0.2s ease",
             }}
           >
-            {tab.icon(active)}
+            <Image
+              src={active ? tab.iconFill : tab.iconLine}
+              alt={tab.label}
+              width={24}
+              height={24}
+              style={{
+                filter: active
+                  ? "brightness(0) saturate(100%) invert(54%) sepia(30%) saturate(700%) hue-rotate(340deg) brightness(90%)"
+                  : "brightness(0) saturate(100%) invert(67%) sepia(10%) saturate(600%) hue-rotate(210deg) brightness(95%)",
+              }}
+            />
             {tab.label}
           </Link>
         );

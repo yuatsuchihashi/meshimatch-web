@@ -14,15 +14,18 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { GENRES, ALLERGIES, DIETARY_RESTRICTIONS } from "@/lib/mockData";
+import { GENRES } from "@/lib/mockData";
+import { useUser } from "@/lib/hooks/useUser";
+import { createClient } from "@/lib/supabase/client";
+import { nanoid } from "@/lib/utils/nanoid";
 import type { TierData, TierKey } from "@/lib/types";
 
 type Step = "name" | "members" | "survey" | "complete";
 
 const TIER_CONFIG = {
-  S: { label: "Tier S", emoji: "🔥", subtitle: "めっちゃ食べたい", color: "var(--primary)" },
-  A: { label: "Tier A", emoji: "👍", subtitle: "食べたい", color: "var(--warning)" },
-  B: { label: "Tier B", emoji: "😐", subtitle: "まぁいいよ", color: "var(--text-tertiary)" },
+  S: { label: "Tier S", emoji: "", subtitle: "めっちゃ食べたい", color: "var(--primary)" },
+  A: { label: "Tier A", emoji: "", subtitle: "食べたい", color: "var(--warning)" },
+  B: { label: "Tier B", emoji: "", subtitle: "まぁいいよ", color: "var(--text-tertiary)" },
 };
 
 const AREAS = ["渋谷", "新宿", "池袋", "銀座", "六本木", "恵比寿", "表参道", "下北沢", "吉祥寺", "上野"];
@@ -197,6 +200,7 @@ function TierDropZone({
 
 export default function CreateGroupPage() {
   const router = useRouter();
+  const { user, userId } = useUser();
   const [step, setStep] = useState<Step>("name");
   const [groupName, setGroupName] = useState("");
   const [memberInput, setMemberInput] = useState("");
@@ -206,6 +210,8 @@ export default function CreateGroupPage() {
   const [tiers, setTiers] = useState<TierData>({ S: [], A: [], B: [] });
   const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [createdGroupId, setCreatedGroupId] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState<string>("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -262,11 +268,69 @@ export default function CreateGroupPage() {
     }
   }
 
-  function handleSubmitSurvey() {
+  async function handleSubmitSurvey() {
+    if (!userId) return;
     setStep("complete");
-    setTimeout(() => {
-      router.push("/groups/mock-new/waiting");
-    }, 2000);
+
+    try {
+      const supabase = createClient();
+      const code = nanoid(8);
+
+      // 1. グループ作成
+      const { data: group, error: groupError } = await supabase
+        .from("groups")
+        .insert({
+          name: groupName,
+          invite_code: code,
+          created_by: userId,
+        })
+        .select()
+        .single();
+
+      if (groupError || !group) {
+        console.error("Group creation failed:", groupError);
+        return;
+      }
+
+      setCreatedGroupId(group.id);
+      setInviteCode(code);
+
+      // 2. 自分をownerとして追加
+      const { data: member } = await supabase
+        .from("group_members")
+        .insert({
+          group_id: group.id,
+          profile_id: userId,
+          display_name: user?.displayName ?? "ホスト",
+          role: "owner",
+        })
+        .select()
+        .single();
+
+      // 3. サーベイ回答を送信
+      if (member) {
+        await supabase.from("survey_responses").insert({
+          group_id: group.id,
+          member_id: member.id,
+          tier_s: tiers.S,
+          tier_a: tiers.A,
+          tier_b: tiers.B,
+          disliked: [],
+          preferred_areas: anywhereOk ? [] : preferredAreas,
+        });
+
+        await supabase
+          .from("group_members")
+          .update({ has_survey: true })
+          .eq("id", member.id);
+      }
+
+      setTimeout(() => {
+        router.push(`/groups/${group.id}/waiting`);
+      }, 2000);
+    } catch (err) {
+      console.error("Error creating group:", err);
+    }
   }
 
   // ─── EXIT CONFIRM SHEET ───
@@ -310,7 +374,7 @@ export default function CreateGroupPage() {
         <BackButton onClick={() => router.push("/home")} />
         <div style={{ padding: "16px 20px 40px" }}>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
-            グループを作ろう 🎉
+            グループを作ろう
           </div>
           <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 32 }}>
             メンバーの好みを合わせて、みんながハッピーなお店を見つけましょう
@@ -359,7 +423,7 @@ export default function CreateGroupPage() {
         <BackButton onClick={() => setStep("name")} />
         <div style={{ padding: "16px 20px 40px" }}>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
-            メンバーを追加 👥
+            メンバーを追加
           </div>
           <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 24 }}>
             一緒に行くメンバーを追加してください
@@ -374,7 +438,7 @@ export default function CreateGroupPage() {
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    backgroundColor: "rgba(196,85,42,0.1)",
+                    backgroundColor: "rgba(204,119,85,0.1)",
                     border: "1px solid var(--primary)",
                     borderRadius: 20,
                     padding: "6px 12px",
@@ -452,7 +516,7 @@ export default function CreateGroupPage() {
             }}
           >
             <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
-              🔗 招待リンクを共有
+              招待リンクを共有
             </div>
             <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
               リンクを共有してメンバーを招待できます
@@ -460,7 +524,11 @@ export default function CreateGroupPage() {
             <button
               className="btn-secondary"
               style={{ height: 42, fontSize: 14 }}
-              onClick={() => alert("リンクをコピーしました！（デモ）")}
+              onClick={() => {
+                const url = `${window.location.origin}/invite/${inviteCode || "preview"}`;
+                navigator.clipboard.writeText(url);
+                alert("招待リンクをコピーしました！");
+              }}
             >
               リンクをコピー
             </button>
@@ -486,7 +554,7 @@ export default function CreateGroupPage() {
         <BackButton onClick={() => setStep("members")} />
         <div style={{ padding: "16px 20px 40px" }}>
           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
-            今日の気分は？ 🍽️
+            今日の気分は？
           </div>
           <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 24 }}>
             場所とジャンルを教えてください
@@ -503,7 +571,7 @@ export default function CreateGroupPage() {
             }}
           >
             <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
-              📍 場所
+              場所
             </div>
             <label
               style={{
@@ -554,7 +622,7 @@ export default function CreateGroupPage() {
                           padding: "7px 12px",
                           borderRadius: 20,
                           border: `1.5px solid ${selected ? "var(--primary)" : "var(--border)"}`,
-                          backgroundColor: selected ? "rgba(196,85,42,0.1)" : "var(--bg)",
+                          backgroundColor: selected ? "rgba(204,119,85,0.1)" : "var(--bg)",
                           color: selected ? "var(--primary)" : "var(--text-primary)",
                           fontSize: 13,
                           fontWeight: selected ? 600 : 400,
@@ -576,7 +644,7 @@ export default function CreateGroupPage() {
           {/* Genre DnD section */}
           <div style={{ marginBottom: 8 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
-              🍽️ ジャンルのランク付け
+              ジャンルのランク付け
             </div>
             <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 16 }}>
               ジャンルをドラッグ＆ドロップしてティアに分けてください
@@ -591,7 +659,7 @@ export default function CreateGroupPage() {
                 marginBottom: 16,
               }}
             >
-              💡 すべてのジャンルをランク付けする必要はありません
+              すべてのジャンルをランク付けする必要はありません
             </div>
           </div>
 
@@ -710,16 +778,17 @@ export default function CreateGroupPage() {
             width: 80,
             height: 80,
             borderRadius: "50%",
-            backgroundColor: "rgba(107,122,82,0.15)",
+            backgroundColor: "rgba(74,138,90,0.12)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 36,
             marginBottom: 20,
           }}
           className="animate-bounce-in"
         >
-          ✅
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
         </div>
         <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
           回答完了！
@@ -738,7 +807,16 @@ export default function CreateGroupPage() {
             fontSize: 14,
           }}
         >
-          <div className="animate-spin-slow" style={{ fontSize: 16 }}>⏳</div>
+          <div
+            style={{
+              width: 16,
+              height: 16,
+              border: "2px solid var(--border)",
+              borderTopColor: "var(--text-tertiary)",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+            }}
+          />
           待機室に移動中...
         </div>
       </div>

@@ -1,17 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MOCK_GROUPS, MOCK_CURRENT_USER, MOCK_INVITATIONS, MOCK_GROUP_4 } from "@/lib/mockData";
-
-const JOINED_KEY = "meshimatch-joined-groups";
-const DISMISSED_INVITES_KEY = "meshimatch-dismissed-invites";
+import { useUser } from "@/lib/hooks/useUser";
+import { useGroups } from "@/lib/hooks/useGroups";
+import { createClient } from "@/lib/supabase/client";
 import { GroupCard } from "@/components/groups/GroupCard";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
 import type { Invitation, MeshiGroup } from "@/lib/types";
-
-const DECIDED_KEY = "meshimatch-decided";
 
 function timeAgo(date: Date): string {
   const diff = Date.now() - date.getTime();
@@ -24,44 +22,53 @@ function timeAgo(date: Date): string {
 
 export default function HomePage() {
   const router = useRouter();
+  const { user, userId, loading: userLoading } = useUser();
+  const { groups, loading: groupsLoading, refresh: refreshGroups } = useGroups(userId);
   const [showArchived, setShowArchived] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
   const [hiddenGroupIds, setHiddenGroupIds] = useState<Set<string>>(new Set());
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
-  const [invitations, setInvitations] = useState<Invitation[]>(MOCK_INVITATIONS);
-  const [decidedOverrides, setDecidedOverrides] = useState<Record<string, string>>({});
-  const [joinedGroupIds, setJoinedGroupIds] = useState<string[]>([]);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
 
+  // 招待通知を取得
   useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(DECIDED_KEY) ?? "{}");
-      setDecidedOverrides(saved);
-    } catch { /* ignore */ }
-    try {
-      const joined: string[] = JSON.parse(localStorage.getItem(JOINED_KEY) ?? "[]");
-      setJoinedGroupIds(joined);
-    } catch { /* ignore */ }
-    try {
-      const dismissed: string[] = JSON.parse(localStorage.getItem(DISMISSED_INVITES_KEY) ?? "[]");
-      if (dismissed.length > 0) {
-        setInvitations(MOCK_INVITATIONS.filter((inv) => !dismissed.includes(inv.id)));
+    if (!userId) return;
+    async function fetchInvitations() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("invitations")
+        .select(`
+          *,
+          groups!inner (name),
+          inviter:profiles!invitations_inviter_id_fkey (display_name)
+        `)
+        .eq("invitee_id", userId)
+        .eq("status", "pending");
+
+      if (data) {
+        setInvitations(
+          data.map((inv) => ({
+            id: inv.id,
+            groupId: inv.group_id,
+            groupName: inv.groups?.name ?? "不明",
+            inviterName: inv.inviter?.display_name ?? "不明",
+            areaNames: [],
+            memberCount: 0,
+            createdAt: new Date(inv.created_at),
+          }))
+        );
       }
-    } catch { /* ignore */ }
-  }, []);
+    }
+    fetchInvitations();
+  }, [userId]);
 
-  function mergeDecided(groups: MeshiGroup[]): MeshiGroup[] {
-    return groups.map((g) =>
-      decidedOverrides[g.id] ? { ...g, decidedRestaurant: decidedOverrides[g.id] } : g
-    );
-  }
+  const loading = userLoading || groupsLoading;
 
-  const user = MOCK_CURRENT_USER;
-  const joinedExtra = joinedGroupIds.includes("group-4") ? [MOCK_GROUP_4] : [];
-  const allActiveGroups = mergeDecided([...MOCK_GROUPS.filter((g) => g.status === "active"), ...joinedExtra]);
+  const allActiveGroups = groups.filter((g) => g.status === "active");
   const visibleActiveGroups = allActiveGroups.filter((g) => !hiddenGroupIds.has(g.id));
   const hiddenActiveGroups = allActiveGroups.filter((g) => hiddenGroupIds.has(g.id));
-  const archivedGroups = mergeDecided(MOCK_GROUPS.filter((g) => g.status === "archived"));
+  const archivedGroups = groups.filter((g) => g.status === "archived");
 
   function toggleHide(groupId: string) {
     setHiddenGroupIds((prev) => {
@@ -82,16 +89,37 @@ export default function HomePage() {
     setTimeout(() => setShowNotifications(false), 250);
   }
 
-  function handleAcceptInvitation(inv: Invitation) {
-    try {
-      const dismissed: string[] = JSON.parse(localStorage.getItem(DISMISSED_INVITES_KEY) ?? "[]");
-      if (!dismissed.includes(inv.id)) {
-        localStorage.setItem(DISMISSED_INVITES_KEY, JSON.stringify([...dismissed, inv.id]));
-      }
-    } catch { /* ignore */ }
+  async function handleAcceptInvitation(inv: Invitation) {
+    if (!userId) return;
+    const supabase = createClient();
+
+    await supabase
+      .from("invitations")
+      .update({ status: "accepted" })
+      .eq("id", inv.id);
+
+    await supabase.from("group_members").insert({
+      group_id: inv.groupId,
+      profile_id: userId,
+      display_name: user?.displayName ?? "ゲスト",
+      role: "member",
+    });
+
     setInvitations((prev) => prev.filter((i) => i.id !== inv.id));
     closeNotifications();
+    refreshGroups();
     router.push(`/groups/${inv.groupId}/survey`);
+  }
+
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
+          <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", margin: "0 auto 12px" }} />
+          <div style={{ fontSize: 14 }}>読み込み中...</div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -110,7 +138,7 @@ export default function HomePage() {
             こんにちは、
           </div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)" }}>
-            {user.displayName}さん 👋
+            {user?.displayName ?? "ユーザー"}さん
           </div>
         </div>
 
@@ -131,9 +159,15 @@ export default function HomePage() {
               justifyContent: "center",
             }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
+            <Image
+              src="/icons/notification_line.svg"
+              alt="通知"
+              width={22}
+              height={22}
+              style={{
+                filter: "brightness(0) saturate(100%) invert(45%) sepia(10%) saturate(500%) hue-rotate(210deg) brightness(95%)",
+              }}
+            />
           </div>
           {invitations.length > 0 && (
             <div
@@ -165,13 +199,13 @@ export default function HomePage() {
         <Link href="/groups/create" style={{ textDecoration: "none" }}>
           <div
             style={{
-              background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
+              background: "linear-gradient(135deg, var(--secondary), #3D3B6E)",
               borderRadius: 20,
               padding: 20,
               display: "flex",
               alignItems: "center",
               gap: 16,
-              boxShadow: "0 4px 16px rgba(196,85,42,0.3)",
+              boxShadow: "0 4px 16px rgba(45,43,85,0.25)",
             }}
           >
             <div
@@ -179,28 +213,37 @@ export default function HomePage() {
                 width: 52,
                 height: 52,
                 borderRadius: 16,
-                backgroundColor: "rgba(255,255,255,0.2)",
+                backgroundColor: "rgba(255,255,255,0.12)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                fontSize: 26,
               }}
             >
-              🎉
+              <Image
+                src="/icons/add_line.svg"
+                alt="作成"
+                width={28}
+                height={28}
+                style={{ filter: "brightness(0) invert(1)" }}
+              />
             </div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 700, color: "white", marginBottom: 4 }}>
                 グループを作ろう
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)" }}>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
                 みんなで行くお店をAIが提案
               </div>
             </div>
-            <div style={{ marginLeft: "auto", color: "rgba(255,255,255,0.7)" }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+            <div style={{ marginLeft: "auto", color: "rgba(255,255,255,0.5)" }}>
+              <Image
+                src="/icons/arrow_right_line.svg"
+                alt=""
+                width={20}
+                height={20}
+                style={{ filter: "brightness(0) invert(1) opacity(0.5)" }}
+              />
             </div>
           </div>
         </Link>
@@ -329,7 +372,6 @@ export default function HomePage() {
             justifyContent: "flex-end",
           }}
         >
-          {/* Backdrop */}
           <div
             style={{
               position: "absolute",
@@ -340,8 +382,6 @@ export default function HomePage() {
             }}
             onClick={closeNotifications}
           />
-
-          {/* Sheet */}
           <div
             style={{
               position: "relative",
@@ -353,12 +393,9 @@ export default function HomePage() {
               transition: "transform 0.25s cubic-bezier(0.34,1.1,0.64,1)",
             }}
           >
-            {/* ドラッグハンドル */}
             <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 0" }}>
               <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
             </div>
-
-            {/* ヘッダー */}
             <div
               style={{
                 padding: "16px 20px 12px",
@@ -383,8 +420,6 @@ export default function HomePage() {
                 ✕
               </button>
             </div>
-
-            {/* コンテンツ */}
             <div style={{ padding: "0 20px 40px" }}>
               {invitations.length === 0 ? (
                 <div
@@ -397,7 +432,13 @@ export default function HomePage() {
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 40 }}>🔔</div>
+                  <Image
+                    src="/icons/notification_line.svg"
+                    alt=""
+                    width={40}
+                    height={40}
+                    style={{ filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)", opacity: 0.5 }}
+                  />
                   <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-secondary)" }}>
                     通知はありません
                   </div>
@@ -420,52 +461,20 @@ export default function HomePage() {
                           </div>
                         </div>
                       </div>
-
                       <div
                         style={{
-                          backgroundColor: "var(--bg-secondary, var(--surface))",
+                          backgroundColor: "var(--bg-secondary)",
                           borderRadius: 12,
                           padding: 14,
                           marginBottom: 14,
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                          <span style={{ fontSize: 16 }}>🍽️</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>
                             {inv.groupName}
                           </span>
                         </div>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          {inv.areaNames.map((area) => (
-                            <span
-                              key={area}
-                              style={{
-                                fontSize: 12,
-                                backgroundColor: "var(--surface)",
-                                color: "var(--text-secondary)",
-                                borderRadius: 8,
-                                padding: "3px 10px",
-                                fontWeight: 500,
-                              }}
-                            >
-                              📍 {area}
-                            </span>
-                          ))}
-                          <span
-                            style={{
-                              fontSize: 12,
-                              backgroundColor: "var(--surface)",
-                              color: "var(--text-secondary)",
-                              borderRadius: 8,
-                              padding: "3px 10px",
-                              fontWeight: 500,
-                            }}
-                          >
-                            👥 {inv.memberCount}名
-                          </span>
-                        </div>
                       </div>
-
                       <button
                         className="btn-primary"
                         style={{ height: 46, fontSize: 15 }}
@@ -497,7 +506,13 @@ function EmptyState() {
         gap: 12,
       }}
     >
-      <div style={{ fontSize: 48 }}>🍽️</div>
+      <Image
+        src="/icons/search_line.svg"
+        alt=""
+        width={48}
+        height={48}
+        style={{ filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)", opacity: 0.4 }}
+      />
       <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-secondary)" }}>
         グループがありません
       </div>

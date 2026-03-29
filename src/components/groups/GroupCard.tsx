@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MeshiGroup } from "@/lib/types";
 import { MemberAvatarStack, MemberAvatar } from "./MemberAvatar";
@@ -15,15 +14,15 @@ interface GroupCardProps {
 
 function getStatusBadge(group: MeshiGroup) {
   if (group.decidedRestaurant) {
-    return { label: "レストラン決定済み", color: "var(--secondary)", bg: "rgba(107,122,82,0.12)" };
+    return { label: "レストラン決定済み", color: "var(--success)", bg: "rgba(74,138,90,0.1)" };
   }
   const totalCount = group.members.length;
   const respondedCount = group.surveyResponses.length;
   if (respondedCount === totalCount) {
-    return { label: "全員回答済み", color: "var(--secondary)", bg: "rgba(107,122,82,0.12)" };
+    return { label: "全員回答済み", color: "var(--success)", bg: "rgba(74,138,90,0.1)" };
   }
   if (respondedCount > 0) {
-    return { label: "回答待ち", color: "var(--warning, #d97706)", bg: "rgba(217,119,6,0.1)" };
+    return { label: "回答待ち", color: "var(--primary)", bg: "rgba(204,119,85,0.1)" };
   }
   return { label: "未回答", color: "var(--text-tertiary)", bg: "var(--bg-secondary)" };
 }
@@ -40,16 +39,18 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
     <>
       <div
         className="card"
+        onClick={() => router.push(`/groups/${group.id}/results`)}
         style={{
           padding: 16,
           display: "flex",
           flexDirection: "column",
           gap: 12,
+          cursor: "pointer",
         }}
       >
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <Link href={`/groups/${group.id}/results`} style={{ textDecoration: "none", flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
                 fontSize: 17,
@@ -62,28 +63,22 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
             </div>
             {group.decidedRestaurant && (
               <div
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  router.push(`/groups/${group.id}/results?decided=${encodeURIComponent(group.decidedRestaurant!)}`);
-                }}
                 style={{
-                  backgroundColor: "rgba(107,122,82,0.1)",
-                  border: "1px solid rgba(107,122,82,0.3)",
+                  backgroundColor: "rgba(74,138,90,0.08)",
+                  border: "1px solid rgba(74,138,90,0.2)",
                   borderRadius: 12,
                   padding: "8px 12px",
-                  cursor: "pointer",
                 }}
               >
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--secondary)", marginBottom: 2 }}>
-                  🎉 ここに決まりました！
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--success)", marginBottom: 2 }}>
+                  ここに決まりました！
                 </div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
                   {group.decidedRestaurant}
                 </div>
               </div>
             )}
-          </Link>
+          </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginLeft: 8 }}>
             {/* Response count badge */}
@@ -92,12 +87,12 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
                 display: "flex",
                 alignItems: "center",
                 gap: 4,
-                backgroundColor: respondedCount === totalCount ? "rgba(107,122,82,0.12)" : "var(--bg-secondary)",
+                backgroundColor: respondedCount === totalCount ? "rgba(74,138,90,0.1)" : "var(--bg-secondary)",
                 borderRadius: 20,
                 padding: "4px 10px",
                 fontSize: 13,
                 fontWeight: 600,
-                color: respondedCount === totalCount ? "var(--secondary)" : "var(--text-secondary)",
+                color: respondedCount === totalCount ? "var(--success)" : "var(--text-secondary)",
               }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -109,7 +104,7 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
             {/* Hide button (active section only) */}
             {onToggleHide && (
               <button
-                onClick={onToggleHide}
+                onClick={(e) => { e.stopPropagation(); onToggleHide(); }}
                 title="非表示にする"
                 style={{
                   background: "none",
@@ -130,7 +125,7 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
             {/* Restore button (hidden section only) */}
             {onRestore && (
               <button
-                onClick={onRestore}
+                onClick={(e) => { e.stopPropagation(); onRestore(); }}
                 style={{
                   background: "none",
                   border: "1px solid var(--primary)",
@@ -169,7 +164,7 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           {/* Clickable avatar stack → member modal */}
           <button
-            onClick={() => setShowMembersModal(true)}
+            onClick={(e) => { e.stopPropagation(); setShowMembersModal(true); }}
             style={{
               background: "none",
               border: "none",
@@ -271,8 +266,8 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
                         fontWeight: 600,
                         padding: "3px 10px",
                         borderRadius: 20,
-                        backgroundColor: hasResponded ? "rgba(107,122,82,0.12)" : "var(--bg-secondary)",
-                        color: hasResponded ? "var(--secondary)" : "var(--text-tertiary)",
+                        backgroundColor: hasResponded ? "rgba(74,138,90,0.1)" : "var(--bg-secondary)",
+                        color: hasResponded ? "var(--success)" : "var(--text-tertiary)",
                       }}
                     >
                       {hasResponded ? "回答済み" : "未回答"}

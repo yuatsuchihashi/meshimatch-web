@@ -1,16 +1,68 @@
 "use client";
 
-import { use } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MOCK_GROUPS } from "@/lib/mockData";
+import { createClient } from "@/lib/supabase/client";
 
 export default function InvitePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+  const { id: inviteCode } = use(params);
   const router = useRouter();
+  const [groupName, setGroupName] = useState("グループ");
+  const [memberCount, setMemberCount] = useState(0);
+  const [groupId, setGroupId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  const group = MOCK_GROUPS.find((g) => g.id === id);
-  const groupName = group?.name ?? "グループ";
-  const memberCount = group?.members.length ?? 0;
+  useEffect(() => {
+    async function fetchGroup() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("groups")
+        .select(`
+          id, name,
+          group_members (id)
+        `)
+        .eq("invite_code", inviteCode)
+        .single();
+
+      if (data) {
+        setGroupId(data.id);
+        setGroupName(data.name);
+        setMemberCount(data.group_members?.length ?? 0);
+      } else {
+        setNotFound(true);
+      }
+      setLoading(false);
+    }
+    fetchGroup();
+  }, [inviteCode]);
+
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%" }} />
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, textAlign: "center" }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-tertiary)", marginBottom: 12 }}>!</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
+          グループが見つかりません
+        </div>
+        <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          招待リンクが無効です
+        </div>
+      </div>
+    );
+  }
+
+  function handleGoToSurvey() {
+    // ログイン済みならグループのサーベイへ、未ログインならログインを促す
+    router.push(`/groups/${groupId}/survey`);
+  }
 
   return (
     <div
@@ -24,15 +76,12 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
         padding: "40px 24px",
       }}
     >
-      {/* Logo */}
       <div style={{ marginBottom: 40, textAlign: "center" }}>
-        <div style={{ fontSize: 48, marginBottom: 8 }}>🍽️</div>
         <div style={{ fontSize: 22, fontWeight: 900, color: "var(--primary)", letterSpacing: "-0.5px" }}>
           MeshiMatch
         </div>
       </div>
 
-      {/* Card */}
       <div
         style={{
           backgroundColor: "var(--surface)",
@@ -45,33 +94,19 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
           boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
         }}
       >
-        <div style={{ fontSize: 32, marginBottom: 12 }}>🎉</div>
         <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 4 }}>
           グループに招待されました
         </div>
-        <div
-          style={{
-            fontSize: 22,
-            fontWeight: 800,
-            color: "var(--text-primary)",
-            marginBottom: 8,
-          }}
-        >
+        <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
           {groupName}
         </div>
-        <div
-          style={{
-            fontSize: 14,
-            color: "var(--text-secondary)",
-            marginBottom: 28,
-          }}
-        >
+        <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 28 }}>
           {memberCount}人が参加中
         </div>
 
         <div
           style={{
-            backgroundColor: "rgba(196,85,42,0.06)",
+            backgroundColor: "rgba(204,119,85,0.06)",
             borderRadius: 14,
             padding: "14px 16px",
             marginBottom: 28,
@@ -79,7 +114,7 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
           }}
         >
           <div style={{ fontSize: 13, fontWeight: 600, color: "var(--primary)", marginBottom: 6 }}>
-            📋 アンケートに答えてね
+            アンケートに答えてね
           </div>
           <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
             好きな食べ物のジャンルをティア分けするだけ！
@@ -89,14 +124,14 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
 
         <button
           className="btn-primary"
-          onClick={() => router.push(`/invite/${id}/survey`)}
+          onClick={handleGoToSurvey}
           style={{ width: "100%", fontSize: 16 }}
         >
           アンケートに答える →
         </button>
 
         <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 16 }}>
-          ログイン不要・1分で完了
+          ログインが必要です
         </div>
       </div>
     </div>

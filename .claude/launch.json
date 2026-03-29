@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "meshimatch",
-      "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "cd /Users/yuatsuchihashi/meshimatch && npm run dev -- --port 3002"],
-      "port": 3002
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "3001"],
+      "port": 3001
     }
   ]
 }

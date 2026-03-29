@@ -1,56 +1,75 @@
 import type { Genre, Allergy, DietaryRestriction, MeshiGroup, Restaurant, Invitation, UserProfile } from "./types";
 
 export const GENRES: Genre[] = [
-  { id: "G001", name: "和食", emoji: "🍣" },
-  { id: "G002", name: "洋食", emoji: "🍽️" },
-  { id: "G003", name: "イタリアン・フレンチ", emoji: "🍝" },
-  { id: "G004", name: "中華", emoji: "🥟" },
-  { id: "G005", name: "焼肉・ホルモン", emoji: "🥩" },
-  { id: "G006", name: "韓国料理", emoji: "🌶️" },
-  { id: "G007", name: "アジア・エスニック", emoji: "🍜" },
-  { id: "G008", name: "居酒屋", emoji: "🍺" },
-  { id: "G009", name: "ダイニングバー・バル", emoji: "🍷" },
-  { id: "G010", name: "創作料理", emoji: "👨‍🍳" },
-  { id: "G011", name: "お好み焼き・もんじゃ", emoji: "🥞" },
-  { id: "G013", name: "カフェ・スイーツ", emoji: "☕" },
-  { id: "G014", name: "ラーメン", emoji: "🍜" },
-  { id: "G016", name: "焼き鳥・串焼き", emoji: "🍡" },
-  { id: "G017", name: "海鮮・魚料理", emoji: "🐟" },
-  { id: "G018", name: "鍋", emoji: "🫕" },
-  { id: "G019", name: "ステーキ・ハンバーグ", emoji: "🥩" },
+  { id: "G001", name: "和食", emoji: "" },
+  { id: "G002", name: "洋食", emoji: "" },
+  { id: "G003", name: "イタリアン・フレンチ", emoji: "" },
+  { id: "G004", name: "中華", emoji: "" },
+  { id: "G005", name: "焼肉・ホルモン", emoji: "" },
+  { id: "G006", name: "韓国料理", emoji: "" },
+  { id: "G007", name: "アジア・エスニック", emoji: "" },
+  { id: "G008", name: "居酒屋", emoji: "" },
+  { id: "G009", name: "ダイニングバー・バル", emoji: "" },
+  { id: "G010", name: "創作料理", emoji: "" },
+  { id: "G011", name: "お好み焼き・もんじゃ", emoji: "" },
+  { id: "G013", name: "カフェ・スイーツ", emoji: "" },
+  { id: "G014", name: "ラーメン", emoji: "" },
+  { id: "G016", name: "焼き鳥・串焼き", emoji: "" },
+  { id: "G017", name: "海鮮・魚料理", emoji: "" },
+  { id: "G018", name: "鍋", emoji: "" },
+  { id: "G019", name: "ステーキ・ハンバーグ", emoji: "" },
 ];
 
 export const ALLERGIES: Allergy[] = [
-  { id: "egg", name: "卵", emoji: "🥚" },
-  { id: "milk", name: "乳製品", emoji: "🥛" },
-  { id: "wheat", name: "小麦", emoji: "🌾" },
-  { id: "shrimp", name: "えび", emoji: "🦐" },
-  { id: "crab", name: "かに", emoji: "🦀" },
-  { id: "buckwheat", name: "そば", emoji: "🍜" },
-  { id: "peanut", name: "落花生", emoji: "🥜" },
-  { id: "walnut", name: "くるみ", emoji: "🌰" },
+  { id: "egg", name: "卵", emoji: "" },
+  { id: "milk", name: "乳製品", emoji: "" },
+  { id: "wheat", name: "小麦", emoji: "" },
+  { id: "shrimp", name: "えび", emoji: "" },
+  { id: "crab", name: "かに", emoji: "" },
+  { id: "buckwheat", name: "そば", emoji: "" },
+  { id: "peanut", name: "落花生", emoji: "" },
+  { id: "walnut", name: "くるみ", emoji: "" },
 ];
 
 export const DIETARY_RESTRICTIONS: DietaryRestriction[] = [
-  { id: "vegetarian", name: "ベジタリアン", emoji: "🥗" },
-  { id: "vegan", name: "ヴィーガン", emoji: "🌱" },
-  { id: "halal", name: "ハラール", emoji: "☪️" },
-  { id: "gluten_free", name: "グルテンフリー", emoji: "🚫" },
-  { id: "no_pork", name: "豚肉NG", emoji: "🐷" },
-  { id: "no_alcohol", name: "アルコールNG", emoji: "🚱" },
-  { id: "low_sodium", name: "減塩", emoji: "🧂" },
-  { id: "kosher", name: "コーシャ", emoji: "✡️" },
+  { id: "vegetarian", name: "ベジタリアン", emoji: "" },
+  { id: "vegan", name: "ヴィーガン", emoji: "" },
+  { id: "halal", name: "ハラール", emoji: "" },
+  { id: "gluten_free", name: "グルテンフリー", emoji: "" },
+  { id: "no_pork", name: "豚肉NG", emoji: "" },
+  { id: "no_alcohol", name: "アルコールNG", emoji: "" },
+  { id: "low_sodium", name: "減塩", emoji: "" },
+  { id: "kosher", name: "コーシャ", emoji: "" },
 ];
 
 export const MOCK_CURRENT_USER: UserProfile = {
   id: "user-1",
   displayName: "ゆあ",
-  dislikedGenres: ["G012"],
+  dislikedGenres: [],
   allergies: [],
-  dietaryRestrictions: [],
-  spiceTolerance: 3,
-  flavorIntensity: 3,
 };
+
+// テスト用: 苦手ジャンル・アレルギーのあるメンバーのプロフィール
+export const MOCK_MEMBER_PROFILES: UserProfile[] = [
+  {
+    id: "user-1",
+    displayName: "ゆあ",
+    dislikedGenres: [],
+    allergies: [],
+  },
+  {
+    id: "user-2",
+    displayName: "たろう",
+    dislikedGenres: ["G014"], // ラーメン苦手
+    allergies: ["shrimp"],    // えびアレルギー（注意喚起のみ）
+  },
+  {
+    id: "user-3",
+    displayName: "はな",
+    dislikedGenres: ["G005", "G019"], // 焼肉・ステーキ苦手
+    allergies: ["egg"],               // 卵アレルギー（注意喚起のみ）
+  },
+];
 
 export const MOCK_GROUPS: MeshiGroup[] = [
   {
