@@ -47,15 +47,27 @@ function buildGenrePreferences(buckets: GenrePreferenceBucketData) {
   return [
     ...buckets.prioritize.map((genreId) => ({
       genreId,
-      priority: "prefer" as const,
+      priority: "must" as const,
     })),
     ...buckets.nice_to_have.map((genreId) => ({
       genreId,
-      priority: "optional" as const,
+      priority: "prefer" as const,
     })),
     ...buckets.open_to_it.map((genreId) => ({
       genreId,
       priority: "optional" as const,
+    })),
+    ...buckets.rather_not.map((genreId) => ({
+      genreId,
+      priority: "rather_not" as const,
+    })),
+    ...buckets.prefer_avoid.map((genreId) => ({
+      genreId,
+      priority: "prefer_avoid" as const,
+    })),
+    ...buckets.definitely_avoid.map((genreId) => ({
+      genreId,
+      priority: "definitely_avoid" as const,
     })),
   ];
 }
@@ -389,6 +401,9 @@ export default function SurveyPage({
       prioritize: [],
       nice_to_have: [],
       open_to_it: [],
+      rather_not: [],
+      prefer_avoid: [],
+      definitely_avoid: [],
     });
   const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -436,7 +451,7 @@ export default function SurveyPage({
     })
   );
 
-  const bucketConfig = {
+  const bucketConfig: Record<GenrePreferenceBucketKey, { label: string; subtitle: string; color: string }> = {
     prioritize: {
       label: locale === "en" ? "Prioritize" : "優先したい",
       subtitle: locale === "en" ? "Show these first" : "まず候補に入れたい",
@@ -452,7 +467,22 @@ export default function SurveyPage({
       subtitle: locale === "en" ? "Fine as one of the options" : "選択肢に入っていて大丈夫",
       color: "var(--text-tertiary)",
     },
-  } as const;
+    rather_not: {
+      label: locale === "en" ? "Rather not" : "あまり気分じゃない",
+      subtitle: locale === "en" ? "Prefer to skip" : "できれば避けたい",
+      color: "#e8a030",
+    },
+    prefer_avoid: {
+      label: locale === "en" ? "Prefer to avoid" : "避けたい",
+      subtitle: locale === "en" ? "Would rather not" : "なるべく候補から外したい",
+      color: "#e07040",
+    },
+    definitely_avoid: {
+      label: locale === "en" ? "Definitely avoid" : "絶対イヤ",
+      subtitle: locale === "en" ? "Do not include" : "候補に入れないでほしい",
+      color: "#d04040",
+    },
+  };
 
   const submitMessages = [
     t("survey.submitting0"),
@@ -461,16 +491,13 @@ export default function SurveyPage({
     t("survey.submitting3"),
   ];
 
-  const unranked = GENRES.filter(
-    (genre) =>
-      !preferenceBuckets.prioritize.includes(genre.id) &&
-      !preferenceBuckets.nice_to_have.includes(genre.id) &&
-      !preferenceBuckets.open_to_it.includes(genre.id)
-  );
-  const rankedCount =
-    preferenceBuckets.prioritize.length +
-    preferenceBuckets.nice_to_have.length +
-    preferenceBuckets.open_to_it.length;
+  const allBucketKeys: GenrePreferenceBucketKey[] = [
+    "prioritize", "nice_to_have", "open_to_it",
+    "rather_not", "prefer_avoid", "definitely_avoid",
+  ];
+  const allPlacedIds = new Set(allBucketKeys.flatMap((k) => preferenceBuckets[k]));
+  const unranked = GENRES.filter((genre) => !allPlacedIds.has(genre.id));
+  const rankedCount = allPlacedIds.size;
   const activeGenre = activeGenreId
     ? GENRES.find((genre) => genre.id === activeGenreId)
     : null;
@@ -518,16 +545,22 @@ export default function SurveyPage({
         prioritize: previous.prioritize.filter((id) => id !== genreId),
         nice_to_have: previous.nice_to_have.filter((id) => id !== genreId),
         open_to_it: previous.open_to_it.filter((id) => id !== genreId),
+        rather_not: previous.rather_not.filter((id) => id !== genreId),
+        prefer_avoid: previous.prefer_avoid.filter((id) => id !== genreId),
+        definitely_avoid: previous.definitely_avoid.filter((id) => id !== genreId),
       }));
       return;
     }
 
-    if (["prioritize", "nice_to_have", "open_to_it"].includes(destination)) {
+    if (allBucketKeys.includes(destination as GenrePreferenceBucketKey)) {
       setPreferenceBuckets((previous) => {
         const next = {
           prioritize: previous.prioritize.filter((id) => id !== genreId),
           nice_to_have: previous.nice_to_have.filter((id) => id !== genreId),
           open_to_it: previous.open_to_it.filter((id) => id !== genreId),
+          rather_not: previous.rather_not.filter((id) => id !== genreId),
+          prefer_avoid: previous.prefer_avoid.filter((id) => id !== genreId),
+          definitely_avoid: previous.definitely_avoid.filter((id) => id !== genreId),
         };
         next[destination as GenrePreferenceBucketKey] = [
           ...next[destination as GenrePreferenceBucketKey],
@@ -835,9 +868,7 @@ export default function SurveyPage({
             <UnrankedPool unranked={unranked} allRankedText={t("survey.allRanked")} />
           </div>
 
-          {(
-            ["prioritize", "nice_to_have", "open_to_it"] as GenrePreferenceBucketKey[]
-          ).map((bucketKey) => (
+          {allBucketKeys.map((bucketKey) => (
             <PreferenceBucketZone
               key={bucketKey}
               bucketKey={bucketKey}

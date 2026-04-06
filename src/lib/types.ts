@@ -35,13 +35,17 @@ export interface DietaryRestriction {
 
 export type PriorityLevel = "must" | "prefer" | "optional";
 
+export type GenrePriorityLevel =
+  | "must" | "prefer" | "optional"
+  | "rather_not" | "prefer_avoid" | "definitely_avoid";
+
 export type SessionAtmosphere = "casual" | "polished" | "lively" | "calm";
 
 export type SessionFocus = "drink_centered" | "food_centered" | "balanced";
 
 export interface GenrePreferenceInput {
   genreId: string;
-  priority: PriorityLevel;
+  priority: GenrePriorityLevel;
 }
 
 export interface DietaryRestrictionInput {
@@ -150,12 +154,21 @@ export interface UserProfile {
 }
 
 // --- Survey / Genre Preference Buckets ---
-export type GenrePreferenceBucketKey = "prioritize" | "nice_to_have" | "open_to_it";
+export type GenrePreferenceBucketKey =
+  | "prioritize"
+  | "nice_to_have"
+  | "open_to_it"
+  | "rather_not"
+  | "prefer_avoid"
+  | "definitely_avoid";
 
 export interface GenrePreferenceBucketData {
   prioritize: string[];
   nice_to_have: string[];
   open_to_it: string[];
+  rather_not: string[];
+  prefer_avoid: string[];
+  definitely_avoid: string[];
 }
 
 // --- Matching Engine 出力 ---

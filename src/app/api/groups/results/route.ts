@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { searchRestaurants } from "@/lib/hotpepper/client";
 import { ALLERGIES, DIETARY_RESTRICTIONS } from "@/lib/mockData";
 import {
-  calculateGroupGenreScores,
+  calculateGroupGenreScoresWithKeywords,
   getGenreRanking,
   getSearchParams,
   resolveAreas,
@@ -69,7 +69,7 @@ async function fetchAreaRestaurants(params: {
   genreCodes: string[];
   keywords: string[];
   sortBy: SortMode;
-  groupGenreScores: ReturnType<typeof calculateGroupGenreScores>;
+  groupGenreScores: Record<string, import("@/lib/types").GenreScore>;
   budgetSignals: ReturnType<typeof aggregateBudgetSignals>;
   sessionAtmosphere: SessionAtmosphere | null;
   sessionFocus: SessionFocus | null;
@@ -224,12 +224,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const groupGenreScores = calculateGroupGenreScores(surveys, profiles);
+  const { scores: groupGenreScores, keywordVotes } = calculateGroupGenreScoresWithKeywords(surveys, profiles);
   const genreRanking = getGenreRanking(groupGenreScores);
   const { genreCodes, keywords } = getSearchParams(
     genreRanking,
     3,
-    (group.session_focus as SessionFocus | null) ?? null
+    (group.session_focus as SessionFocus | null) ?? null,
+    keywordVotes
   );
   const resolvedAreas = resolveAreas(surveys);
   const budgetSignals = aggregateBudgetSignals(

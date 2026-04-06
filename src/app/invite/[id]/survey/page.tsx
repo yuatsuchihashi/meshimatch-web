@@ -72,6 +72,18 @@ function buildGenrePreferences(buckets: GenrePreferenceBucketData) {
       genreId,
       priority: "optional" as const,
     })),
+    ...buckets.rather_not.map((genreId) => ({
+      genreId,
+      priority: "rather_not" as const,
+    })),
+    ...buckets.prefer_avoid.map((genreId) => ({
+      genreId,
+      priority: "prefer_avoid" as const,
+    })),
+    ...buckets.definitely_avoid.map((genreId) => ({
+      genreId,
+      priority: "definitely_avoid" as const,
+    })),
   ];
 }
 
@@ -267,6 +279,9 @@ export default function GuestSurveyPage({
       prioritize: [],
       nice_to_have: [],
       open_to_it: [],
+      rather_not: [],
+      prefer_avoid: [],
+      definitely_avoid: [],
     });
   const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
 
@@ -293,7 +308,22 @@ export default function GuestSurveyPage({
       subtitle: locale === "en" ? "Fine as one of the options" : "選択肢に入っていて大丈夫",
       color: "var(--text-tertiary)",
     },
-  } as const;
+    rather_not: {
+      label: "あまり気分じゃない",
+      subtitle: "できれば避けたい",
+      color: "#e8a030",
+    },
+    prefer_avoid: {
+      label: "避けたい",
+      subtitle: "なるべく候補から外したい",
+      color: "#e07040",
+    },
+    definitely_avoid: {
+      label: "絶対イヤ",
+      subtitle: "候補に入れないでほしい",
+      color: "#d04040",
+    },
+  } as Record<GenrePreferenceBucketKey, { label: string; subtitle: string; color: string }>;
 
   useEffect(() => {
     async function fetchGroup() {
@@ -375,16 +405,22 @@ export default function GuestSurveyPage({
         prioritize: previous.prioritize.filter((id) => id !== genreId),
         nice_to_have: previous.nice_to_have.filter((id) => id !== genreId),
         open_to_it: previous.open_to_it.filter((id) => id !== genreId),
+        rather_not: previous.rather_not.filter((id) => id !== genreId),
+        prefer_avoid: previous.prefer_avoid.filter((id) => id !== genreId),
+        definitely_avoid: previous.definitely_avoid.filter((id) => id !== genreId),
       }));
       return;
     }
 
-    if (["prioritize", "nice_to_have", "open_to_it"].includes(destination)) {
+    if (["prioritize", "nice_to_have", "open_to_it", "rather_not", "prefer_avoid", "definitely_avoid"].includes(destination)) {
       setPreferenceBuckets((previous) => {
         const next = {
           prioritize: previous.prioritize.filter((id) => id !== genreId),
           nice_to_have: previous.nice_to_have.filter((id) => id !== genreId),
           open_to_it: previous.open_to_it.filter((id) => id !== genreId),
+          rather_not: previous.rather_not.filter((id) => id !== genreId),
+          prefer_avoid: previous.prefer_avoid.filter((id) => id !== genreId),
+          definitely_avoid: previous.definitely_avoid.filter((id) => id !== genreId),
         };
         next[destination as GenrePreferenceBucketKey] = [
           ...next[destination as GenrePreferenceBucketKey],
@@ -496,12 +532,18 @@ export default function GuestSurveyPage({
     (genre) =>
       !preferenceBuckets.prioritize.includes(genre.id) &&
       !preferenceBuckets.nice_to_have.includes(genre.id) &&
-      !preferenceBuckets.open_to_it.includes(genre.id)
+      !preferenceBuckets.open_to_it.includes(genre.id) &&
+      !preferenceBuckets.rather_not.includes(genre.id) &&
+      !preferenceBuckets.prefer_avoid.includes(genre.id) &&
+      !preferenceBuckets.definitely_avoid.includes(genre.id)
   );
   const rankedCount =
     preferenceBuckets.prioritize.length +
     preferenceBuckets.nice_to_have.length +
-    preferenceBuckets.open_to_it.length;
+    preferenceBuckets.open_to_it.length +
+    preferenceBuckets.rather_not.length +
+    preferenceBuckets.prefer_avoid.length +
+    preferenceBuckets.definitely_avoid.length;
   const activeGenre = activeGenreId
     ? GENRES.find((genre) => genre.id === activeGenreId)
     : null;
@@ -847,7 +889,7 @@ export default function GuestSurveyPage({
           </div>
 
           {(
-            ["prioritize", "nice_to_have", "open_to_it"] as GenrePreferenceBucketKey[]
+            ["prioritize", "nice_to_have", "open_to_it", "rather_not", "prefer_avoid", "definitely_avoid"] as GenrePreferenceBucketKey[]
           ).map((bucketKey) => (
             <PreferenceBucketZone
               key={bucketKey}
