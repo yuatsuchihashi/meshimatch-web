@@ -23,25 +23,6 @@ import type {
   UserProfile,
 } from "@/lib/types";
 
-const AREA_TO_MIDDLE_CODE: Record<string, string> = {
-  "渋谷": "Y055",
-  "新宿": "Y050",
-  "池袋": "Y045",
-  "東京": "Y035",
-  "品川": "Y060",
-  "上野": "Y030",
-  "銀座": "Y040",
-  "六本木": "Y065",
-  "恵比寿": "Y056",
-  "目黒": "Y061",
-  "秋葉原": "Y033",
-  "浅草": "Y025",
-  "横浜": "Y200",
-  "吉祥寺": "Y070",
-  "立川": "Y080",
-  "町田": "Y090",
-};
-
 const ATMOSPHERE_KEYWORDS: Partial<Record<SessionAtmosphere, string>> = {
   casual: "カジュアル",
   polished: "おしゃれ",
@@ -105,15 +86,17 @@ async function fetchAreaRestaurants(params: {
     sessionFocus,
     groupSize,
   } = params;
-  const middleAreaCode = AREA_TO_MIDDLE_CODE[area.areaName];
   const atmosphereKeyword = sessionAtmosphere ? ATMOSPHERE_KEYWORDS[sessionAtmosphere] : undefined;
   const restaurants = new Map<string, Restaurant>();
 
+  // Use lat/lng search with 800m radius (range=2 in HotPepper API)
   const searchTasks = [
     ...genreCodes.map((genreCode) =>
       searchRestaurants({
         genre: genreCode,
-        middle_area: middleAreaCode,
+        lat: area.lat,
+        lng: area.lng,
+        range: 2,
         keyword: atmosphereKeyword,
         count: 8,
         free_drink: sessionFocus === "drink_centered" ? 1 : undefined,
@@ -122,7 +105,9 @@ async function fetchAreaRestaurants(params: {
     ...keywords.slice(0, 2).map((keyword) =>
       searchRestaurants({
         keyword: [keyword, atmosphereKeyword].filter(Boolean).join(" "),
-        middle_area: middleAreaCode,
+        lat: area.lat,
+        lng: area.lng,
+        range: 2,
         count: 5,
       })
     ),
@@ -249,19 +234,13 @@ export async function GET(request: NextRequest) {
   const resolvedAreas = resolveAreas(surveys);
   const budgetSignals = aggregateBudgetSignals(
     surveys.map((survey) => ({
-      idealYen: survey.budgetIdealYen ?? null,
-      maxYen: survey.budgetMaxYen ?? null,
-      priority: survey.budgetPriority ?? null,
+      tier: survey.budgetTier ?? null,
     }))
   );
 
   const candidateAreas = recommendCandidateAreas({
     groupSize: (group.group_size as number | null) ?? surveyRows.length,
-    scheduledAt: (group.scheduled_at as string | null) ?? null,
-    sessionAtmosphere: (group.session_atmosphere as SessionAtmosphere | null) ?? null,
-    sessionFocus: (group.session_focus as SessionFocus | null) ?? null,
     responses: surveys.map((survey) => ({
-      departureArea: survey.departureArea ?? null,
       departureStation: survey.departureStation ?? null,
       preferredAreas: survey.preferredAreas ?? [],
     })),
@@ -274,9 +253,6 @@ export async function GET(request: NextRequest) {
           .map((areaName) =>
             recommendCandidateAreas({
               groupSize: (group.group_size as number | null) ?? surveyRows.length,
-              sessionAtmosphere: (group.session_atmosphere as SessionAtmosphere | null) ?? null,
-              sessionFocus: (group.session_focus as SessionFocus | null) ?? null,
-              scheduledAt: (group.scheduled_at as string | null) ?? null,
               responses: [{ preferredAreas: [areaName] }],
             }, 1)[0]
           )

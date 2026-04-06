@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -381,6 +381,7 @@ export default function SurveyPage({
   const [departureArea, setDepartureArea] = useState("");
   const [departureStation, setDepartureStation] = useState("");
   const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
+  const [budgetTier, setBudgetTier] = useState<number | null>(null);
   const [budgetIdealYen, setBudgetIdealYen] = useState("");
   const [budgetMaxYen, setBudgetMaxYen] = useState("");
   const [preferenceBuckets, setPreferenceBuckets] =
@@ -391,6 +392,25 @@ export default function SurveyPage({
     });
   const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [stationSuggestions, setStationSuggestions] = useState<{ id: string; name: string; lines: string[] }[]>([]);
+  const stationSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleStationSearch(query: string) {
+    if (stationSearchTimeout.current) clearTimeout(stationSearchTimeout.current);
+    if (query.length === 0) {
+      setStationSuggestions([]);
+      return;
+    }
+    stationSearchTimeout.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/stations/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        setStationSuggestions(data.stations ?? []);
+      } catch {
+        setStationSuggestions([]);
+      }
+    }, 200);
+  }
 
   useEffect(() => {
     async function fetchGroup() {
@@ -562,9 +582,10 @@ export default function SurveyPage({
           departure_area: departureArea || null,
           departure_station: departureStation || null,
           preferred_areas: preferredAreas,
-          budget_ideal_yen: budgetIdealYen ? Number(budgetIdealYen) : null,
-          budget_max_yen: budgetMaxYen ? Number(budgetMaxYen) : null,
-          budget_priority: "prefer",
+          budget_tier: budgetTier,
+          budget_ideal_yen: null,
+          budget_max_yen: null,
+          budget_priority: null,
           genre_preferences: buildGenrePreferences(preferenceBuckets),
           dietary_restrictions: user?.dietaryRestrictions ?? [],
         },
@@ -635,43 +656,76 @@ export default function SurveyPage({
             集まりやすい場所
           </div>
           <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 12 }}>
-            出発エリア、希望エリア、最寄り駅があれば入力してください
+            最寄り駅を入力してください
           </div>
-          <input
-            value={departureStation}
-            onChange={(event) => setDepartureStation(event.target.value)}
-            placeholder="例: 渋谷駅"
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              borderRadius: 12,
-              border: "1.5px solid var(--border)",
-              fontSize: 15,
-              color: "var(--text-primary)",
-              backgroundColor: "var(--bg)",
-              outline: "none",
-              marginBottom: 12,
-            }}
-          />
-          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
-            出発エリア
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-            {AREAS.map((area) => (
-              <button
-                key={area}
-                type="button"
-                onClick={() => toggleDepartureArea(area)}
-                className={`chip ${departureArea === area ? "chip-selected" : ""}`}
-                style={{ fontSize: 13 }}
-              >
-                {area}
-              </button>
-            ))}
+          <div style={{ position: "relative", marginBottom: 12 }}>
+            <input
+              value={departureStation}
+              onChange={(event) => {
+                setDepartureStation(event.target.value);
+                handleStationSearch(event.target.value);
+              }}
+              onFocus={() => departureStation && handleStationSearch(departureStation)}
+              placeholder="例: 渋谷"
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: "1.5px solid var(--border)",
+                fontSize: 15,
+                color: "var(--text-primary)",
+                backgroundColor: "var(--bg)",
+                outline: "none",
+              }}
+            />
+            {stationSuggestions.length > 0 && (
+              <div style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                backgroundColor: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 12,
+                marginTop: 4,
+                zIndex: 10,
+                maxHeight: 200,
+                overflow: "auto",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }}>
+                {stationSuggestions.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      setDepartureStation(s.name);
+                      setStationSuggestions([]);
+                    }}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "10px 14px",
+                      border: "none",
+                      backgroundColor: "transparent",
+                      textAlign: "left",
+                      fontSize: 14,
+                      color: "var(--text-primary)",
+                      cursor: "pointer",
+                      borderBottom: "1px solid var(--border-light)",
+                    }}
+                  >
+                    <span style={{ fontWeight: 600 }}>{s.name}</span>
+                    <span style={{ fontSize: 12, color: "var(--text-tertiary)", marginLeft: 8 }}>
+                      {s.lines.slice(0, 3).join(" / ")}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
-            希望エリア
+            希望エリア（任意）
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {AREAS.map((area) => (
@@ -698,48 +752,29 @@ export default function SurveyPage({
           }}
         >
           <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
-            予算範囲
+            予算
           </div>
           <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 12 }}>
-            だいたいの目安と、超えたくない上限があれば入力してください
+            1人あたりの予算感を選んでください
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <input
-              inputMode="numeric"
-              value={budgetIdealYen}
-              onChange={(event) =>
-                setBudgetIdealYen(event.target.value.replace(/[^\d]/g, ""))
-              }
-              placeholder="目安 3500"
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                borderRadius: 12,
-                border: "1.5px solid var(--border)",
-                fontSize: 15,
-                color: "var(--text-primary)",
-                backgroundColor: "var(--bg)",
-                outline: "none",
-              }}
-            />
-            <input
-              inputMode="numeric"
-              value={budgetMaxYen}
-              onChange={(event) =>
-                setBudgetMaxYen(event.target.value.replace(/[^\d]/g, ""))
-              }
-              placeholder="上限 5000"
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                borderRadius: 12,
-                border: "1.5px solid var(--border)",
-                fontSize: 15,
-                color: "var(--text-primary)",
-                backgroundColor: "var(--bg)",
-                outline: "none",
-              }}
-            />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {([
+              { value: 1000, label: "~1,000円" },
+              { value: 2000, label: "~2,000円" },
+              { value: 3000, label: "~3,000円" },
+              { value: 5000, label: "~5,000円" },
+              { value: 8000, label: "~8,000円+" },
+            ] as const).map((tier) => (
+              <button
+                key={tier.value}
+                type="button"
+                onClick={() => setBudgetTier(budgetTier === tier.value ? null : tier.value)}
+                className={`chip ${budgetTier === tier.value ? "chip-selected" : ""}`}
+                style={{ fontSize: 13 }}
+              >
+                {tier.label}
+              </button>
+            ))}
           </div>
         </div>
 

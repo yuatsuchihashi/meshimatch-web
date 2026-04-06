@@ -1,0 +1,6257 @@
+[
+ {
+  "station_a": "004030",
+  "station_b": "003979",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "003979",
+  "station_b": "003958",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "003958",
+  "station_b": "003887",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "003887",
+  "station_b": "003872",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "003872",
+  "station_b": "004001",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "004001",
+  "station_b": "003981",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "003981",
+  "station_b": "003951",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "003951",
+  "station_b": "004037",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "004037",
+  "station_b": "004064",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "004064",
+  "station_b": "004087",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "004087",
+  "station_b": "004119",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "004119",
+  "station_b": "004091",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "004091",
+  "station_b": "004112",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "004112",
+  "station_b": "004128",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "004128",
+  "station_b": "004144",
+  "line_id": "ゆりかもめ_東京臨海新交通臨海線"
+ },
+ {
+  "station_a": "003225",
+  "station_b": "003243",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003243",
+  "station_b": "003305",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003305",
+  "station_b": "003328",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003328",
+  "station_b": "003367",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003367",
+  "station_b": "003448",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003448",
+  "station_b": "003495",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003495",
+  "station_b": "003549",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003549",
+  "station_b": "003643",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003643",
+  "station_b": "003696",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003696",
+  "station_b": "003690",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003690",
+  "station_b": "003669",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003669",
+  "station_b": "003700",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003700",
+  "station_b": "003743",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003743",
+  "station_b": "003775",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003775",
+  "station_b": "003812",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003812",
+  "station_b": "003892",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003892",
+  "station_b": "003941",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003941",
+  "station_b": "003954",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003954",
+  "station_b": "003939",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003939",
+  "station_b": "003887",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003887",
+  "station_b": "003886",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003886",
+  "station_b": "003927",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003927",
+  "station_b": "003889",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003889",
+  "station_b": "003818",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003818",
+  "station_b": "003754",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003754",
+  "station_b": "003711",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003711",
+  "station_b": "003646",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003646",
+  "station_b": "003571",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003571",
+  "station_b": "003556",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003556",
+  "station_b": "003543",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003543",
+  "station_b": "003546",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003546",
+  "station_b": "003529",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003529",
+  "station_b": "003595",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003595",
+  "station_b": "003602",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003602",
+  "station_b": "003618",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003618",
+  "station_b": "003623",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003623",
+  "station_b": "003612",
+  "line_id": "東京都_12号線大江戸線"
+ },
+ {
+  "station_a": "003922",
+  "station_b": "003883",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003883",
+  "station_b": "003834",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003834",
+  "station_b": "003812",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003812",
+  "station_b": "003788",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003788",
+  "station_b": "003810",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003810",
+  "station_b": "003835",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003835",
+  "station_b": "003872",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003872",
+  "station_b": "003823",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003823",
+  "station_b": "003792",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003792",
+  "station_b": "003756",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003756",
+  "station_b": "003716",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003716",
+  "station_b": "003677",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003677",
+  "station_b": "003586",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003586",
+  "station_b": "003545",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003545",
+  "station_b": "003505",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003505",
+  "station_b": "003519",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003519",
+  "station_b": "003530",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "003530",
+  "station_b": "003522",
+  "line_id": "東京地下鉄_3号線銀座線"
+ },
+ {
+  "station_a": "004270",
+  "station_b": "004248",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "004248",
+  "station_b": "004215",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "004215",
+  "station_b": "004161",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "004161",
+  "station_b": "004110",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "004110",
+  "station_b": "004079",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "004079",
+  "station_b": "004042",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "004042",
+  "station_b": "003986",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003986",
+  "station_b": "003939",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003939",
+  "station_b": "003872",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003872",
+  "station_b": "003838",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003838",
+  "station_b": "003796",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003796",
+  "station_b": "003756",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003756",
+  "station_b": "003721",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003721",
+  "station_b": "003676",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003676",
+  "station_b": "003636",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003636",
+  "station_b": "003571",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003571",
+  "station_b": "003522",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003522",
+  "station_b": "003538",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "003538",
+  "station_b": "003526",
+  "line_id": "東京都_1号線浅草線"
+ },
+ {
+  "station_a": "004818",
+  "station_b": "004741",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004741",
+  "station_b": "004685",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004685",
+  "station_b": "004633",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004633",
+  "station_b": "004596",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004596",
+  "station_b": "004562",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004562",
+  "station_b": "004496",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004496",
+  "station_b": "004432",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004432",
+  "station_b": "004358",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004358",
+  "station_b": "004301",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004301",
+  "station_b": "004330",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004330",
+  "station_b": "004264",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004264",
+  "station_b": "004235",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004235",
+  "station_b": "004197",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004197",
+  "station_b": "004095",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004095",
+  "station_b": "004061",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004061",
+  "station_b": "004000",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "004000",
+  "station_b": "003949",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "003949",
+  "station_b": "003872",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "003872",
+  "station_b": "003795",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "003795",
+  "station_b": "003766",
+  "line_id": "東日本旅客鉄道_東海道線"
+ },
+ {
+  "station_a": "003123",
+  "station_b": "003163",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003163",
+  "station_b": "003186",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003186",
+  "station_b": "003228",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003228",
+  "station_b": "003261",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003261",
+  "station_b": "003294",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003294",
+  "station_b": "003324",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003324",
+  "station_b": "003361",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003361",
+  "station_b": "003390",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003390",
+  "station_b": "003432",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003432",
+  "station_b": "003474",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003474",
+  "station_b": "003534",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003534",
+  "station_b": "003595",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003595",
+  "station_b": "003671",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003671",
+  "station_b": "003737",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003737",
+  "station_b": "003782",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003782",
+  "station_b": "003787",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003787",
+  "station_b": "003795",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003795",
+  "station_b": "003801",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003801",
+  "station_b": "003833",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003833",
+  "station_b": "003889",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003889",
+  "station_b": "003951",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003951",
+  "station_b": "003999",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "003999",
+  "station_b": "003997",
+  "line_id": "東京地下鉄_8号線有楽町線"
+ },
+ {
+  "station_a": "004633",
+  "station_b": "004647",
+  "line_id": "横浜高速鉄道_みなとみらい21線"
+ },
+ {
+  "station_a": "004647",
+  "station_b": "004656",
+  "line_id": "横浜高速鉄道_みなとみらい21線"
+ },
+ {
+  "station_a": "004656",
+  "station_b": "004679",
+  "line_id": "横浜高速鉄道_みなとみらい21線"
+ },
+ {
+  "station_a": "004679",
+  "station_b": "004686",
+  "line_id": "横浜高速鉄道_みなとみらい21線"
+ },
+ {
+  "station_a": "004686",
+  "station_b": "004704",
+  "line_id": "横浜高速鉄道_みなとみらい21線"
+ },
+ {
+  "station_a": "004314",
+  "station_b": "004325",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004325",
+  "station_b": "004353",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004353",
+  "station_b": "004380",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004380",
+  "station_b": "004416",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004416",
+  "station_b": "004439",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004439",
+  "station_b": "004459",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004459",
+  "station_b": "004501",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004501",
+  "station_b": "004539",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004539",
+  "station_b": "004551",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004551",
+  "station_b": "004602",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004602",
+  "station_b": "004601",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004601",
+  "station_b": "004633",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004633",
+  "station_b": "004654",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004654",
+  "station_b": "004675",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004675",
+  "station_b": "004691",
+  "line_id": "横浜市_3号線"
+ },
+ {
+  "station_a": "004790",
+  "station_b": "004756",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004756",
+  "station_b": "004724",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004724",
+  "station_b": "004719",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004719",
+  "station_b": "004712",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004712",
+  "station_b": "004696",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004696",
+  "station_b": "004660",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004660",
+  "station_b": "004633",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004633",
+  "station_b": "004612",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004612",
+  "station_b": "004598",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004598",
+  "station_b": "004579",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004579",
+  "station_b": "004569",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004569",
+  "station_b": "004560",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004560",
+  "station_b": "004538",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004538",
+  "station_b": "004520",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004520",
+  "station_b": "004506",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004506",
+  "station_b": "004465",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004465",
+  "station_b": "004448",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004448",
+  "station_b": "004424",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004424",
+  "station_b": "004399",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004399",
+  "station_b": "004367",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004367",
+  "station_b": "004331",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004331",
+  "station_b": "004319",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004319",
+  "station_b": "004307",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004307",
+  "station_b": "004294",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004294",
+  "station_b": "004268",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004268",
+  "station_b": "004244",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004244",
+  "station_b": "004220",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004220",
+  "station_b": "004184",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004184",
+  "station_b": "004153",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004153",
+  "station_b": "004125",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004125",
+  "station_b": "004095",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004095",
+  "station_b": "004042",
+  "line_id": "京浜急行電鉄_本線"
+ },
+ {
+  "station_a": "004672",
+  "station_b": "004626",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004626",
+  "station_b": "004611",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004611",
+  "station_b": "004614",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004614",
+  "station_b": "004617",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004617",
+  "station_b": "004615",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004615",
+  "station_b": "004623",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004623",
+  "station_b": "004652",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004652",
+  "station_b": "004642",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004642",
+  "station_b": "004604",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004604",
+  "station_b": "004594",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004594",
+  "station_b": "004624",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004624",
+  "station_b": "004640",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004640",
+  "station_b": "004655",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004655",
+  "station_b": "004668",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004668",
+  "station_b": "004669",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004669",
+  "station_b": "004653",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004653",
+  "station_b": "004633",
+  "line_id": "相模鉄道_本線"
+ },
+ {
+  "station_a": "004633",
+  "station_b": "004608",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004608",
+  "station_b": "004572",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004572",
+  "station_b": "004554",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004554",
+  "station_b": "004528",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004528",
+  "station_b": "004487",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004487",
+  "station_b": "004452",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004452",
+  "station_b": "004406",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004406",
+  "station_b": "004351",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004351",
+  "station_b": "004322",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004322",
+  "station_b": "004297",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004297",
+  "station_b": "004287",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004287",
+  "station_b": "004261",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004261",
+  "station_b": "004245",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004245",
+  "station_b": "004196",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004196",
+  "station_b": "004143",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004143",
+  "station_b": "004094",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004094",
+  "station_b": "004050",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004050",
+  "station_b": "004014",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004014",
+  "station_b": "003985",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "003985",
+  "station_b": "003922",
+  "line_id": "東急電鉄_東横線"
+ },
+ {
+  "station_a": "004821",
+  "station_b": "004772",
+  "line_id": "東日本旅客鉄道_根岸線"
+ },
+ {
+  "station_a": "004772",
+  "station_b": "004752",
+  "line_id": "東日本旅客鉄道_根岸線"
+ },
+ {
+  "station_a": "004752",
+  "station_b": "004716",
+  "line_id": "東日本旅客鉄道_根岸線"
+ },
+ {
+  "station_a": "004716",
+  "station_b": "004691",
+  "line_id": "東日本旅客鉄道_根岸線"
+ },
+ {
+  "station_a": "004675",
+  "station_b": "004633",
+  "line_id": "東日本旅客鉄道_根岸線"
+ },
+ {
+  "station_a": "004805",
+  "station_b": "004775",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004775",
+  "station_b": "004786",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004786",
+  "station_b": "004796",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004796",
+  "station_b": "004818",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004818",
+  "station_b": "004810",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004810",
+  "station_b": "004808",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004808",
+  "station_b": "004815",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004815",
+  "station_b": "004816",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004816",
+  "station_b": "004790",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004790",
+  "station_b": "004761",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004761",
+  "station_b": "004737",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004737",
+  "station_b": "004721",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004721",
+  "station_b": "004718",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004718",
+  "station_b": "004708",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004708",
+  "station_b": "004691",
+  "line_id": "横浜市_1号線"
+ },
+ {
+  "station_a": "004473",
+  "station_b": "004438",
+  "line_id": "横浜市_4号線"
+ },
+ {
+  "station_a": "004438",
+  "station_b": "004409",
+  "line_id": "横浜市_4号線"
+ },
+ {
+  "station_a": "004409",
+  "station_b": "004380",
+  "line_id": "横浜市_4号線"
+ },
+ {
+  "station_a": "004353",
+  "station_b": "004334",
+  "line_id": "横浜市_4号線"
+ },
+ {
+  "station_a": "004334",
+  "station_b": "004350",
+  "line_id": "横浜市_4号線"
+ },
+ {
+  "station_a": "004350",
+  "station_b": "004370",
+  "line_id": "横浜市_4号線"
+ },
+ {
+  "station_a": "004370",
+  "station_b": "004366",
+  "line_id": "横浜市_4号線"
+ },
+ {
+  "station_a": "004366",
+  "station_b": "004351",
+  "line_id": "横浜市_4号線"
+ },
+ {
+  "station_a": "004082",
+  "station_b": "004038",
+  "line_id": "東日本旅客鉄道_横浜線"
+ },
+ {
+  "station_a": "004038",
+  "station_b": "003947",
+  "line_id": "東日本旅客鉄道_横浜線"
+ },
+ {
+  "station_a": "004498",
+  "station_b": "004486",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004486",
+  "station_b": "004484",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004484",
+  "station_b": "004466",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004466",
+  "station_b": "004441",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004441",
+  "station_b": "004430",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004430",
+  "station_b": "004412",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004412",
+  "station_b": "004392",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004392",
+  "station_b": "004391",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004391",
+  "station_b": "004360",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004360",
+  "station_b": "004340",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004340",
+  "station_b": "004314",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004314",
+  "station_b": "004296",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004296",
+  "station_b": "004290",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004290",
+  "station_b": "004274",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004274",
+  "station_b": "004271",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004271",
+  "station_b": "004257",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004257",
+  "station_b": "004238",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004238",
+  "station_b": "004230",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004230",
+  "station_b": "004198",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004198",
+  "station_b": "004177",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004177",
+  "station_b": "004109",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004109",
+  "station_b": "004078",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004078",
+  "station_b": "004069",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004069",
+  "station_b": "004016",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "004016",
+  "station_b": "003972",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "003972",
+  "station_b": "003922",
+  "line_id": "東急電鉄_田園都市線"
+ },
+ {
+  "station_a": "002674",
+  "station_b": "002704",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002704",
+  "station_b": "002721",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002721",
+  "station_b": "002736",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002736",
+  "station_b": "002782",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002782",
+  "station_b": "002809",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002809",
+  "station_b": "002830",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002830",
+  "station_b": "002858",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002858",
+  "station_b": "002868",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002868",
+  "station_b": "002872",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002872",
+  "station_b": "002878",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002878",
+  "station_b": "002888",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002888",
+  "station_b": "002898",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002898",
+  "station_b": "002902",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "002902",
+  "station_b": "002925",
+  "line_id": "関東鉄道_常総線"
+ },
+ {
+  "station_a": "003417",
+  "station_b": "003359",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003359",
+  "station_b": "003363",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003363",
+  "station_b": "003260",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003260",
+  "station_b": "003214",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003214",
+  "station_b": "003199",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003199",
+  "station_b": "003191",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003191",
+  "station_b": "003136",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003136",
+  "station_b": "003089",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003089",
+  "station_b": "003064",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003064",
+  "station_b": "003045",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003045",
+  "station_b": "003032",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003032",
+  "station_b": "003012",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003012",
+  "station_b": "002984",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "002984",
+  "station_b": "002959",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "002959",
+  "station_b": "002965",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "002965",
+  "station_b": "002967",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "002967",
+  "station_b": "002925",
+  "line_id": "東日本旅客鉄道_常磐線"
+ },
+ {
+  "station_a": "003624",
+  "station_b": "003556",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "003556",
+  "station_b": "003502",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "003502",
+  "station_b": "003363",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "003260",
+  "station_b": "003177",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "003177",
+  "station_b": "003133",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "003133",
+  "station_b": "003073",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "003073",
+  "station_b": "003047",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "003047",
+  "station_b": "003024",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "003024",
+  "station_b": "002993",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "002993",
+  "station_b": "002969",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "002969",
+  "station_b": "002935",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "002935",
+  "station_b": "002900",
+  "line_id": "首都圏新都市鉄道_常磐新線"
+ },
+ {
+  "station_a": "002867",
+  "station_b": "002886",
+  "line_id": "関東鉄道_竜ヶ崎線"
+ },
+ {
+  "station_a": "002886",
+  "station_b": "002903",
+  "line_id": "関東鉄道_竜ヶ崎線"
+ },
+ {
+  "station_a": "003584",
+  "station_b": "003642",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003642",
+  "station_b": "003674",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003674",
+  "station_b": "003710",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003710",
+  "station_b": "003736",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003736",
+  "station_b": "003752",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003752",
+  "station_b": "003763",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003763",
+  "station_b": "003777",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003777",
+  "station_b": "003794",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003794",
+  "station_b": "003846",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003846",
+  "station_b": "003899",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003899",
+  "station_b": "003901",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003901",
+  "station_b": "003908",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003908",
+  "station_b": "003914",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003914",
+  "station_b": "003929",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003929",
+  "station_b": "003938",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003938",
+  "station_b": "003922",
+  "line_id": "京王電鉄_井の頭線"
+ },
+ {
+  "station_a": "003942",
+  "station_b": "003947",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003947",
+  "station_b": "003921",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003921",
+  "station_b": "003779",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003779",
+  "station_b": "003634",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003634",
+  "station_b": "003622",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003622",
+  "station_b": "003611",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003611",
+  "station_b": "003606",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003606",
+  "station_b": "003600",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003600",
+  "station_b": "003594",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003594",
+  "station_b": "003590",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003590",
+  "station_b": "003587",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003587",
+  "station_b": "003584",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003584",
+  "station_b": "003579",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003579",
+  "station_b": "003575",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003575",
+  "station_b": "003574",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003574",
+  "station_b": "003573",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003573",
+  "station_b": "003568",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003568",
+  "station_b": "003549",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003549",
+  "station_b": "003604",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003604",
+  "station_b": "003700",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003743",
+  "station_b": "003767",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003767",
+  "station_b": "003774",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003774",
+  "station_b": "003728",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003728",
+  "station_b": "003671",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003595",
+  "station_b": "003580",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003580",
+  "station_b": "003615",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003615",
+  "station_b": "003677",
+  "line_id": "東日本旅客鉄道_中央線"
+ },
+ {
+  "station_a": "003934",
+  "station_b": "004007",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "004007",
+  "station_b": "004027",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "004027",
+  "station_b": "003990",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003990",
+  "station_b": "003952",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003952",
+  "station_b": "003904",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003904",
+  "station_b": "003936",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003936",
+  "station_b": "003971",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003971",
+  "station_b": "003920",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003920",
+  "station_b": "003853",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003853",
+  "station_b": "003821",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003821",
+  "station_b": "003850",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003850",
+  "station_b": "003871",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003871",
+  "station_b": "003891",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003891",
+  "station_b": "003916",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003916",
+  "station_b": "003937",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003937",
+  "station_b": "003966",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003966",
+  "station_b": "003975",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003975",
+  "station_b": "003973",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003973",
+  "station_b": "003959",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003959",
+  "station_b": "003933",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003933",
+  "station_b": "003903",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003903",
+  "station_b": "003861",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003861",
+  "station_b": "003832",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003832",
+  "station_b": "003836",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003836",
+  "station_b": "003849",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003849",
+  "station_b": "003862",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003862",
+  "station_b": "003874",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003874",
+  "station_b": "003846",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003846",
+  "station_b": "003830",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003830",
+  "station_b": "003806",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003806",
+  "station_b": "003791",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003791",
+  "station_b": "003764",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003764",
+  "station_b": "003700",
+  "line_id": "京王電鉄_京王線"
+ },
+ {
+  "station_a": "003883",
+  "station_b": "003812",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003812",
+  "station_b": "003782",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003782",
+  "station_b": "003729",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003729",
+  "station_b": "003657",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003657",
+  "station_b": "003651",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003651",
+  "station_b": "003719",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003719",
+  "station_b": "003716",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003716",
+  "station_b": "003753",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003753",
+  "station_b": "003754",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003754",
+  "station_b": "003704",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003704",
+  "station_b": "003639",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003639",
+  "station_b": "003526",
+  "line_id": "東京地下鉄_11号線半蔵門線"
+ },
+ {
+  "station_a": "003743",
+  "station_b": "003828",
+  "line_id": "東日本旅客鉄道_山手線"
+ },
+ {
+  "station_a": "003828",
+  "station_b": "003922",
+  "line_id": "東日本旅客鉄道_山手線"
+ },
+ {
+  "station_a": "003922",
+  "station_b": "003991",
+  "line_id": "東日本旅客鉄道_山手線"
+ },
+ {
+  "station_a": "003991",
+  "station_b": "004072",
+  "line_id": "東日本旅客鉄道_山手線"
+ },
+ {
+  "station_a": "004072",
+  "station_b": "004110",
+  "line_id": "東日本旅客鉄道_山手線"
+ },
+ {
+  "station_a": "004110",
+  "station_b": "004135",
+  "line_id": "東日本旅客鉄道_山手線"
+ },
+ {
+  "station_a": "004135",
+  "station_b": "004095",
+  "line_id": "東日本旅客鉄道_山手線"
+ },
+ {
+  "station_a": "003361",
+  "station_b": "003379",
+  "line_id": "東京地下鉄_13号線副都心線"
+ },
+ {
+  "station_a": "003379",
+  "station_b": "003471",
+  "line_id": "東京地下鉄_13号線副都心線"
+ },
+ {
+  "station_a": "003471",
+  "station_b": "003544",
+  "line_id": "東京地下鉄_13号線副都心線"
+ },
+ {
+  "station_a": "003544",
+  "station_b": "003612",
+  "line_id": "東京地下鉄_13号線副都心線"
+ },
+ {
+  "station_a": "003612",
+  "station_b": "003689",
+  "line_id": "東京地下鉄_13号線副都心線"
+ },
+ {
+  "station_a": "003689",
+  "station_b": "003780",
+  "line_id": "東京地下鉄_13号線副都心線"
+ },
+ {
+  "station_a": "003780",
+  "station_b": "003844",
+  "line_id": "東京地下鉄_13号線副都心線"
+ },
+ {
+  "station_a": "003844",
+  "station_b": "003922",
+  "line_id": "東京地下鉄_13号線副都心線"
+ },
+ {
+  "station_a": "004771",
+  "station_b": "004715",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004715",
+  "station_b": "004701",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004701",
+  "station_b": "004672",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004672",
+  "station_b": "004584",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004584",
+  "station_b": "004525",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004525",
+  "station_b": "004470",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004470",
+  "station_b": "004426",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004426",
+  "station_b": "004387",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004387",
+  "station_b": "004324",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004324",
+  "station_b": "004278",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004278",
+  "station_b": "004263",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004263",
+  "station_b": "004227",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004227",
+  "station_b": "004185",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004185",
+  "station_b": "004160",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004160",
+  "station_b": "004159",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004159",
+  "station_b": "004150",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004150",
+  "station_b": "004130",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004130",
+  "station_b": "004105",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004105",
+  "station_b": "004076",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004076",
+  "station_b": "004053",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004053",
+  "station_b": "004036",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004036",
+  "station_b": "004024",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "004024",
+  "station_b": "003988",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003988",
+  "station_b": "003970",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003970",
+  "station_b": "003960",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003960",
+  "station_b": "003945",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003945",
+  "station_b": "003931",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003931",
+  "station_b": "003908",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003908",
+  "station_b": "003880",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003880",
+  "station_b": "003847",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003847",
+  "station_b": "003837",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003837",
+  "station_b": "003778",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003778",
+  "station_b": "003750",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003750",
+  "station_b": "003700",
+  "line_id": "小田急電鉄_小田原線"
+ },
+ {
+  "station_a": "003575",
+  "station_b": "003619",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003619",
+  "station_b": "003632",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003632",
+  "station_b": "003628",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003628",
+  "station_b": "003638",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003638",
+  "station_b": "003643",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003643",
+  "station_b": "003662",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003662",
+  "station_b": "003700",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003700",
+  "station_b": "003689",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003689",
+  "station_b": "003707",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003707",
+  "station_b": "003713",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003713",
+  "station_b": "003728",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003728",
+  "station_b": "003788",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003788",
+  "station_b": "003799",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003799",
+  "station_b": "003805",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003805",
+  "station_b": "003823",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003823",
+  "station_b": "003766",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003766",
+  "station_b": "003719",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003719",
+  "station_b": "003661",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003661",
+  "station_b": "003615",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003615",
+  "station_b": "003546",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003546",
+  "station_b": "003542",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003542",
+  "station_b": "003484",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003484",
+  "station_b": "003431",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003431",
+  "station_b": "003390",
+  "line_id": "東京地下鉄_4号線丸ノ内線"
+ },
+ {
+  "station_a": "003689",
+  "station_b": "003673",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003673",
+  "station_b": "003671",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003671",
+  "station_b": "003657",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003651",
+  "station_b": "003659",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003659",
+  "station_b": "003655",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003655",
+  "station_b": "003675",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003675",
+  "station_b": "003706",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003706",
+  "station_b": "003711",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003711",
+  "station_b": "003709",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003709",
+  "station_b": "003704",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003704",
+  "station_b": "003702",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003702",
+  "station_b": "003698",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003698",
+  "station_b": "003695",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003695",
+  "station_b": "003745",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003745",
+  "station_b": "003724",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003724",
+  "station_b": "003667",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003667",
+  "station_b": "003565",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003565",
+  "station_b": "003449",
+  "line_id": "東京都_10号線新宿線"
+ },
+ {
+  "station_a": "003874",
+  "station_b": "003915",
+  "line_id": "東急電鉄_世田谷線"
+ },
+ {
+  "station_a": "003915",
+  "station_b": "003957",
+  "line_id": "東急電鉄_世田谷線"
+ },
+ {
+  "station_a": "003957",
+  "station_b": "003989",
+  "line_id": "東急電鉄_世田谷線"
+ },
+ {
+  "station_a": "003989",
+  "station_b": "004020",
+  "line_id": "東急電鉄_世田谷線"
+ },
+ {
+  "station_a": "004020",
+  "station_b": "004021",
+  "line_id": "東急電鉄_世田谷線"
+ },
+ {
+  "station_a": "004021",
+  "station_b": "004017",
+  "line_id": "東急電鉄_世田谷線"
+ },
+ {
+  "station_a": "004017",
+  "station_b": "003996",
+  "line_id": "東急電鉄_世田谷線"
+ },
+ {
+  "station_a": "003996",
+  "station_b": "004006",
+  "line_id": "東急電鉄_世田谷線"
+ },
+ {
+  "station_a": "004006",
+  "station_b": "004016",
+  "line_id": "東急電鉄_世田谷線"
+ },
+ {
+  "station_a": "004253",
+  "station_b": "004234",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004234",
+  "station_b": "004163",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004163",
+  "station_b": "004120",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004120",
+  "station_b": "004116",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004116",
+  "station_b": "004086",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004086",
+  "station_b": "004139",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004139",
+  "station_b": "004056",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004056",
+  "station_b": "004070",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004070",
+  "station_b": "004066",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004066",
+  "station_b": "004013",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "004013",
+  "station_b": "003966",
+  "line_id": "京王電鉄_相模原線"
+ },
+ {
+  "station_a": "003977",
+  "station_b": "003904",
+  "line_id": "京王電鉄_動物園線"
+ },
+ {
+  "station_a": "003977",
+  "station_b": "003950",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003950",
+  "station_b": "003904",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003904",
+  "station_b": "003829",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003829",
+  "station_b": "003783",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003783",
+  "station_b": "003697",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003697",
+  "station_b": "003649",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003649",
+  "station_b": "003617",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003617",
+  "station_b": "003528",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003528",
+  "station_b": "003499",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003499",
+  "station_b": "003476",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003476",
+  "station_b": "003447",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003447",
+  "station_b": "003371",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003371",
+  "station_b": "003320",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "003320",
+  "station_b": "003283",
+  "line_id": "多摩都市モノレール_多摩都市モノレール線"
+ },
+ {
+  "station_a": "004019",
+  "station_b": "004010",
+  "line_id": "京王電鉄_高尾線"
+ },
+ {
+  "station_a": "004010",
+  "station_b": "004009",
+  "line_id": "京王電鉄_高尾線"
+ },
+ {
+  "station_a": "004009",
+  "station_b": "004007",
+  "line_id": "京王電鉄_高尾線"
+ },
+ {
+  "station_a": "003856",
+  "station_b": "003850",
+  "line_id": "京王電鉄_競馬場線"
+ },
+ {
+  "station_a": "003634",
+  "station_b": "003665",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "003665",
+  "station_b": "003733",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "003733",
+  "station_b": "003765",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "003765",
+  "station_b": "003831",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "003831",
+  "station_b": "003853",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "003853",
+  "station_b": "003876",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "003876",
+  "station_b": "003980",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "003980",
+  "station_b": "004011",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004011",
+  "station_b": "004032",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004032",
+  "station_b": "004067",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004067",
+  "station_b": "004089",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004089",
+  "station_b": "004130",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004130",
+  "station_b": "004158",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004158",
+  "station_b": "004179",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004179",
+  "station_b": "004229",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004229",
+  "station_b": "004242",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004242",
+  "station_b": "004269",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004269",
+  "station_b": "004286",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004286",
+  "station_b": "004297",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004297",
+  "station_b": "004308",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004308",
+  "station_b": "004336",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004336",
+  "station_b": "004359",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004359",
+  "station_b": "004403",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004403",
+  "station_b": "004435",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004435",
+  "station_b": "004448",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004448",
+  "station_b": "004461",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004461",
+  "station_b": "004475",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004475",
+  "station_b": "004488",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004488",
+  "station_b": "004432",
+  "line_id": "東日本旅客鉄道_南武線"
+ },
+ {
+  "station_a": "004253",
+  "station_b": "004288",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "004288",
+  "station_b": "004342",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "004342",
+  "station_b": "004379",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "004379",
+  "station_b": "004437",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "004437",
+  "station_b": "004462",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "004462",
+  "station_b": "004544",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "004544",
+  "station_b": "004593",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "004593",
+  "station_b": "004672",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "004701",
+  "station_b": "004765",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "004765",
+  "station_b": "004795",
+  "line_id": "東日本旅客鉄道_相模線"
+ },
+ {
+  "station_a": "003526",
+  "station_b": "003477",
+  "line_id": "京成電鉄_押上線"
+ },
+ {
+  "station_a": "003477",
+  "station_b": "003422",
+  "line_id": "京成電鉄_押上線"
+ },
+ {
+  "station_a": "003422",
+  "station_b": "003376",
+  "line_id": "京成電鉄_押上線"
+ },
+ {
+  "station_a": "003376",
+  "station_b": "003323",
+  "line_id": "京成電鉄_押上線"
+ },
+ {
+  "station_a": "003323",
+  "station_b": "003280",
+  "line_id": "京成電鉄_押上線"
+ },
+ {
+  "station_a": "003417",
+  "station_b": "003339",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003339",
+  "station_b": "003302",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003302",
+  "station_b": "003301",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003301",
+  "station_b": "003290",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003290",
+  "station_b": "003273",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003273",
+  "station_b": "003274",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003274",
+  "station_b": "003280",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003280",
+  "station_b": "003248",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003248",
+  "station_b": "003303",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003303",
+  "station_b": "003331",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003331",
+  "station_b": "003346",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003346",
+  "station_b": "003380",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003380",
+  "station_b": "003412",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003412",
+  "station_b": "003445",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003445",
+  "station_b": "003472",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003472",
+  "station_b": "003485",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003485",
+  "station_b": "003496",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003496",
+  "station_b": "003516",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003516",
+  "station_b": "003567",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003567",
+  "station_b": "003609",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003609",
+  "station_b": "003664",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003664",
+  "station_b": "003699",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003699",
+  "station_b": "003731",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003731",
+  "station_b": "003747",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003747",
+  "station_b": "003725",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003725",
+  "station_b": "003718",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003718",
+  "station_b": "003597",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003597",
+  "station_b": "003511",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003511",
+  "station_b": "003492",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003492",
+  "station_b": "003482",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003482",
+  "station_b": "003452",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "003452",
+  "station_b": "003392",
+  "line_id": "京成電鉄_本線"
+ },
+ {
+  "station_a": "002632",
+  "station_b": "002683",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002683",
+  "station_b": "002713",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002713",
+  "station_b": "002728",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002728",
+  "station_b": "002750",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002750",
+  "station_b": "002772",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002772",
+  "station_b": "002785",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002785",
+  "station_b": "002810",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002810",
+  "station_b": "002836",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002836",
+  "station_b": "002856",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002856",
+  "station_b": "002875",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002875",
+  "station_b": "002920",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002920",
+  "station_b": "002942",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002942",
+  "station_b": "002960",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002960",
+  "station_b": "002977",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002977",
+  "station_b": "002994",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "002994",
+  "station_b": "003016",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003016",
+  "station_b": "003040",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003040",
+  "station_b": "003059",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003059",
+  "station_b": "003101",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003101",
+  "station_b": "003159",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003159",
+  "station_b": "003176",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003176",
+  "station_b": "003200",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003200",
+  "station_b": "003224",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003224",
+  "station_b": "003260",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003260",
+  "station_b": "003288",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003288",
+  "station_b": "003297",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003297",
+  "station_b": "003355",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003355",
+  "station_b": "003442",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003442",
+  "station_b": "003479",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003479",
+  "station_b": "003526",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003526",
+  "station_b": "003524",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003524",
+  "station_b": "003522",
+  "line_id": "東武鉄道_伊勢崎線"
+ },
+ {
+  "station_a": "003248",
+  "station_b": "003232",
+  "line_id": "京成電鉄_金町線"
+ },
+ {
+  "station_a": "003232",
+  "station_b": "003195",
+  "line_id": "京成電鉄_金町線"
+ },
+ {
+  "station_a": "003248",
+  "station_b": "003244",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003244",
+  "station_b": "003229",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003229",
+  "station_b": "003213",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003213",
+  "station_b": "003206",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003206",
+  "station_b": "003187",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003187",
+  "station_b": "003169",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003169",
+  "station_b": "003170",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003170",
+  "station_b": "003146",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003146",
+  "station_b": "003137",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003137",
+  "station_b": "003135",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003135",
+  "station_b": "003129",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003129",
+  "station_b": "003090",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "003090",
+  "station_b": "003083",
+  "line_id": "北総鉄道_北総線"
+ },
+ {
+  "station_a": "004194",
+  "station_b": "004260",
+  "line_id": "京成電鉄_千原線"
+ },
+ {
+  "station_a": "004260",
+  "station_b": "004276",
+  "line_id": "京成電鉄_千原線"
+ },
+ {
+  "station_a": "004276",
+  "station_b": "004338",
+  "line_id": "京成電鉄_千原線"
+ },
+ {
+  "station_a": "004338",
+  "station_b": "004365",
+  "line_id": "京成電鉄_千原線"
+ },
+ {
+  "station_a": "004365",
+  "station_b": "004423",
+  "line_id": "京成電鉄_千原線"
+ },
+ {
+  "station_a": "003747",
+  "station_b": "003814",
+  "line_id": "京成電鉄_千葉線"
+ },
+ {
+  "station_a": "003814",
+  "station_b": "003913",
+  "line_id": "京成電鉄_千葉線"
+ },
+ {
+  "station_a": "003913",
+  "station_b": "003964",
+  "line_id": "京成電鉄_千葉線"
+ },
+ {
+  "station_a": "003964",
+  "station_b": "004048",
+  "line_id": "京成電鉄_千葉線"
+ },
+ {
+  "station_a": "004048",
+  "station_b": "004115",
+  "line_id": "京成電鉄_千葉線"
+ },
+ {
+  "station_a": "004115",
+  "station_b": "004145",
+  "line_id": "京成電鉄_千葉線"
+ },
+ {
+  "station_a": "004145",
+  "station_b": "004172",
+  "line_id": "京成電鉄_千葉線"
+ },
+ {
+  "station_a": "004172",
+  "station_b": "004176",
+  "line_id": "京成電鉄_千葉線"
+ },
+ {
+  "station_a": "004176",
+  "station_b": "004194",
+  "line_id": "京成電鉄_千葉線"
+ },
+ {
+  "station_a": "003136",
+  "station_b": "003115",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003115",
+  "station_b": "003109",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003109",
+  "station_b": "003116",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003116",
+  "station_b": "003105",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003105",
+  "station_b": "003085",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003085",
+  "station_b": "003095",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003095",
+  "station_b": "003111",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003111",
+  "station_b": "003143",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003143",
+  "station_b": "003164",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003164",
+  "station_b": "003146",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003146",
+  "station_b": "003178",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003178",
+  "station_b": "003227",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003227",
+  "station_b": "003238",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003238",
+  "station_b": "003265",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003265",
+  "station_b": "003327",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003327",
+  "station_b": "003388",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003388",
+  "station_b": "003425",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003425",
+  "station_b": "003459",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003459",
+  "station_b": "003493",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003493",
+  "station_b": "003535",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003535",
+  "station_b": "003603",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003603",
+  "station_b": "003694",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003694",
+  "station_b": "003747",
+  "line_id": "新京成電鉄_新京成線"
+ },
+ {
+  "station_a": "003316",
+  "station_b": "003326",
+  "line_id": "山万_ユーカリが丘線"
+ },
+ {
+  "station_a": "003326",
+  "station_b": "003386",
+  "line_id": "山万_ユーカリが丘線"
+ },
+ {
+  "station_a": "003386",
+  "station_b": "003429",
+  "line_id": "山万_ユーカリが丘線"
+ },
+ {
+  "station_a": "003429",
+  "station_b": "003452",
+  "line_id": "山万_ユーカリが丘線"
+ },
+ {
+  "station_a": "003452",
+  "station_b": "003366",
+  "line_id": "山万_ユーカリが丘線"
+ },
+ {
+  "station_a": "002914",
+  "station_b": "002934",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "002934",
+  "station_b": "002938",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "002938",
+  "station_b": "002951",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "002951",
+  "station_b": "002947",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "002947",
+  "station_b": "002968",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "002968",
+  "station_b": "002975",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "002975",
+  "station_b": "002995",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "002995",
+  "station_b": "003006",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003006",
+  "station_b": "002989",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "002989",
+  "station_b": "003004",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003004",
+  "station_b": "003044",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003044",
+  "station_b": "003052",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003052",
+  "station_b": "003072",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003072",
+  "station_b": "003107",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003107",
+  "station_b": "003130",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003130",
+  "station_b": "003155",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003155",
+  "station_b": "003210",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003210",
+  "station_b": "003236",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003236",
+  "station_b": "003277",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003277",
+  "station_b": "003278",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003278",
+  "station_b": "003335",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003335",
+  "station_b": "003368",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003368",
+  "station_b": "003417",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003417",
+  "station_b": "003460",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003460",
+  "station_b": "003505",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003505",
+  "station_b": "003555",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003555",
+  "station_b": "003624",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003624",
+  "station_b": "003677",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003677",
+  "station_b": "003766",
+  "line_id": "東日本旅客鉄道_東北線"
+ },
+ {
+  "station_a": "003417",
+  "station_b": "003298",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003298",
+  "station_b": "003266",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003266",
+  "station_b": "003235",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003235",
+  "station_b": "003209",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003209",
+  "station_b": "003196",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003196",
+  "station_b": "003171",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003171",
+  "station_b": "003144",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003144",
+  "station_b": "003120",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003120",
+  "station_b": "003098",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003098",
+  "station_b": "003078",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003078",
+  "station_b": "003060",
+  "line_id": "東京都_日暮里・舎人ライナー"
+ },
+ {
+  "station_a": "003847",
+  "station_b": "003845",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003845",
+  "station_b": "003844",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003844",
+  "station_b": "003883",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003883",
+  "station_b": "003868",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003868",
+  "station_b": "003822",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003822",
+  "station_b": "003799",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003805",
+  "station_b": "003802",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003802",
+  "station_b": "003772",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003772",
+  "station_b": "003719",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003719",
+  "station_b": "003645",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003645",
+  "station_b": "003558",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003558",
+  "station_b": "003483",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003483",
+  "station_b": "003434",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003434",
+  "station_b": "003368",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003368",
+  "station_b": "003302",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003302",
+  "station_b": "003260",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "003214",
+  "station_b": "003162",
+  "line_id": "東京地下鉄_9号線千代田線"
+ },
+ {
+  "station_a": "004331",
+  "station_b": "004349",
+  "line_id": "京浜急行電鉄_空港線"
+ },
+ {
+  "station_a": "004349",
+  "station_b": "004356",
+  "line_id": "京浜急行電鉄_空港線"
+ },
+ {
+  "station_a": "004356",
+  "station_b": "004364",
+  "line_id": "京浜急行電鉄_空港線"
+ },
+ {
+  "station_a": "004364",
+  "station_b": "004373",
+  "line_id": "京浜急行電鉄_空港線"
+ },
+ {
+  "station_a": "004373",
+  "station_b": "004382",
+  "line_id": "京浜急行電鉄_空港線"
+ },
+ {
+  "station_a": "004382",
+  "station_b": "004368",
+  "line_id": "京浜急行電鉄_空港線"
+ },
+ {
+  "station_a": "004251",
+  "station_b": "004285",
+  "line_id": "東京モノレール_東京モノレール羽田線"
+ },
+ {
+  "station_a": "004285",
+  "station_b": "004312",
+  "line_id": "東京モノレール_東京モノレール羽田線"
+ },
+ {
+  "station_a": "004312",
+  "station_b": "004348",
+  "line_id": "東京モノレール_東京モノレール羽田線"
+ },
+ {
+  "station_a": "004348",
+  "station_b": "004373",
+  "line_id": "東京モノレール_東京モノレール羽田線"
+ },
+ {
+  "station_a": "004382",
+  "station_b": "004372",
+  "line_id": "東京モノレール_東京モノレール羽田線"
+ },
+ {
+  "station_a": "004372",
+  "station_b": "004361",
+  "line_id": "東京モノレール_東京モノレール羽田線"
+ },
+ {
+  "station_a": "004361",
+  "station_b": "004393",
+  "line_id": "東京モノレール_東京モノレール羽田線"
+ },
+ {
+  "station_a": "004424",
+  "station_b": "004417",
+  "line_id": "京浜急行電鉄_大師線"
+ },
+ {
+  "station_a": "004417",
+  "station_b": "004415",
+  "line_id": "京浜急行電鉄_大師線"
+ },
+ {
+  "station_a": "004415",
+  "station_b": "004413",
+  "line_id": "京浜急行電鉄_大師線"
+ },
+ {
+  "station_a": "004413",
+  "station_b": "004408",
+  "line_id": "京浜急行電鉄_大師線"
+ },
+ {
+  "station_a": "004408",
+  "station_b": "004407",
+  "line_id": "京浜急行電鉄_大師線"
+ },
+ {
+  "station_a": "004407",
+  "station_b": "004418",
+  "line_id": "京浜急行電鉄_大師線"
+ },
+ {
+  "station_a": "003141",
+  "station_b": "003092",
+  "line_id": "埼玉高速鉄道_埼玉高速鉄道線"
+ },
+ {
+  "station_a": "003092",
+  "station_b": "003054",
+  "line_id": "埼玉高速鉄道_埼玉高速鉄道線"
+ },
+ {
+  "station_a": "003054",
+  "station_b": "003036",
+  "line_id": "埼玉高速鉄道_埼玉高速鉄道線"
+ },
+ {
+  "station_a": "003036",
+  "station_b": "003017",
+  "line_id": "埼玉高速鉄道_埼玉高速鉄道線"
+ },
+ {
+  "station_a": "003017",
+  "station_b": "002988",
+  "line_id": "埼玉高速鉄道_埼玉高速鉄道線"
+ },
+ {
+  "station_a": "002988",
+  "station_b": "002956",
+  "line_id": "埼玉高速鉄道_埼玉高速鉄道線"
+ },
+ {
+  "station_a": "002956",
+  "station_b": "002933",
+  "line_id": "埼玉高速鉄道_埼玉高速鉄道線"
+ },
+ {
+  "station_a": "003611",
+  "station_b": "003771",
+  "line_id": "東日本旅客鉄道_武蔵野線"
+ },
+ {
+  "station_a": "003771",
+  "station_b": "003876",
+  "line_id": "東日本旅客鉄道_武蔵野線"
+ },
+ {
+  "station_a": "004072",
+  "station_b": "004044",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "004044",
+  "station_b": "004025",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "004025",
+  "station_b": "003941",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003941",
+  "station_b": "003884",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003884",
+  "station_b": "003810",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003810",
+  "station_b": "003782",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003782",
+  "station_b": "003728",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003595",
+  "station_b": "003542",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003542",
+  "station_b": "003481",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003481",
+  "station_b": "003441",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003441",
+  "station_b": "003343",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003343",
+  "station_b": "003279",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003279",
+  "station_b": "003236",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003236",
+  "station_b": "003207",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003207",
+  "station_b": "003153",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "003153",
+  "station_b": "003141",
+  "line_id": "東京地下鉄_7号線南北線"
+ },
+ {
+  "station_a": "002742",
+  "station_b": "002747",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002747",
+  "station_b": "002756",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002756",
+  "station_b": "002770",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002770",
+  "station_b": "002787",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002787",
+  "station_b": "002802",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002802",
+  "station_b": "002812",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002812",
+  "station_b": "002824",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002824",
+  "station_b": "002835",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002835",
+  "station_b": "002844",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002844",
+  "station_b": "002857",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002857",
+  "station_b": "002881",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002881",
+  "station_b": "002914",
+  "line_id": "埼玉新都市交通_伊奈線"
+ },
+ {
+  "station_a": "002652",
+  "station_b": "002691",
+  "line_id": "東日本旅客鉄道_高崎線"
+ },
+ {
+  "station_a": "002691",
+  "station_b": "002720",
+  "line_id": "東日本旅客鉄道_高崎線"
+ },
+ {
+  "station_a": "002720",
+  "station_b": "002761",
+  "line_id": "東日本旅客鉄道_高崎線"
+ },
+ {
+  "station_a": "002761",
+  "station_b": "002775",
+  "line_id": "東日本旅客鉄道_高崎線"
+ },
+ {
+  "station_a": "002775",
+  "station_b": "002796",
+  "line_id": "東日本旅客鉄道_高崎線"
+ },
+ {
+  "station_a": "002796",
+  "station_b": "002847",
+  "line_id": "東日本旅客鉄道_高崎線"
+ },
+ {
+  "station_a": "002847",
+  "station_b": "002914",
+  "line_id": "東日本旅客鉄道_高崎線"
+ },
+ {
+  "station_a": "002927",
+  "station_b": "002921",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002921",
+  "station_b": "002908",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002908",
+  "station_b": "002889",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002889",
+  "station_b": "002885",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002885",
+  "station_b": "002909",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002909",
+  "station_b": "002919",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002919",
+  "station_b": "002891",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002891",
+  "station_b": "002877",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002877",
+  "station_b": "002862",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002862",
+  "station_b": "002914",
+  "line_id": "東日本旅客鉄道_川越線"
+ },
+ {
+  "station_a": "002914",
+  "station_b": "002887",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002887",
+  "station_b": "002876",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002876",
+  "station_b": "002869",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002869",
+  "station_b": "002854",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002854",
+  "station_b": "002833",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002833",
+  "station_b": "002813",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002813",
+  "station_b": "002807",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002807",
+  "station_b": "002790",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002790",
+  "station_b": "002785",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002785",
+  "station_b": "002784",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002784",
+  "station_b": "002783",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002783",
+  "station_b": "002788",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002788",
+  "station_b": "002803",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002803",
+  "station_b": "002819",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002819",
+  "station_b": "002832",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002832",
+  "station_b": "002841",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002841",
+  "station_b": "002861",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002861",
+  "station_b": "002892",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002892",
+  "station_b": "002926",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002926",
+  "station_b": "002949",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002949",
+  "station_b": "002969",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002969",
+  "station_b": "002978",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002978",
+  "station_b": "002984",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "002984",
+  "station_b": "003026",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003026",
+  "station_b": "003039",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003039",
+  "station_b": "003048",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003048",
+  "station_b": "003070",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003070",
+  "station_b": "003102",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003102",
+  "station_b": "003146",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003146",
+  "station_b": "003211",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003211",
+  "station_b": "003307",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003307",
+  "station_b": "003454",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003454",
+  "station_b": "003518",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "003518",
+  "station_b": "003589",
+  "line_id": "東武鉄道_野田線"
+ },
+ {
+  "station_a": "004014",
+  "station_b": "003991",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003991",
+  "station_b": "003969",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003969",
+  "station_b": "003892",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003892",
+  "station_b": "003900",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003900",
+  "station_b": "003866",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003866",
+  "station_b": "003805",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003802",
+  "station_b": "003823",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003823",
+  "station_b": "003838",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003838",
+  "station_b": "003860",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003860",
+  "station_b": "003797",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003797",
+  "station_b": "003773",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003773",
+  "station_b": "003721",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003721",
+  "station_b": "003692",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003692",
+  "station_b": "003624",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003624",
+  "station_b": "003560",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003560",
+  "station_b": "003505",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003505",
+  "station_b": "003469",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003469",
+  "station_b": "003399",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003399",
+  "station_b": "003363",
+  "line_id": "東京地下鉄_2号線日比谷線"
+ },
+ {
+  "station_a": "003615",
+  "station_b": "003624",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003624",
+  "station_b": "003668",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003668",
+  "station_b": "003636",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003636",
+  "station_b": "003654",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003654",
+  "station_b": "003703",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003703",
+  "station_b": "003766",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003766",
+  "station_b": "003639",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003639",
+  "station_b": "003635",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003635",
+  "station_b": "003561",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003561",
+  "station_b": "003486",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003486",
+  "station_b": "003360",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003360",
+  "station_b": "003403",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003403",
+  "station_b": "003449",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003449",
+  "station_b": "003498",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003498",
+  "station_b": "003547",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003547",
+  "station_b": "003589",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003589",
+  "station_b": "003613",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003613",
+  "station_b": "003681",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003681",
+  "station_b": "003815",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003815",
+  "station_b": "003919",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003919",
+  "station_b": "003965",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "003965",
+  "station_b": "004047",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "004047",
+  "station_b": "004124",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "004124",
+  "station_b": "004173",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "004173",
+  "station_b": "004151",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "004151",
+  "station_b": "004057",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "004057",
+  "station_b": "003898",
+  "line_id": "東日本旅客鉄道_総武線"
+ },
+ {
+  "station_a": "004426",
+  "station_b": "004457",
+  "line_id": "小田急電鉄_江ノ島線"
+ },
+ {
+  "station_a": "004457",
+  "station_b": "004498",
+  "line_id": "小田急電鉄_江ノ島線"
+ },
+ {
+  "station_a": "004498",
+  "station_b": "004537",
+  "line_id": "小田急電鉄_江ノ島線"
+ },
+ {
+  "station_a": "004537",
+  "station_b": "004549",
+  "line_id": "小田急電鉄_江ノ島線"
+ },
+ {
+  "station_a": "004549",
+  "station_b": "004617",
+  "line_id": "小田急電鉄_江ノ島線"
+ },
+ {
+  "station_a": "004617",
+  "station_b": "004676",
+  "line_id": "小田急電鉄_江ノ島線"
+ },
+ {
+  "station_a": "004676",
+  "station_b": "004729",
+  "line_id": "小田急電鉄_江ノ島線"
+ },
+ {
+  "station_a": "004729",
+  "station_b": "004782",
+  "line_id": "小田急電鉄_江ノ島線"
+ },
+ {
+  "station_a": "004154",
+  "station_b": "004118",
+  "line_id": "小田急電鉄_多摩線"
+ },
+ {
+  "station_a": "004118",
+  "station_b": "004090",
+  "line_id": "小田急電鉄_多摩線"
+ },
+ {
+  "station_a": "004090",
+  "station_b": "004141",
+  "line_id": "小田急電鉄_多摩線"
+ },
+ {
+  "station_a": "004141",
+  "station_b": "004168",
+  "line_id": "小田急電鉄_多摩線"
+ },
+ {
+  "station_a": "004168",
+  "station_b": "004214",
+  "line_id": "小田急電鉄_多摩線"
+ },
+ {
+  "station_a": "004214",
+  "station_b": "004237",
+  "line_id": "小田急電鉄_多摩線"
+ },
+ {
+  "station_a": "004237",
+  "station_b": "004227",
+  "line_id": "小田急電鉄_多摩線"
+ },
+ {
+  "station_a": "004479",
+  "station_b": "004535",
+  "line_id": "小湊鐵道_小湊鐵道線"
+ },
+ {
+  "station_a": "004535",
+  "station_b": "004577",
+  "line_id": "小湊鐵道_小湊鐵道線"
+ },
+ {
+  "station_a": "004577",
+  "station_b": "004632",
+  "line_id": "小湊鐵道_小湊鐵道線"
+ },
+ {
+  "station_a": "004632",
+  "station_b": "004667",
+  "line_id": "小湊鐵道_小湊鐵道線"
+ },
+ {
+  "station_a": "004667",
+  "station_b": "004713",
+  "line_id": "小湊鐵道_小湊鐵道線"
+ },
+ {
+  "station_a": "004713",
+  "station_b": "004757",
+  "line_id": "小湊鐵道_小湊鐵道線"
+ },
+ {
+  "station_a": "004757",
+  "station_b": "004826",
+  "line_id": "小湊鐵道_小湊鐵道線"
+ },
+ {
+  "station_a": "004774",
+  "station_b": "004730",
+  "line_id": "東日本旅客鉄道_内房線"
+ },
+ {
+  "station_a": "004730",
+  "station_b": "004677",
+  "line_id": "東日本旅客鉄道_内房線"
+ },
+ {
+  "station_a": "003547",
+  "station_b": "003566",
+  "line_id": "東葉高速鉄道_東葉高速線"
+ },
+ {
+  "station_a": "003566",
+  "station_b": "003501",
+  "line_id": "東葉高速鉄道_東葉高速線"
+ },
+ {
+  "station_a": "003501",
+  "station_b": "003459",
+  "line_id": "東葉高速鉄道_東葉高速線"
+ },
+ {
+  "station_a": "003459",
+  "station_b": "003421",
+  "line_id": "東葉高速鉄道_東葉高速線"
+ },
+ {
+  "station_a": "003421",
+  "station_b": "003401",
+  "line_id": "東葉高速鉄道_東葉高速線"
+ },
+ {
+  "station_a": "003401",
+  "station_b": "003416",
+  "line_id": "東葉高速鉄道_東葉高速線"
+ },
+ {
+  "station_a": "003416",
+  "station_b": "003446",
+  "line_id": "東葉高速鉄道_東葉高速線"
+ },
+ {
+  "station_a": "003446",
+  "station_b": "003487",
+  "line_id": "東葉高速鉄道_東葉高速線"
+ },
+ {
+  "station_a": "003181",
+  "station_b": "003148",
+  "line_id": "西武鉄道_狭山線"
+ },
+ {
+  "station_a": "003148",
+  "station_b": "003118",
+  "line_id": "西武鉄道_狭山線"
+ },
+ {
+  "station_a": "002950",
+  "station_b": "002999",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "002999",
+  "station_b": "002997",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "002997",
+  "station_b": "003020",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003020",
+  "station_b": "003028",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003028",
+  "station_b": "003018",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003018",
+  "station_b": "003011",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003011",
+  "station_b": "003050",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003050",
+  "station_b": "003068",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003068",
+  "station_b": "003088",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003088",
+  "station_b": "003118",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003118",
+  "station_b": "003131",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003131",
+  "station_b": "003151",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003151",
+  "station_b": "003179",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003179",
+  "station_b": "003217",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003217",
+  "station_b": "003242",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003242",
+  "station_b": "003271",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003271",
+  "station_b": "003263",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003263",
+  "station_b": "003292",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003292",
+  "station_b": "003314",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003314",
+  "station_b": "003349",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003349",
+  "station_b": "003345",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003345",
+  "station_b": "003328",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003328",
+  "station_b": "003321",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003321",
+  "station_b": "003337",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003337",
+  "station_b": "003393",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003393",
+  "station_b": "003426",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003426",
+  "station_b": "003390",
+  "line_id": "西武鉄道_池袋線"
+ },
+ {
+  "station_a": "003181",
+  "station_b": "003192",
+  "line_id": "西武鉄道_山口線"
+ },
+ {
+  "station_a": "003192",
+  "station_b": "003201",
+  "line_id": "西武鉄道_山口線"
+ },
+ {
+  "station_a": "003450",
+  "station_b": "003520",
+  "line_id": "西武鉄道_国分寺線"
+ },
+ {
+  "station_a": "003520",
+  "station_b": "003606",
+  "line_id": "西武鉄道_国分寺線"
+ },
+ {
+  "station_a": "003606",
+  "station_b": "003333",
+  "line_id": "西武鉄道_国分寺線"
+ },
+ {
+  "station_a": "003333",
+  "station_b": "003220",
+  "line_id": "西武鉄道_国分寺線"
+ },
+ {
+  "station_a": "002991",
+  "station_b": "002963",
+  "line_id": "西武鉄道_新宿線"
+ },
+ {
+  "station_a": "002963",
+  "station_b": "002940",
+  "line_id": "西武鉄道_新宿線"
+ },
+ {
+  "station_a": "002940",
+  "station_b": "002895",
+  "line_id": "西武鉄道_新宿線"
+ },
+ {
+  "station_a": "003197",
+  "station_b": "003220",
+  "line_id": "西武鉄道_西武園線"
+ },
+ {
+  "station_a": "003462",
+  "station_b": "003428",
+  "line_id": "西武鉄道_拝島線"
+ },
+ {
+  "station_a": "003428",
+  "station_b": "003404",
+  "line_id": "西武鉄道_拝島線"
+ },
+ {
+  "station_a": "003404",
+  "station_b": "003371",
+  "line_id": "西武鉄道_拝島線"
+ },
+ {
+  "station_a": "003371",
+  "station_b": "003365",
+  "line_id": "西武鉄道_拝島線"
+ },
+ {
+  "station_a": "003365",
+  "station_b": "003333",
+  "line_id": "西武鉄道_拝島線"
+ },
+ {
+  "station_a": "003333",
+  "station_b": "003312",
+  "line_id": "西武鉄道_拝島線"
+ },
+ {
+  "station_a": "003312",
+  "station_b": "003340",
+  "line_id": "西武鉄道_拝島線"
+ },
+ {
+  "station_a": "003201",
+  "station_b": "003231",
+  "line_id": "西武鉄道_多摩湖線"
+ },
+ {
+  "station_a": "003231",
+  "station_b": "003287",
+  "line_id": "西武鉄道_多摩湖線"
+ },
+ {
+  "station_a": "003287",
+  "station_b": "003312",
+  "line_id": "西武鉄道_多摩湖線"
+ },
+ {
+  "station_a": "003312",
+  "station_b": "003382",
+  "line_id": "西武鉄道_多摩湖線"
+ },
+ {
+  "station_a": "003382",
+  "station_b": "003455",
+  "line_id": "西武鉄道_多摩湖線"
+ },
+ {
+  "station_a": "003455",
+  "station_b": "003606",
+  "line_id": "西武鉄道_多摩湖線"
+ },
+ {
+  "station_a": "003568",
+  "station_b": "003523",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003523",
+  "station_b": "003508",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003508",
+  "station_b": "003570",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003570",
+  "station_b": "003578",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003578",
+  "station_b": "003595",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003595",
+  "station_b": "003657",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003657",
+  "station_b": "003691",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003691",
+  "station_b": "003719",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003719",
+  "station_b": "003756",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003756",
+  "station_b": "003773",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003773",
+  "station_b": "003818",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003818",
+  "station_b": "003840",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003840",
+  "station_b": "003839",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003839",
+  "station_b": "003854",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003854",
+  "station_b": "003890",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003890",
+  "station_b": "003894",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003894",
+  "station_b": "003875",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003875",
+  "station_b": "003819",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003819",
+  "station_b": "003755",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003755",
+  "station_b": "003686",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003686",
+  "station_b": "003582",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003582",
+  "station_b": "003547",
+  "line_id": "東京地下鉄_5号線東西線"
+ },
+ {
+  "station_a": "003328",
+  "station_b": "003311",
+  "line_id": "西武鉄道_西武有楽町線"
+ },
+ {
+  "station_a": "003311",
+  "station_b": "003294",
+  "line_id": "西武鉄道_西武有楽町線"
+ },
+ {
+  "station_a": "003944",
+  "station_b": "003943",
+  "line_id": "西武鉄道_多摩川線"
+ },
+ {
+  "station_a": "003943",
+  "station_b": "003873",
+  "line_id": "西武鉄道_多摩川線"
+ },
+ {
+  "station_a": "003873",
+  "station_b": "003790",
+  "line_id": "西武鉄道_多摩川線"
+ },
+ {
+  "station_a": "003790",
+  "station_b": "003653",
+  "line_id": "西武鉄道_多摩川線"
+ },
+ {
+  "station_a": "003653",
+  "station_b": "003590",
+  "line_id": "西武鉄道_多摩川線"
+ },
+ {
+  "station_a": "003390",
+  "station_b": "003286",
+  "line_id": "東日本旅客鉄道_赤羽線"
+ },
+ {
+  "station_a": "003286",
+  "station_b": "003218",
+  "line_id": "東日本旅客鉄道_赤羽線"
+ },
+ {
+  "station_a": "003218",
+  "station_b": "003155",
+  "line_id": "東日本旅客鉄道_赤羽線"
+ },
+ {
+  "station_a": "002709",
+  "station_b": "002710",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002710",
+  "station_b": "002708",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002708",
+  "station_b": "002717",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002717",
+  "station_b": "002753",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002753",
+  "station_b": "002800",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002800",
+  "station_b": "002822",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002822",
+  "station_b": "002837",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002837",
+  "station_b": "002852",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002852",
+  "station_b": "002874",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002874",
+  "station_b": "002893",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002893",
+  "station_b": "002909",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002909",
+  "station_b": "002937",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002937",
+  "station_b": "002964",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002964",
+  "station_b": "002987",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "002987",
+  "station_b": "003007",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003007",
+  "station_b": "003025",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003025",
+  "station_b": "003038",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003038",
+  "station_b": "003049",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003049",
+  "station_b": "003061",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003061",
+  "station_b": "003097",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003097",
+  "station_b": "003123",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003123",
+  "station_b": "003156",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003156",
+  "station_b": "003184",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003184",
+  "station_b": "003194",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003194",
+  "station_b": "003212",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003212",
+  "station_b": "003223",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003223",
+  "station_b": "003233",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003233",
+  "station_b": "003269",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003269",
+  "station_b": "003285",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003285",
+  "station_b": "003315",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003315",
+  "station_b": "003390",
+  "line_id": "東武鉄道_東上本線"
+ },
+ {
+  "station_a": "003433",
+  "station_b": "003411",
+  "line_id": "東日本旅客鉄道_五日市線"
+ },
+ {
+  "station_a": "003411",
+  "station_b": "003462",
+  "line_id": "東日本旅客鉄道_五日市線"
+ },
+ {
+  "station_a": "003168",
+  "station_b": "003226",
+  "line_id": "東日本旅客鉄道_青梅線"
+ },
+ {
+  "station_a": "003226",
+  "station_b": "003300",
+  "line_id": "東日本旅客鉄道_青梅線"
+ },
+ {
+  "station_a": "003300",
+  "station_b": "003353",
+  "line_id": "東日本旅客鉄道_青梅線"
+ },
+ {
+  "station_a": "003353",
+  "station_b": "003462",
+  "line_id": "東日本旅客鉄道_青梅線"
+ },
+ {
+  "station_a": "003462",
+  "station_b": "003507",
+  "line_id": "東日本旅客鉄道_青梅線"
+ },
+ {
+  "station_a": "003507",
+  "station_b": "003536",
+  "line_id": "東日本旅客鉄道_青梅線"
+ },
+ {
+  "station_a": "003536",
+  "station_b": "003562",
+  "line_id": "東日本旅客鉄道_青梅線"
+ },
+ {
+  "station_a": "003562",
+  "station_b": "003581",
+  "line_id": "東日本旅客鉄道_青梅線"
+ },
+ {
+  "station_a": "003581",
+  "station_b": "003634",
+  "line_id": "東日本旅客鉄道_青梅線"
+ },
+ {
+  "station_a": "004201",
+  "station_b": "004203",
+  "line_id": "千葉都市モノレール_1号線"
+ },
+ {
+  "station_a": "004203",
+  "station_b": "004173",
+  "line_id": "千葉都市モノレール_1号線"
+ },
+ {
+  "station_a": "004173",
+  "station_b": "004169",
+  "line_id": "千葉都市モノレール_1号線"
+ },
+ {
+  "station_a": "004169",
+  "station_b": "004187",
+  "line_id": "千葉都市モノレール_1号線"
+ },
+ {
+  "station_a": "004187",
+  "station_b": "004226",
+  "line_id": "千葉都市モノレール_1号線"
+ },
+ {
+  "station_a": "004039",
+  "station_b": "004023",
+  "line_id": "千葉都市モノレール_2号線"
+ },
+ {
+  "station_a": "004023",
+  "station_b": "004028",
+  "line_id": "千葉都市モノレール_2号線"
+ },
+ {
+  "station_a": "004028",
+  "station_b": "004041",
+  "line_id": "千葉都市モノレール_2号線"
+ },
+ {
+  "station_a": "004041",
+  "station_b": "004057",
+  "line_id": "千葉都市モノレール_2号線"
+ },
+ {
+  "station_a": "004057",
+  "station_b": "004081",
+  "line_id": "千葉都市モノレール_2号線"
+ },
+ {
+  "station_a": "004081",
+  "station_b": "004099",
+  "line_id": "千葉都市モノレール_2号線"
+ },
+ {
+  "station_a": "004099",
+  "station_b": "004103",
+  "line_id": "千葉都市モノレール_2号線"
+ },
+ {
+  "station_a": "004103",
+  "station_b": "004126",
+  "line_id": "千葉都市モノレール_2号線"
+ },
+ {
+  "station_a": "004173",
+  "station_b": "004236",
+  "line_id": "東日本旅客鉄道_外房線"
+ },
+ {
+  "station_a": "004236",
+  "station_b": "004281",
+  "line_id": "東日本旅客鉄道_外房線"
+ },
+ {
+  "station_a": "004281",
+  "station_b": "004327",
+  "line_id": "東日本旅客鉄道_外房線"
+ },
+ {
+  "station_a": "003785",
+  "station_b": "003797",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003797",
+  "station_b": "003859",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003859",
+  "station_b": "003928",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003928",
+  "station_b": "003997",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003997",
+  "station_b": "004012",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "004012",
+  "station_b": "004055",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "004055",
+  "station_b": "003978",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003978",
+  "station_b": "003870",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003870",
+  "station_b": "003682",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003682",
+  "station_b": "003547",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003547",
+  "station_b": "003761",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003761",
+  "station_b": "003863",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003863",
+  "station_b": "003984",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "003984",
+  "station_b": "004049",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "004049",
+  "station_b": "004093",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "004093",
+  "station_b": "004201",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "004201",
+  "station_b": "004281",
+  "line_id": "東日本旅客鉄道_京葉線"
+ },
+ {
+  "station_a": "004797",
+  "station_b": "004773",
+  "line_id": "相模鉄道_いずみ野線"
+ },
+ {
+  "station_a": "004773",
+  "station_b": "004745",
+  "line_id": "相模鉄道_いずみ野線"
+ },
+ {
+  "station_a": "004745",
+  "station_b": "004742",
+  "line_id": "相模鉄道_いずみ野線"
+ },
+ {
+  "station_a": "004742",
+  "station_b": "004714",
+  "line_id": "相模鉄道_いずみ野線"
+ },
+ {
+  "station_a": "004714",
+  "station_b": "004674",
+  "line_id": "相模鉄道_いずみ野線"
+ },
+ {
+  "station_a": "004674",
+  "station_b": "004642",
+  "line_id": "相模鉄道_いずみ野線"
+ },
+ {
+  "station_a": "004594",
+  "station_b": "004581",
+  "line_id": "相模鉄道_相鉄新横浜線"
+ },
+ {
+  "station_a": "003000",
+  "station_b": "002992",
+  "line_id": "流鉄_流山線"
+ },
+ {
+  "station_a": "002992",
+  "station_b": "003019",
+  "line_id": "流鉄_流山線"
+ },
+ {
+  "station_a": "003019",
+  "station_b": "003029",
+  "line_id": "流鉄_流山線"
+ },
+ {
+  "station_a": "003029",
+  "station_b": "003043",
+  "line_id": "流鉄_流山線"
+ },
+ {
+  "station_a": "003043",
+  "station_b": "003064",
+  "line_id": "流鉄_流山線"
+ },
+ {
+  "station_a": "004135",
+  "station_b": "004197",
+  "line_id": "東京臨海高速鉄道_りんかい線"
+ },
+ {
+  "station_a": "004197",
+  "station_b": "004182",
+  "line_id": "東京臨海高速鉄道_りんかい線"
+ },
+ {
+  "station_a": "004182",
+  "station_b": "004123",
+  "line_id": "東京臨海高速鉄道_りんかい線"
+ },
+ {
+  "station_a": "004123",
+  "station_b": "004108",
+  "line_id": "東京臨海高速鉄道_りんかい線"
+ },
+ {
+  "station_a": "004108",
+  "station_b": "004065",
+  "line_id": "東京臨海高速鉄道_りんかい線"
+ },
+ {
+  "station_a": "004065",
+  "station_b": "004034",
+  "line_id": "東京臨海高速鉄道_りんかい線"
+ },
+ {
+  "station_a": "004034",
+  "station_b": "003997",
+  "line_id": "東京臨海高速鉄道_りんかい線"
+ },
+ {
+  "station_a": "004341",
+  "station_b": "004377",
+  "line_id": "東急電鉄_こどもの国線"
+ },
+ {
+  "station_a": "004377",
+  "station_b": "004430",
+  "line_id": "東急電鉄_こどもの国線"
+ },
+ {
+  "station_a": "004177",
+  "station_b": "004175",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004175",
+  "station_b": "004191",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004191",
+  "station_b": "004205",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004205",
+  "station_b": "004216",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004216",
+  "station_b": "004196",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004196",
+  "station_b": "004210",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004210",
+  "station_b": "004200",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004200",
+  "station_b": "004212",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004212",
+  "station_b": "004219",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004219",
+  "station_b": "004225",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004225",
+  "station_b": "004215",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004215",
+  "station_b": "004186",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004186",
+  "station_b": "004188",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004188",
+  "station_b": "004197",
+  "line_id": "東急電鉄_大井町線"
+ },
+ {
+  "station_a": "004259",
+  "station_b": "004247",
+  "line_id": "東急電鉄_池上線"
+ },
+ {
+  "station_a": "004247",
+  "station_b": "004239",
+  "line_id": "東急電鉄_池上線"
+ },
+ {
+  "station_a": "004239",
+  "station_b": "004232",
+  "line_id": "東急電鉄_池上線"
+ },
+ {
+  "station_a": "004232",
+  "station_b": "004219",
+  "line_id": "東急電鉄_池上線"
+ },
+ {
+  "station_a": "004219",
+  "station_b": "004181",
+  "line_id": "東急電鉄_池上線"
+ },
+ {
+  "station_a": "004181",
+  "station_b": "004155",
+  "line_id": "東急電鉄_池上線"
+ },
+ {
+  "station_a": "004155",
+  "station_b": "004127",
+  "line_id": "東急電鉄_池上線"
+ },
+ {
+  "station_a": "004127",
+  "station_b": "004110",
+  "line_id": "東急電鉄_池上線"
+ },
+ {
+  "station_a": "004245",
+  "station_b": "004223",
+  "line_id": "東急電鉄_目黒線"
+ },
+ {
+  "station_a": "004223",
+  "station_b": "004200",
+  "line_id": "東急電鉄_目黒線"
+ },
+ {
+  "station_a": "004200",
+  "station_b": "004180",
+  "line_id": "東急電鉄_目黒線"
+ },
+ {
+  "station_a": "004180",
+  "station_b": "004157",
+  "line_id": "東急電鉄_目黒線"
+ },
+ {
+  "station_a": "004157",
+  "station_b": "004133",
+  "line_id": "東急電鉄_目黒線"
+ },
+ {
+  "station_a": "004133",
+  "station_b": "004114",
+  "line_id": "東急電鉄_目黒線"
+ },
+ {
+  "station_a": "004114",
+  "station_b": "004072",
+  "line_id": "東急電鉄_目黒線"
+ },
+ {
+  "station_a": "004261",
+  "station_b": "004279",
+  "line_id": "東急電鉄_東急多摩川線"
+ },
+ {
+  "station_a": "004279",
+  "station_b": "004299",
+  "line_id": "東急電鉄_東急多摩川線"
+ },
+ {
+  "station_a": "004299",
+  "station_b": "004310",
+  "line_id": "東急電鉄_東急多摩川線"
+ },
+ {
+  "station_a": "004310",
+  "station_b": "004317",
+  "line_id": "東急電鉄_東急多摩川線"
+ },
+ {
+  "station_a": "004317",
+  "station_b": "004329",
+  "line_id": "東急電鉄_東急多摩川線"
+ },
+ {
+  "station_a": "004329",
+  "station_b": "004330",
+  "line_id": "東急電鉄_東急多摩川線"
+ },
+ {
+  "station_a": "003104",
+  "station_b": "003112",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003112",
+  "station_b": "003117",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003117",
+  "station_b": "003128",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003128",
+  "station_b": "003140",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003140",
+  "station_b": "003158",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003158",
+  "station_b": "003165",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003165",
+  "station_b": "003193",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003193",
+  "station_b": "003216",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003216",
+  "station_b": "003245",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003245",
+  "station_b": "003268",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003268",
+  "station_b": "003293",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003293",
+  "station_b": "003354",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003354",
+  "station_b": "003415",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003415",
+  "station_b": "003461",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003461",
+  "station_b": "003529",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003529",
+  "station_b": "003580",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003580",
+  "station_b": "003651",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003719",
+  "station_b": "003802",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003802",
+  "station_b": "003842",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003842",
+  "station_b": "003911",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003911",
+  "station_b": "003962",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003962",
+  "station_b": "003986",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003986",
+  "station_b": "004025",
+  "line_id": "東京都_6号線三田線"
+ },
+ {
+  "station_a": "003751",
+  "station_b": "003688",
+  "line_id": "東京地下鉄_4号線丸ノ内線分岐線"
+ },
+ {
+  "station_a": "003688",
+  "station_b": "003679",
+  "line_id": "東京地下鉄_4号線丸ノ内線分岐線"
+ },
+ {
+  "station_a": "003679",
+  "station_b": "003643",
+  "line_id": "東京地下鉄_4号線丸ノ内線分岐線"
+ },
+ {
+  "station_a": "003490",
+  "station_b": "003509",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003509",
+  "station_b": "003514",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003514",
+  "station_b": "003468",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003468",
+  "station_b": "003443",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003443",
+  "station_b": "003436",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003436",
+  "station_b": "003407",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003407",
+  "station_b": "003378",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003378",
+  "station_b": "003351",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003351",
+  "station_b": "003319",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003319",
+  "station_b": "003310",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003310",
+  "station_b": "003289",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003289",
+  "station_b": "003276",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003276",
+  "station_b": "003256",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003256",
+  "station_b": "003239",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003239",
+  "station_b": "003253",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003253",
+  "station_b": "003246",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003246",
+  "station_b": "003252",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003252",
+  "station_b": "003254",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003254",
+  "station_b": "003255",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003255",
+  "station_b": "003259",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003259",
+  "station_b": "003266",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003266",
+  "station_b": "003284",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003284",
+  "station_b": "003291",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003291",
+  "station_b": "003299",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003299",
+  "station_b": "003306",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003306",
+  "station_b": "003322",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003322",
+  "station_b": "003350",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003350",
+  "station_b": "003357",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003357",
+  "station_b": "003370",
+  "line_id": "東京都_荒川線"
+ },
+ {
+  "station_a": "003497",
+  "station_b": "003488",
+  "line_id": "東京都_上野懸垂線"
+ },
+ {
+  "station_a": "002965",
+  "station_b": "002972",
+  "line_id": "東日本旅客鉄道_成田線"
+ },
+ {
+  "station_a": "002972",
+  "station_b": "002976",
+  "line_id": "東日本旅客鉄道_成田線"
+ },
+ {
+  "station_a": "002976",
+  "station_b": "002983",
+  "line_id": "東日本旅客鉄道_成田線"
+ },
+ {
+  "station_a": "002983",
+  "station_b": "003002",
+  "line_id": "東日本旅客鉄道_成田線"
+ },
+ {
+  "station_a": "003002",
+  "station_b": "003022",
+  "line_id": "東日本旅客鉄道_成田線"
+ },
+ {
+  "station_a": "003022",
+  "station_b": "003037",
+  "line_id": "東日本旅客鉄道_成田線"
+ },
+ {
+  "station_a": "003479",
+  "station_b": "003525",
+  "line_id": "東武鉄道_亀戸線"
+ },
+ {
+  "station_a": "003525",
+  "station_b": "003548",
+  "line_id": "東武鉄道_亀戸線"
+ },
+ {
+  "station_a": "003548",
+  "station_b": "003610",
+  "line_id": "東武鉄道_亀戸線"
+ },
+ {
+  "station_a": "003610",
+  "station_b": "003635",
+  "line_id": "東武鉄道_亀戸線"
+ },
+ {
+  "station_a": "004519",
+  "station_b": "004532",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004532",
+  "station_b": "004536",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004536",
+  "station_b": "004531",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004531",
+  "station_b": "004522",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004522",
+  "station_b": "004517",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004517",
+  "station_b": "004540",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004540",
+  "station_b": "004547",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004547",
+  "station_b": "004564",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004564",
+  "station_b": "004518",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004518",
+  "station_b": "004503",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004503",
+  "station_b": "004488",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "004488",
+  "station_b": "004496",
+  "line_id": "東日本旅客鉄道_鶴見線"
+ },
+ {
+  "station_a": "003150",
+  "station_b": "003159",
+  "line_id": "東武鉄道_大師線"
+ },
+ {
+  "station_a": "002700",
+  "station_b": "002672",
+  "line_id": "東武鉄道_日光線"
+ },
+ {
+  "station_a": "002829",
+  "station_b": "002839",
+  "line_id": "東武鉄道_越生線"
+ },
+ {
+  "station_a": "002839",
+  "station_b": "002845",
+  "line_id": "東武鉄道_越生線"
+ },
+ {
+  "station_a": "002845",
+  "station_b": "002850",
+  "line_id": "東武鉄道_越生線"
+ },
+ {
+  "station_a": "002850",
+  "station_b": "002860",
+  "line_id": "東武鉄道_越生線"
+ },
+ {
+  "station_a": "002860",
+  "station_b": "002848",
+  "line_id": "東武鉄道_越生線"
+ },
+ {
+  "station_a": "002848",
+  "station_b": "002822",
+  "line_id": "東武鉄道_越生線"
+ },
+ {
+  "station_a": "004098",
+  "station_b": "004058",
+  "line_id": "舞浜リゾートライン_ディズニーリゾートライン"
+ },
+ {
+  "station_a": "004058",
+  "station_b": "004063",
+  "line_id": "舞浜リゾートライン_ディズニーリゾートライン"
+ },
+ {
+  "station_a": "004063",
+  "station_b": "004106",
+  "line_id": "舞浜リゾートライン_ディズニーリゾートライン"
+ }
+]

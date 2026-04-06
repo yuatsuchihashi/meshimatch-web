@@ -4,13 +4,74 @@ import type {
   SessionFocus,
 } from "@/lib/types";
 
+// --- Place Algorithm v2 ---
+
 export type AreaReasonCode =
-  | "easy_gather"
-  | "practical_midpoint"
-  | "strong_supply"
-  | "large_group_safe"
-  | "preferred_area_bonus"
-  | "discovery_pick";
+  | "easy_access"
+  | "strong_restaurant"
+  | "good_for_large_group"
+  | "great_discovery"
+  | "matches_preference";
+
+export interface Station {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  passenger_count: number;
+  line_ids: string[];
+}
+
+export interface Line {
+  id: string;
+  name: string;
+  operator: string;
+  type: "JR" | "metro" | "private";
+  station_ids: string[];
+}
+
+export interface StationEdge {
+  station_a: string;
+  station_b: string;
+  line_id: string;
+}
+
+export interface CandidateAreaScores {
+  access: number;
+  restaurant: number;
+  scale: number;
+  discovery: number;
+  preference: number;
+  combined: number;
+}
+
+export interface CandidateArea {
+  areaName: string;
+  stationName: string;
+  stationId: string;
+  lat: number;
+  lng: number;
+  scores: CandidateAreaScores;
+  reasons: AreaReasonCode[];
+  tags: string[];
+  explanation: string;
+}
+
+export interface PlaceResponseSignal {
+  departureStationId?: string | null;
+  preferredStationIds?: string[];
+  /** @deprecated v1 text-based fields */
+  departureArea?: string | null;
+  departureStation?: string | null;
+  preferredAreas?: string[];
+}
+
+export interface PlaceRecommendationInput {
+  groupSize?: number | null;
+  responses: PlaceResponseSignal[];
+}
+
+// --- Restaurant Algorithm ---
 
 export type RestaurantReasonCode =
   | "budget_overlap"
@@ -22,59 +83,9 @@ export type RestaurantReasonCode =
   | "restriction_friendly"
   | "group_size_fit";
 
-export interface AreaMetadata {
-  id: string;
-  displayName: string;
-  stationName: string;
-  areaKind: "district" | "hub" | "discovery";
-  prefecture: string;
-  hubScore: number;
-  supplyScore: number;
-  nightlifeScore: number;
-  discoveryScore: number;
-  reliabilityScore: number;
-  nearbyHubs: string[];
-}
-
-export interface PlaceResponseSignal {
-  departureArea?: string | null;
-  departureStation?: string | null;
-  preferredAreas?: string[];
-}
-
-export interface CandidateAreaScores {
-  transferSimplicity: number;
-  midpointCloseness: number;
-  stationScale: number;
-  restaurantSupply: number;
-  nightlifeIntensity: number;
-  discoveryPotential: number;
-  preferredAreaBonus: number;
-  groupSizeAdjustment: number;
-  efficiency: number;
-  discovery: number;
-  combined: number;
-}
-
-export interface CandidateArea {
-  areaName: string;
-  stationName: string;
-  metadata: AreaMetadata;
-  scores: CandidateAreaScores;
-  reasons: AreaReasonCode[];
-  tags: string[];
-  explanation: string;
-}
-
-export interface PlaceRecommendationInput {
-  groupSize?: number | null;
-  scheduledAt?: Date | string | null;
-  sessionAtmosphere?: SessionAtmosphere | null;
-  sessionFocus?: SessionFocus | null;
-  responses: PlaceResponseSignal[];
-}
-
 export interface BudgetSignal {
+  tier?: number | null;
+  /** @deprecated v1 fields kept for backward compat */
   idealYen?: number | null;
   maxYen?: number | null;
   priority?: PriorityLevel | null;
@@ -82,10 +93,9 @@ export interface BudgetSignal {
 
 export interface AggregatedBudgetPreference {
   respondentCount: number;
-  idealLowerYen: number | null;
-  idealUpperYen: number | null;
-  maxAcceptableYen: number | null;
-  strongestPriority: PriorityLevel | null;
+  medianTier: number | null;
+  toleranceLower: number | null;
+  toleranceUpper: number | null;
 }
 
 export interface RestaurantBudgetRange {

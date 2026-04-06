@@ -1,5 +1,4 @@
 import type {
-  PriorityLevel,
   Restaurant,
   SessionAtmosphere,
   SessionFocus,
@@ -12,12 +11,7 @@ import type {
   RestaurantReasonCode,
 } from "@/lib/recommendation/types";
 
-function priorityRank(priority: PriorityLevel | null | undefined) {
-  if (priority === "must") return 3;
-  if (priority === "prefer") return 2;
-  if (priority === "optional") return 1;
-  return 0;
-}
+export const BUDGET_TIERS = [1000, 2000, 3000, 5000, 8000] as const;
 
 function clamp(value: number, min = 0, max = 1) {
   return Math.min(max, Math.max(min, value));
@@ -27,40 +21,48 @@ function isDrinkFriendly(restaurant: Restaurant) {
   return /(居酒屋|バー|バル|焼肉|韓国|ダイニング)/.test(restaurant.genre);
 }
 
-function median(values: number[]) {
-  if (values.length === 0) return null;
+function getMedian(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
-  const middle = Math.floor(sorted.length / 2);
+  const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 0
-    ? Math.round((sorted[middle - 1] + sorted[middle]) / 2)
-    : sorted[middle];
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+}
+
+function nearestTierIndex(value: number): number {
+  let bestIdx = 0;
+  let bestDist = Infinity;
+  for (let i = 0; i < BUDGET_TIERS.length; i++) {
+    const dist = Math.abs(BUDGET_TIERS[i] - value);
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestIdx = i;
+    }
+  }
+  return bestIdx;
 }
 
 export function aggregateBudgetSignals(
   signals: BudgetSignal[]
 ): AggregatedBudgetPreference {
-  const activeSignals = signals.filter(
-    (signal) => signal.idealYen || signal.maxYen || signal.priority
-  );
-  const idealValues = activeSignals
-    .map((signal) => signal.idealYen)
-    .filter((value): value is number => typeof value === "number");
-  const maxValues = activeSignals
-    .map((signal) => signal.maxYen)
-    .filter((value): value is number => typeof value === "number");
-  const strongestPriority = activeSignals
-    .map((signal) => signal.priority ?? null)
-    .sort((a, b) => priorityRank(b) - priorityRank(a))[0] ?? null;
+  const tierValues = signals
+    .map((s) => s.tier)
+    .filter((v): v is number => typeof v === "number" && v > 0);
 
-  const idealMedian = median(idealValues);
-  const maxMedian = median(maxValues);
+  if (tierValues.length === 0) {
+    return { respondentCount: 0, medianTier: null, toleranceLower: null, toleranceUpper: null };
+  }
+
+  const median = getMedian(tierValues);
+  const tierIdx = nearestTierIndex(median);
+  const lo = BUDGET_TIERS[Math.max(0, tierIdx - 1)];
+  const hi = BUDGET_TIERS[Math.min(BUDGET_TIERS.length - 1, tierIdx + 1)];
 
   return {
-    respondentCount: activeSignals.length,
-    idealLowerYen: idealMedian ? Math.round(idealMedian * 0.85) : null,
-    idealUpperYen: idealMedian ? Math.round(idealMedian * 1.15) : null,
-    maxAcceptableYen: maxMedian,
-    strongestPriority,
+    respondentCount: tierValues.length,
+    medianTier: BUDGET_TIERS[tierIdx],
+    toleranceLower: lo,
+    toleranceUpper: hi,
   };
 }
 
@@ -93,50 +95,55 @@ export function scoreBudgetFit(
 ) {
   const reasons: RestaurantReasonCode[] = [];
 
-  if (aggregate.respondentCount === 0 || restaurantBudget.maxYen === null) {
+  if (aggregate.respondentCount === 0 || aggregate.medianTier === null) {
     return {
-      score: 0.55,
+      score: 0.5,
       reasons,
       tags: restaurantReasonTags(reasons),
       explanation: buildRestaurantExplanation(reasons),
     };
   }
 
-  const withinIdeal =
-    aggregate.idealLowerYen !== null &&
-    aggregate.idealUpperYen !== null &&
-    restaurantBudget.minYen !== null &&
-    restaurantBudget.maxYen >= aggregate.idealLowerYen &&
-    restaurantBudget.minYen <= aggregate.idealUpperYen;
+  if (restaurantBudget.minYen === null && restaurantBudget.maxYen === null) {
+    return {
+      score: 0.5,
+      reasons,
+      tags: restaurantReasonTags(reasons),
+      explanation: buildRestaurantExplanation(reasons),
+    };
+  }
 
-  const withinMax =
-    aggregate.maxAcceptableYen !== null &&
-    restaurantBudget.minYen !== null &&
-    restaurantBudget.minYen <= aggregate.maxAcceptableYen;
+  const restMid =
+    restaurantBudget.minYen !== null && restaurantBudget.maxYen !== null
+      ? (restaurantBudget.minYen + restaurantBudget.maxYen) / 2
+      : (restaurantBudget.minYen ?? restaurantBudget.maxYen)!;
 
-  let score = 0.35;
+  const ideal = aggregate.medianTier;
+  const lo = aggregate.toleranceLower ?? ideal;
+  const hi = aggregate.toleranceUpper ?? ideal;
 
-  if (withinIdeal) {
-    score += 0.4;
+  if (restMid >= ideal * 0.8 && restMid <= ideal * 1.2) {
     reasons.push("budget_overlap");
+    return {
+      score: 1.0,
+      reasons,
+      tags: restaurantReasonTags(reasons),
+      explanation: buildRestaurantExplanation(reasons),
+    };
   }
 
-  if (withinMax) {
-    score += 0.2;
+  if (restMid >= lo && restMid <= hi) {
     reasons.push("budget_safe");
-  }
-
-  if (
-    aggregate.strongestPriority === "must" &&
-    aggregate.maxAcceptableYen !== null &&
-    restaurantBudget.minYen !== null &&
-    restaurantBudget.minYen > aggregate.maxAcceptableYen
-  ) {
-    score = 0.05;
+    return {
+      score: 0.5,
+      reasons,
+      tags: restaurantReasonTags(reasons),
+      explanation: buildRestaurantExplanation(reasons),
+    };
   }
 
   return {
-    score: Math.min(1, score),
+    score: 0.0,
     reasons,
     tags: restaurantReasonTags(reasons),
     explanation: buildRestaurantExplanation(reasons),

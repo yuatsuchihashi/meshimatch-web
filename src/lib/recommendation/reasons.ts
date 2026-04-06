@@ -4,17 +4,16 @@ import type {
 } from "@/lib/recommendation/types";
 
 const AREA_REASON_TAGS: Record<AreaReasonCode, string> = {
-  easy_gather: "集まりやすい",
-  practical_midpoint: "中間候補",
-  strong_supply: "店数が多い",
-  large_group_safe: "大人数向き",
-  preferred_area_bonus: "希望エリア寄り",
-  discovery_pick: "穴場寄り",
+  easy_access: "アクセスしやすい",
+  strong_restaurant: "店数が豊富",
+  good_for_large_group: "大人数向き",
+  great_discovery: "穴場発見しやすい",
+  matches_preference: "希望エリア",
 };
 
 const RESTAURANT_REASON_TAGS: Record<RestaurantReasonCode, string> = {
-  budget_overlap: "予算が合う",
-  budget_safe: "上限内に収まりやすい",
+  budget_overlap: "予算帯にぴったり",
+  budget_safe: "予算帯に近い",
   preferred_genre_match: "好みに近い",
   drink_focus_fit: "飲み会向き",
   food_focus_fit: "食事メイン向き",
@@ -24,17 +23,16 @@ const RESTAURANT_REASON_TAGS: Record<RestaurantReasonCode, string> = {
 };
 
 const AREA_REASON_PHRASES: Record<AreaReasonCode, string> = {
-  easy_gather: "集まりやすく",
-  practical_midpoint: "移動の偏りが出にくく",
-  strong_supply: "店の選択肢が十分あり",
-  large_group_safe: "大人数でも候補を確保しやすく",
-  preferred_area_bonus: "参加者の希望エリアにも寄っていて",
-  discovery_pick: "定番すぎない選択肢としても機能し",
+  easy_access: "みんなが集まりやすく",
+  strong_restaurant: "店の選択肢が十分あり",
+  good_for_large_group: "大人数でも候補を確保しやすく",
+  great_discovery: "定番すぎない穴場を見つけやすく",
+  matches_preference: "参加者の希望エリアに合っていて",
 };
 
 const RESTAURANT_REASON_PHRASES: Record<RestaurantReasonCode, string> = {
-  budget_overlap: "提出された予算帯に収まりやすく",
-  budget_safe: "上限予算を超えにくく",
+  budget_overlap: "グループの予算帯にぴったり収まり",
+  budget_safe: "グループの予算帯に近く",
   preferred_genre_match: "提出された好みに近いジャンルで",
   drink_focus_fit: "飲み中心の集まりに向いていて",
   food_focus_fit: "食事メインの会に向いていて",
