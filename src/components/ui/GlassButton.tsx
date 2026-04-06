@@ -27,9 +27,9 @@ export function GlassButton({
   };
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-sm rounded-xl",
-    md: "px-5 py-2.5 text-base rounded-2xl",
-    lg: "px-7 py-3.5 text-lg rounded-2xl",
+    sm: "px-3 py-1.5 text-sm rounded-full",
+    md: "px-5 py-2.5 text-base rounded-full",
+    lg: "px-7 py-3.5 text-lg rounded-full",
   };
 
   return (

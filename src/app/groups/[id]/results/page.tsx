@@ -2,7 +2,6 @@
 
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/lib/hooks/useUser";
 import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
@@ -10,28 +9,30 @@ import { RestaurantDetailModal } from "@/components/restaurants/RestaurantDetail
 import { MemberAvatarStack, MemberAvatar } from "@/components/groups/MemberAvatar";
 import { useLocale } from "@/lib/i18n";
 import type { Restaurant } from "@/lib/types";
+import type { CandidateArea } from "@/lib/recommendation/types";
 
 type SortMode = "match" | "rating";
+type CandidateAreaResult = CandidateArea & { restaurants: Restaurant[] };
+type DietaryNote = { memberName: string; labels: string[] };
 
 export default function ResultsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
   const { t } = useLocale();
   const { userId } = useUser();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("match");
-  const [selectedArea, setSelectedArea] = useState<string>("all");
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showGroupMenu, setShowGroupMenu] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState<"delete" | "leave" | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [decidedRestaurant, setDecidedRestaurant] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [candidateAreas, setCandidateAreas] = useState<CandidateAreaResult[]>([]);
   const [groupName, setGroupName] = useState("グループ");
   const [memberNames, setMemberNames] = useState<string[]>([]);
   const [members, setMembers] = useState<{ id: string; displayName: string; role: string; hasSurvey: boolean }[]>([]);
   const [areas, setAreas] = useState<string[]>([]);
+  const [dietaryNotes, setDietaryNotes] = useState<DietaryNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [myRole, setMyRole] = useState<"owner" | "member" | null>(null);
 
@@ -78,11 +79,14 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         const res = await fetch(`/api/groups/results?group_id=${id}&sort=${sortMode}`);
         const data = await res.json();
 
-        if (data.results) {
-          setRestaurants(data.results);
+        if (data.candidateAreas) {
+          setCandidateAreas(data.candidateAreas);
         }
         if (data.resolvedAreas) {
           setAreas(data.resolvedAreas);
+        }
+        if (data.dietaryNotes) {
+          setDietaryNotes(data.dietaryNotes);
         }
       } catch (err) {
         console.error("Failed to fetch results:", err);
@@ -91,7 +95,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       setLoading(false);
     }
 
-    fetchResults();
+    void fetchResults();
   }, [id, sortMode, userId]);
 
   async function handleDecide(restaurant: Restaurant) {
@@ -115,47 +119,18 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     if (!userId) return;
     setActionLoading(true);
     try {
-      const supabase = createClient();
+      const res = await fetch("/api/groups", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupId: id, profileId: userId, action }),
+      });
 
-      if (action === "delete") {
-        const { error: e1 } = await supabase.from("decisions").delete().eq("group_id", id);
-        if (e1) console.error("decisions delete:", e1);
-        const { error: e2 } = await supabase.from("survey_responses").delete().eq("group_id", id);
-        if (e2) console.error("survey_responses delete:", e2);
-        const { error: e3 } = await supabase.from("invitations").delete().eq("group_id", id);
-        if (e3) console.error("invitations delete:", e3);
-        const { error: e4 } = await supabase.from("group_members").delete().eq("group_id", id);
-        if (e4) console.error("group_members delete:", e4);
-        const { error: e5 } = await supabase.from("groups").delete().eq("id", id);
-        if (e5) {
-          console.error("groups delete:", e5);
-          alert("削除に失敗しました: " + e5.message);
-          setActionLoading(false);
-          setShowConfirmDialog(null);
-          return;
-        }
-      } else {
-        const myMembership = await supabase
-          .from("group_members")
-          .select("id")
-          .eq("group_id", id)
-          .eq("profile_id", userId)
-          .single();
-
-        if (myMembership.data) {
-          await supabase.from("survey_responses").delete()
-            .eq("group_id", id)
-            .eq("member_id", myMembership.data.id);
-          const { error: leaveErr } = await supabase.from("group_members").delete()
-            .eq("id", myMembership.data.id);
-          if (leaveErr) {
-            console.error("leave error:", leaveErr);
-            alert("退出に失敗しました: " + leaveErr.message);
-            setActionLoading(false);
-            setShowConfirmDialog(null);
-            return;
-          }
-        }
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "エラーが発生しました");
+        setActionLoading(false);
+        setShowConfirmDialog(null);
+        return;
       }
 
       window.location.href = "/home";
@@ -178,16 +153,10 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     );
   }
 
-  const filteredRestaurants =
-    selectedArea === "all"
-      ? restaurants
-      : restaurants.filter((r) => r.area === selectedArea);
-
-  const sortedRestaurants = [...filteredRestaurants].sort((a, b) =>
-    sortMode === "match" ? b.matchScore - a.matchScore : b.rating - a.rating
+  const totalRestaurants = candidateAreas.reduce(
+    (count, area) => count + area.restaurants.length,
+    0
   );
-
-  const allAreas = ["all", ...Array.from(new Set(restaurants.map((r) => r.area).filter(Boolean)))];
 
   return (
     <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
@@ -223,11 +192,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   key={area}
                   style={{
                     fontSize: 12,
-                    backgroundColor: "rgba(196,85,42,0.1)",
+                    backgroundColor: "rgba(194,106,74,0.08)",
                     color: "var(--primary)",
-                    borderRadius: 20,
-                    padding: "3px 10px",
-                    fontWeight: 600,
+                    borderRadius: 100,
+                    padding: "4px 12px",
+                    fontWeight: 500,
                   }}
                 >
                   {area}
@@ -270,9 +239,9 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                       right: 0,
                       marginTop: 4,
                       backgroundColor: "var(--surface)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 12,
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                      border: "1px solid var(--border-light)",
+                      borderRadius: 16,
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                       overflow: "hidden",
                       zIndex: 60,
                       minWidth: 180,
@@ -315,41 +284,14 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         </div>
       </div>
 
-      {/* Area tabs */}
-      {allAreas.length > 2 && (
-        <div style={{ display: "flex", gap: 8, padding: "0 20px 16px", overflowX: "auto", scrollbarWidth: "none" }}>
-          {allAreas.map((area) => (
-            <button
-              key={area}
-              onClick={() => setSelectedArea(area)}
-              style={{
-                padding: "7px 16px",
-                borderRadius: 20,
-                border: "1.5px solid",
-                borderColor: selectedArea === area ? "var(--primary)" : "var(--border)",
-                backgroundColor: selectedArea === area ? "rgba(204,119,85,0.1)" : "var(--surface)",
-                color: selectedArea === area ? "var(--primary)" : "var(--text-secondary)",
-                fontSize: 14,
-                fontWeight: selectedArea === area ? 700 : 500,
-                cursor: "pointer",
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {area === "all" ? t("results.filterAll") : area}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* 決定済みバナー */}
       {decidedRestaurant && (
         <div
           style={{
             margin: "0 20px 16px",
-            backgroundColor: "rgba(74,138,90,0.08)",
-            border: "1.5px solid rgba(74,138,90,0.3)",
-            borderRadius: 16,
+            backgroundColor: "rgba(61,139,94,0.06)",
+            border: "1.5px solid rgba(61,139,94,0.2)",
+            borderRadius: 20,
             padding: "14px 16px",
             display: "flex",
             alignItems: "center",
@@ -376,14 +318,14 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               onClick={() => setSortMode(mode)}
               style={{
                 padding: "8px 20px",
-                borderRadius: 9,
+                borderRadius: 100,
                 border: "none",
                 backgroundColor: sortMode === mode ? "var(--surface)" : "transparent",
-                color: sortMode === mode ? "var(--primary)" : "var(--text-secondary)",
-                fontSize: 14,
-                fontWeight: sortMode === mode ? 700 : 500,
+                color: sortMode === mode ? "var(--text-primary)" : "var(--text-tertiary)",
+                fontSize: 13,
+                fontWeight: sortMode === mode ? 600 : 500,
                 cursor: "pointer",
-                boxShadow: sortMode === mode ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+                boxShadow: sortMode === mode ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
               }}
             >
               {label}
@@ -391,21 +333,139 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
           ))}
         </div>
         <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 8 }}>
-          {t("results.resultCount", { count: sortedRestaurants.length })}
+          {t("results.resultCount", { count: totalRestaurants })}
         </div>
       </div>
 
-      {/* Restaurant list */}
-      <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 14 }}>
-        {sortedRestaurants.length === 0 ? (
+      <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 18 }}>
+        {myRole === "owner" && dietaryNotes.length > 0 && (
+          <section
+            className="card"
+            style={{
+              padding: 18,
+              backgroundColor: "rgba(194,106,74,0.06)",
+              border: "1px solid rgba(194,106,74,0.14)",
+            }}
+          >
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
+              幹事メモ
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
+              食事制限とアレルギーの共有です。候補の並び替えには使っていません。
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {dietaryNotes.map((note) => (
+                <div key={`${note.memberName}-${note.labels.join("-")}`}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
+                    {note.memberName}
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {note.labels.map((label) => (
+                      <span
+                        key={`${note.memberName}-${label}`}
+                        style={{
+                          fontSize: 12,
+                          backgroundColor: "rgba(194,106,74,0.08)",
+                          color: "var(--primary)",
+                          borderRadius: 100,
+                          padding: "4px 10px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {candidateAreas.length === 0 ? (
           <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-secondary)", fontSize: 15 }}>
-            {restaurants.length === 0 ? t("results.noResultsApi") : t("results.noResultsArea")}
+            {t("results.noResultsApi")}
           </div>
         ) : (
-          sortedRestaurants.map((restaurant, i) => (
-            <div key={restaurant.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s`, animationFillMode: "both" }}>
-              <RestaurantCard restaurant={restaurant} onClick={setSelectedRestaurant} />
-            </div>
+          candidateAreas.map((area, areaIndex) => (
+            <section key={area.areaName} className="animate-fade-in" style={{ animationDelay: `${areaIndex * 0.06}s`, animationFillMode: "both" }}>
+              <div
+                className="card"
+                style={{
+                  padding: 18,
+                  marginBottom: 12,
+                  background:
+                    areaIndex === 0
+                      ? "linear-gradient(160deg, rgba(194,106,74,0.12), rgba(194,106,74,0.03))"
+                      : "var(--surface)",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-tertiary)", marginBottom: 4 }}>
+                      候補エリア {areaIndex + 1}
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>
+                      {area.areaName}
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2 }}>
+                      {area.stationName}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      alignSelf: "flex-start",
+                      padding: "8px 12px",
+                      borderRadius: 999,
+                      backgroundColor: "rgba(26,26,46,0.06)",
+                      color: "var(--secondary)",
+                      fontSize: 13,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {Math.round(area.scores.combined * 100)}%
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                  {area.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      style={{
+                        fontSize: 12,
+                        backgroundColor: "rgba(194,106,74,0.08)",
+                        color: "var(--primary)",
+                        borderRadius: 100,
+                        padding: "4px 10px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-secondary)" }}>
+                  {area.explanation}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {area.restaurants.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "18px 16px", color: "var(--text-secondary)", fontSize: 14 }}>
+                    {t("results.noResultsArea")}
+                  </div>
+                ) : (
+                  area.restaurants.map((restaurant) => (
+                    <RestaurantCard
+                      key={`${area.areaName}-${restaurant.id}`}
+                      restaurant={restaurant}
+                      onClick={setSelectedRestaurant}
+                    />
+                  ))
+                )}
+              </div>
+            </section>
           ))
         )}
       </div>
@@ -428,7 +488,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             backgroundColor: "var(--success)",
             color: "white",
             padding: "12px 24px",
-            borderRadius: 24,
+            borderRadius: 100,
             fontSize: 15,
             fontWeight: 700,
             zIndex: 110,
@@ -462,8 +522,8 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             style={{
               position: "relative",
               backgroundColor: "var(--bg)",
-              borderRadius: 20,
-              padding: "28px 24px 20px",
+              borderRadius: 24,
+              padding: "32px 24px 24px",
               width: "min(320px, calc(100vw - 40px))",
               textAlign: "center",
             }}
@@ -495,7 +555,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 style={{
                   flex: 1,
                   padding: "12px 16px",
-                  borderRadius: 12,
+                  borderRadius: 100,
                   border: "1px solid var(--border)",
                   backgroundColor: "var(--surface)",
                   color: "var(--text-primary)",
@@ -512,9 +572,9 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 style={{
                   flex: 1,
                   padding: "12px 16px",
-                  borderRadius: 12,
+                  borderRadius: 100,
                   border: "none",
-                  backgroundColor: "#C53030",
+                  backgroundColor: "var(--danger)",
                   color: "white",
                   fontSize: 15,
                   fontWeight: 600,

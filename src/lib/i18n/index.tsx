@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import { ja } from "./ja";
 import { en } from "./en";
-import type { Translations } from "./ja";
+import type { TranslationShape } from "./ja";
 
 export type Locale = "ja" | "en";
 
@@ -27,7 +27,7 @@ function getNestedValue(obj: Record<string, unknown>, key: string): string {
   return typeof current === "string" ? current : key;
 }
 
-const dictionaries: Record<Locale, Translations> = { ja, en };
+const dictionaries: Record<Locale, TranslationShape> = { ja, en };
 
 interface LocaleContextValue {
   locale: Locale;

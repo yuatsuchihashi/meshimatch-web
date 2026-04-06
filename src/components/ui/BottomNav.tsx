@@ -50,27 +50,37 @@ export function BottomNav() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              paddingTop: 10,
-              paddingBottom: 10,
-              gap: 3,
+              paddingTop: 12,
+              paddingBottom: 12,
+              gap: 4,
               color: active ? "var(--primary)" : "var(--text-tertiary)",
               textDecoration: "none",
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: active ? 600 : 400,
+              letterSpacing: "0.02em",
               transition: "color 0.2s ease",
             }}
           >
-            <Image
-              src={active ? tab.iconFill : tab.iconLine}
-              alt={tab.label}
-              width={24}
-              height={24}
-              style={{
-                filter: active
-                  ? "brightness(0) saturate(100%) invert(54%) sepia(30%) saturate(700%) hue-rotate(340deg) brightness(90%)"
-                  : "brightness(0) saturate(100%) invert(67%) sepia(10%) saturate(600%) hue-rotate(210deg) brightness(95%)",
-              }}
-            />
+            <div style={{
+              width: 28,
+              height: 28,
+              borderRadius: 100,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}>
+              <Image
+                src={active ? tab.iconFill : tab.iconLine}
+                alt={tab.label}
+                width={22}
+                height={22}
+                style={{
+                  filter: active
+                    ? "brightness(0) saturate(100%) invert(42%) sepia(30%) saturate(800%) hue-rotate(340deg) brightness(90%)"
+                    : "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(300%) hue-rotate(200deg) brightness(100%)",
+                }}
+              />
+            </div>
             {tab.label}
           </Link>
         );

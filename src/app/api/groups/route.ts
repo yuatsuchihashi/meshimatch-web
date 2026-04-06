@@ -35,11 +35,15 @@ export async function GET(request: NextRequest) {
         survey_responses (
           id,
           member_id,
-          tier_s,
-          tier_a,
-          tier_b,
-          disliked,
+          response_version,
+          departure_area,
+          departure_station,
           preferred_areas,
+          budget_ideal_yen,
+          budget_max_yen,
+          budget_priority,
+          genre_preferences,
+          dietary_restrictions,
           submitted_at
         ),
         decisions (

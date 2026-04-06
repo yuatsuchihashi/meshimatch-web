@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  /* ── New 5-color palette ── */
-  --primary: #CC7755;          /* salmon – main accent, buttons, CTA */
-  --primary-light: #D4916F;    /* lighter salmon */
-  --secondary: #2D2B55;        /* navy – headings, strong text */
-  --accent: #CC7755;           /* salmon alias */
-  --accent-light: #D4916F;
+  /* ── Premium minimal palette ── */
+  --primary: #C26A4A;          /* terracotta – main accent, CTA */
+  --primary-light: #D4836A;    /* lighter terracotta */
+  --secondary: #1A1A2E;        /* deep navy – strong text, contrast areas */
+  --accent: #C26A4A;           /* terracotta alias */
+  --accent-light: #D4836A;
 
-  --bg: #FAF8F4;               /* warm white */
-  --bg-secondary: #F0EBDF;     /* cream tint */
+  --bg: #F7F6F3;               /* soft warm white */
+  --bg-secondary: #EFEEE9;     /* subtle off-white */
   --surface: #FFFFFF;
-  --surface-hover: #F8F6F2;
+  --surface-hover: #FAFAF8;
 
-  --text-primary: #2D2B55;     /* navy */
-  --text-secondary: #6B6896;   /* muted navy */
-  --text-tertiary: #9996B8;    /* light purple-grey */
+  --text-primary: #1A1A2E;     /* deep navy */
+  --text-secondary: #6E6E7A;   /* neutral grey */
+  --text-tertiary: #A0A0AC;    /* light grey */
 
-  --border: #E2DDD4;
-  --border-light: #EFEBE4;
+  --border: #E8E8E4;
+  --border-light: #F0F0EC;
 
-  --warning: #F5CC44;          /* gold – ratings, warnings */
-  --danger: #8B1A1A;           /* maroon – errors, destructive */
-  --success: #4A8A5A;          /* green – completed states */
+  --warning: #E8B944;          /* warm yellow – ratings, highlights */
+  --danger: #B33A3A;           /* rich red – errors, destructive */
+  --success: #3D8B5E;          /* muted green – completed states */
 }
 
 @theme inline {
@@ -54,74 +54,77 @@ body {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
 }
 
 ::-webkit-scrollbar { width: 0; height: 0; }
 
-/* ── Utility classes (replacing undefined glass/bg-mesh) ── */
+/* ── Utility classes ── */
 .bg-mesh {
-  background: linear-gradient(160deg, var(--secondary) 0%, #1E1C3E 100%);
+  background: linear-gradient(160deg, var(--secondary) 0%, #2A2A42 100%);
 }
 .bg-mesh-subtle {
   background-color: var(--bg);
 }
 
 .glass {
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 16px;
-}
-.glass-strong {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.08);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 20px;
 }
+.glass-strong {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 24px;
+}
 .glass-dark {
-  background: rgba(0,0,0,0.3);
-  backdrop-filter: blur(16px);
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
+  border-radius: 20px;
 }
 
 /* ── Buttons ── */
 .btn-primary {
   display: flex; align-items: center; justify-content: center;
-  width: 100%; height: 54px;
+  width: 100%; height: 52px;
   background-color: var(--primary); color: white;
-  font-weight: 600; font-size: 16px;
-  border-radius: 16px; border: none; cursor: pointer;
+  font-weight: 600; font-size: 15px;
+  border-radius: 100px; border: none; cursor: pointer;
   transition: opacity 0.15s ease, transform 0.15s ease;
+  letter-spacing: 0.01em;
 }
-.btn-primary:hover { opacity: 0.92; }
+.btn-primary:hover { opacity: 0.9; }
 .btn-primary:active { transform: scale(0.97); }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
 .btn-secondary {
   display: flex; align-items: center; justify-content: center;
-  width: 100%; height: 54px;
-  background-color: transparent; color: var(--primary);
-  font-weight: 600; font-size: 16px;
-  border-radius: 16px; border: 1.5px solid var(--primary); cursor: pointer;
+  width: 100%; height: 52px;
+  background-color: var(--surface); color: var(--text-primary);
+  font-weight: 600; font-size: 15px;
+  border-radius: 100px; border: 1.5px solid var(--border); cursor: pointer;
   transition: opacity 0.15s ease, transform 0.15s ease;
+  letter-spacing: 0.01em;
 }
-.btn-secondary:hover { opacity: 0.8; }
+.btn-secondary:hover { opacity: 0.8; background-color: var(--surface-hover); }
 .btn-secondary:active { transform: scale(0.97); }
-.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-secondary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
 /* ── Card ── */
 .card {
   background: var(--surface);
   border-radius: 20px;
   border: 1px solid var(--border-light);
-  box-shadow: 0 2px 8px rgba(45,43,85,0.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02);
 }
 
 /* ── Chips ── */
 .chip {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 6px 14px; border-radius: 20px;
+  padding: 8px 16px; border-radius: 100px;
   font-size: 14px; font-weight: 500;
   border: 1.5px solid var(--border);
   background: var(--surface); color: var(--text-primary);
@@ -129,14 +132,14 @@ body {
   white-space: nowrap; user-select: none;
 }
 .chip-selected {
-  background: rgba(204,119,85,0.1);
-  border-color: var(--primary);
-  color: var(--primary);
+  background: var(--secondary);
+  border-color: var(--secondary);
+  color: white;
 }
 
 /* ── Animations ── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -154,7 +157,7 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
-.animate-fade-in { animation: fadeIn 0.35s ease forwards; }
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
 .animate-spin-slow { animation: spin 1.2s linear infinite; }
 .animate-pulse-ring { animation: pulse-ring 1.8s ease-in-out infinite; }
 .animate-bounce-in { animation: bounce-in 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }

@@ -70,10 +70,11 @@ export function ScoreBadge({ score }: ScoreBadgeProps) {
       style={{
         backgroundColor: color,
         color: "white",
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 700,
-        padding: "3px 8px",
-        borderRadius: 20,
+        padding: "4px 10px",
+        borderRadius: 100,
+        letterSpacing: "0.02em",
       }}
     >
       {percent}%

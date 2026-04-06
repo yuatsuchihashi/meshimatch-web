@@ -45,28 +45,24 @@ export const DIETARY_RESTRICTIONS: DietaryRestriction[] = [
 export const MOCK_CURRENT_USER: UserProfile = {
   id: "user-1",
   displayName: "ゆあ",
-  dislikedGenres: [],
   allergies: [],
 };
 
-// テスト用: 苦手ジャンル・アレルギーのあるメンバーのプロフィール
+// テスト用: アレルギーのあるメンバーのプロフィール
 export const MOCK_MEMBER_PROFILES: UserProfile[] = [
   {
     id: "user-1",
     displayName: "ゆあ",
-    dislikedGenres: [],
     allergies: [],
   },
   {
     id: "user-2",
     displayName: "たろう",
-    dislikedGenres: ["G014"], // ラーメン苦手
     allergies: ["shrimp"],    // えびアレルギー（注意喚起のみ）
   },
   {
     id: "user-3",
     displayName: "はな",
-    dislikedGenres: ["G005", "G019"], // 焼肉・ステーキ苦手
     allergies: ["egg"],               // 卵アレルギー（注意喚起のみ）
   },
 ];
@@ -87,9 +83,12 @@ export const MOCK_GROUPS: MeshiGroup[] = [
       {
         id: "r1",
         memberName: "ゆあ",
-        tierS: ["G005", "G001"],
-        tierA: ["G003"],
-        tierB: ["G008"],
+        genrePreferences: [
+          { genreId: "G005", priority: "prefer" },
+          { genreId: "G001", priority: "prefer" },
+          { genreId: "G003", priority: "optional" },
+          { genreId: "G008", priority: "optional" },
+        ],
         departureStation: "渋谷駅",
         preferredArea: "渋谷",
         submittedAt: new Date("2024-12-01"),
@@ -97,9 +96,13 @@ export const MOCK_GROUPS: MeshiGroup[] = [
       {
         id: "r2",
         memberName: "たろう",
-        tierS: ["G001", "G016"],
-        tierA: ["G005", "G008"],
-        tierB: ["G004"],
+        genrePreferences: [
+          { genreId: "G001", priority: "prefer" },
+          { genreId: "G016", priority: "prefer" },
+          { genreId: "G005", priority: "optional" },
+          { genreId: "G008", priority: "optional" },
+          { genreId: "G004", priority: "optional" },
+        ],
         departureStation: "渋谷駅",
         preferredArea: "渋谷",
         submittedAt: new Date("2024-12-01"),
@@ -107,9 +110,12 @@ export const MOCK_GROUPS: MeshiGroup[] = [
       {
         id: "r3",
         memberName: "はな",
-        tierS: ["G003", "G013"],
-        tierA: ["G001"],
-        tierB: ["G009"],
+        genrePreferences: [
+          { genreId: "G003", priority: "prefer" },
+          { genreId: "G013", priority: "prefer" },
+          { genreId: "G001", priority: "optional" },
+          { genreId: "G009", priority: "optional" },
+        ],
         departureStation: "渋谷駅",
         preferredArea: "渋谷",
         submittedAt: new Date("2024-12-01"),
@@ -131,9 +137,11 @@ export const MOCK_GROUPS: MeshiGroup[] = [
       {
         id: "r4",
         memberName: "ゆあ",
-        tierS: ["G002"],
-        tierA: ["G010"],
-        tierB: ["G013"],
+        genrePreferences: [
+          { genreId: "G002", priority: "prefer" },
+          { genreId: "G010", priority: "optional" },
+          { genreId: "G013", priority: "optional" },
+        ],
         departureStation: "新宿駅",
         preferredArea: "新宿",
         submittedAt: new Date("2024-12-02"),
@@ -141,9 +149,11 @@ export const MOCK_GROUPS: MeshiGroup[] = [
       {
         id: "r5",
         memberName: "さくら",
-        tierS: ["G003"],
-        tierA: ["G002"],
-        tierB: ["G009"],
+        genrePreferences: [
+          { genreId: "G003", priority: "prefer" },
+          { genreId: "G002", priority: "optional" },
+          { genreId: "G009", priority: "optional" },
+        ],
         departureStation: "新宿駅",
         preferredArea: "新宿",
         submittedAt: new Date("2024-12-02"),
@@ -303,9 +313,9 @@ export const MOCK_GROUP_4: MeshiGroup = {
     { id: "m13", displayName: "あい", role: "member", hasSurvey: true },
   ],
   surveyResponses: [
-    { id: "r10", memberName: "りょう", tierS: ["G009"], tierA: ["G005"], tierB: [], departureStation: "六本木駅", preferredArea: "六本木", submittedAt: new Date("2024-12-10") },
-    { id: "r11", memberName: "みく", tierS: ["G003"], tierA: ["G009"], tierB: ["G001"], departureStation: "六本木駅", preferredArea: "六本木", submittedAt: new Date("2024-12-10") },
-    { id: "r12", memberName: "あい", tierS: ["G009"], tierA: ["G003"], tierB: [], departureStation: "六本木駅", preferredArea: null, submittedAt: new Date("2024-12-10") },
+    { id: "r10", memberName: "りょう", genrePreferences: [{ genreId: "G009", priority: "prefer" }, { genreId: "G005", priority: "optional" }], departureStation: "六本木駅", preferredArea: "六本木", submittedAt: new Date("2024-12-10") },
+    { id: "r11", memberName: "みく", genrePreferences: [{ genreId: "G003", priority: "prefer" }, { genreId: "G009", priority: "optional" }, { genreId: "G001", priority: "optional" }], departureStation: "六本木駅", preferredArea: "六本木", submittedAt: new Date("2024-12-10") },
+    { id: "r12", memberName: "あい", genrePreferences: [{ genreId: "G009", priority: "prefer" }, { genreId: "G003", priority: "optional" }], departureStation: "六本木駅", preferredArea: null, submittedAt: new Date("2024-12-10") },
   ],
   resolvedAreas: ["六本木"],
 };

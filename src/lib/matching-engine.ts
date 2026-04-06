@@ -2,14 +2,17 @@
 // MeshiMatch – Matching Engine
 // ============================================================
 
-import type { SurveyResponse, UserProfile, Restaurant } from "@/lib/types";
+import type {
+  Restaurant,
+  SessionFocus,
+  SurveyResponse,
+  UserProfile,
+} from "@/lib/types";
 import type { GenreScore, MatchResult } from "@/lib/types";
 
-// スコアウェイト
-const TIER_S_WEIGHT = 3;
-const TIER_A_WEIGHT = 2;
-const TIER_B_WEIGHT = 1;
-const DISLIKED_PENALTY = -2;
+const MUST_PREFERENCE_WEIGHT = 3;
+const PREFER_PREFERENCE_WEIGHT = 2;
+const OPTIONAL_PREFERENCE_WEIGHT = 1;
 
 // 内部ジャンルID → HotPepper ジャンルコードのマッピング
 const GENRE_ID_TO_HP_CODE: Record<string, string> = {
@@ -60,6 +63,12 @@ const HP_GENRE_NAMES: Record<string, string> = {
   G017: "韓国料理",
 };
 
+const DEFAULT_GENRE_CODES_BY_FOCUS: Record<NonNullable<SessionFocus>, string[]> = {
+  balanced: ["G001", "G004", "G005"],
+  drink_centered: ["G001", "G002", "G012"],
+  food_centered: ["G004", "G005", "G006"],
+};
+
 // ジャンルIDをHotPepperコードに変換
 function toHpCode(genreId: string): string {
   // すでにG001形式の場合はそのまま
@@ -67,46 +76,49 @@ function toHpCode(genreId: string): string {
   return GENRE_ID_TO_HP_CODE[genreId] ?? "G015";
 }
 
+function preferenceWeight(priority: "must" | "prefer" | "optional") {
+  if (priority === "must") return MUST_PREFERENCE_WEIGHT;
+  if (priority === "prefer") return PREFER_PREFERENCE_WEIGHT;
+  return OPTIONAL_PREFERENCE_WEIGHT;
+}
+
+function hasStructuredPositiveSignals(survey: SurveyResponse) {
+  return (survey.genrePreferences?.length ?? 0) > 0;
+}
+
+function applyGenreDelta(rawScores: Record<string, number>, genreId: string, delta: number) {
+  const code = toHpCode(genreId);
+  rawScores[code] = (rawScores[code] ?? 0) + delta;
+}
+
+function applyStructuredPositiveScores(
+  rawScores: Record<string, number>,
+  preferences: NonNullable<SurveyResponse["genrePreferences"]> | NonNullable<UserProfile["favoriteGenres"]>
+) {
+  for (const preference of preferences) {
+    applyGenreDelta(rawScores, preference.genreId, preferenceWeight(preference.priority));
+  }
+}
+
 /**
  * グループ全体のジャンルスコアを計算する
  */
 export function calculateGroupGenreScores(
   surveys: SurveyResponse[],
-  profiles: UserProfile[]
+  profiles: UserProfile[] = []
 ): Record<string, GenreScore> {
   const rawScores: Record<string, number> = {};
+  const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
 
-  // 苦手ジャンルをプロフィールから集める
-  const dislikedSet = new Set<string>();
-  for (const p of profiles) {
-    for (const g of p.dislikedGenres) {
-      dislikedSet.add(toHpCode(g));
-    }
-  }
-
-  // 各サーベイのティアからスコアを集計
+  // survey があればそれを優先し、空欄のみ profile default で補う
   for (const survey of surveys) {
-    for (const g of survey.tierS) {
-      const code = toHpCode(g);
-      rawScores[code] = (rawScores[code] ?? 0) + TIER_S_WEIGHT;
-    }
-    for (const g of survey.tierA) {
-      const code = toHpCode(g);
-      rawScores[code] = (rawScores[code] ?? 0) + TIER_A_WEIGHT;
-    }
-    for (const g of survey.tierB) {
-      const code = toHpCode(g);
-      rawScores[code] = (rawScores[code] ?? 0) + TIER_B_WEIGHT;
-    }
-    for (const g of survey.disliked ?? []) {
-      const code = toHpCode(g);
-      rawScores[code] = (rawScores[code] ?? 0) + DISLIKED_PENALTY;
-    }
-  }
+    const profile = survey.memberId ? profileById.get(survey.memberId) : undefined;
 
-  // 苦手ジャンルにペナルティ追加
-  for (const code of dislikedSet) {
-    rawScores[code] = (rawScores[code] ?? 0) + DISLIKED_PENALTY * surveys.length;
+    if (hasStructuredPositiveSignals(survey)) {
+      applyStructuredPositiveScores(rawScores, survey.genrePreferences ?? []);
+    } else if ((profile?.favoriteGenres?.length ?? 0) > 0) {
+      applyStructuredPositiveScores(rawScores, profile?.favoriteGenres ?? []);
+    }
   }
 
   // 正規化 (-1.0 ~ +1.0)
@@ -139,10 +151,14 @@ export function getGenreRanking(
  */
 export function getSearchParams(
   genreRanking: GenreScore[],
-  topN: number
+  topN: number,
+  sessionFocus?: SessionFocus | null
 ): { genreCodes: string[]; keywords: string[] } {
   const positive = genreRanking.filter((g) => g.score > 0).slice(0, topN);
-  const genreCodes = positive.map((g) => g.genreId);
+  const genreCodes =
+    positive.length > 0
+      ? positive.map((g) => g.genreId)
+      : [...DEFAULT_GENRE_CODES_BY_FOCUS[sessionFocus ?? "balanced"]];
   const keywords: string[] = [];
   return { genreCodes, keywords };
 }
@@ -172,7 +188,7 @@ export function resolveAreas(surveys: SurveyResponse[]): string[] {
 export function scoreAndRankRestaurants(
   restaurants: Restaurant[],
   groupGenreScores: Record<string, GenreScore>,
-  sortBy: "match" | "rating"
+  sortBy: "match" | "rating" = "match"
 ): MatchResult[] {
   const results: MatchResult[] = restaurants.map((restaurant) => {
     const genreScore = groupGenreScores[restaurant.genreId];

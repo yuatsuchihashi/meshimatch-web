@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
-import { GENRES, ALLERGIES } from "@/lib/mockData";
+import { ALLERGIES, DIETARY_RESTRICTIONS, GENRES } from "@/lib/mockData";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
 import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { signOut } from "@/actions/auth";
 import { useLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
+import type { PriorityLevel } from "@/lib/types";
 
 interface Connection {
   id: string;
@@ -17,24 +18,79 @@ interface Connection {
   mutualGroups: number;
 }
 
+const PROFILE_AREAS = ["渋谷", "新宿", "池袋", "銀座", "六本木", "恵比寿", "表参道", "下北沢", "吉祥寺", "上野"];
+
 export default function ProfilePage() {
   const { t, locale, setLocale } = useLocale();
   const { user, userId, loading, refresh } = useUser();
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [displayName, setDisplayName] = useState("");
-  const [dislikedGenres, setDislikedGenres] = useState<string[]>([]);
-  const [allergies, setAllergies] = useState<string[]>([]);
-  const [editSection, setEditSection] = useState<null | "name" | "genres" | "allergies" | "share">(null);
+  const [editingAllergies, setEditingAllergies] = useState<string[]>([]);
+  const [editingFavoriteGenres, setEditingFavoriteGenres] = useState<string[]>([]);
+  const [editingDietaryRestrictions, setEditingDietaryRestrictions] = useState<string[]>([]);
+  const [editingUsualAreas, setEditingUsualAreas] = useState<string[]>([]);
+  const [editingBudgetIdeal, setEditingBudgetIdeal] = useState("");
+  const [editingBudgetMax, setEditingBudgetMax] = useState("");
+  const [editingBudgetPriority, setEditingBudgetPriority] =
+    useState<PriorityLevel>("prefer");
+  const [editSection, setEditSection] =
+    useState<null | "name" | "allergies" | "share" | "favorites" | "defaults" | "dietary">(null);
   const [connectionsOpen, setConnectionsOpen] = useState(false);
   const [connectionsVisible, setConnectionsVisible] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      setDisplayName(user.displayName);
-      setDislikedGenres(user.dislikedGenres);
-      setAllergies(user.allergies);
-    }
-  }, [user]);
+  const [nameInput, setNameInput] = useState("");
+  const displayName = user?.displayName ?? "ユーザー";
+  const allergies = user?.allergies ?? [];
+  const favoriteGenres = user?.favoriteGenres ?? [];
+  const favoriteGenreIds = favoriteGenres.map((genre) => genre.genreId);
+  const usualAreas = user?.usualAreas ?? [];
+  const dietaryRestrictions = user?.dietaryRestrictions ?? [];
+  const dietaryRestrictionIds = dietaryRestrictions.map(
+    (restriction) => restriction.restrictionId
+  );
+  const budgetPriorityLabels =
+    locale === "en"
+      ? {
+          must: "Strict",
+          prefer: "Prefer",
+          optional: "Flexible",
+        }
+      : {
+          must: "厳守したい",
+          prefer: "できれば守りたい",
+          optional: "参考程度",
+        };
+  const preferenceCopy =
+    locale === "en"
+      ? {
+          sessionDefaults: "Session Defaults",
+          favoriteGenres: "Favorite Genres",
+          defaultBudget: "Usual Budget",
+          usualAreas: "Usual Areas",
+          dietaryRestrictions: "Dietary Restrictions",
+          budgetHint: "Saved defaults are used when a session answer is empty",
+          idealBudget: "Ideal",
+          maxBudget: "Max",
+          noDietaryRestrictions: "No dietary restrictions saved",
+          noFavoriteGenres: "No favorite genres saved",
+          noUsualAreas: "No usual areas saved",
+        }
+      : {
+          sessionDefaults: "ふだんの設定",
+          favoriteGenres: "よく選ぶジャンル",
+          defaultBudget: "いつもの予算感",
+          usualAreas: "よく使うエリア",
+          dietaryRestrictions: "食事制限",
+          budgetHint: "session 回答が空のときだけ、この設定を初期値として使います",
+          idealBudget: "理想",
+          maxBudget: "上限",
+          noDietaryRestrictions: "食事制限は未設定です",
+          noFavoriteGenres: "よく選ぶジャンルは未設定です",
+          noUsualAreas: "よく使うエリアは未設定です",
+        };
+  const budgetPriorityOptions: { id: PriorityLevel; label: string }[] = [
+    { id: "must", label: budgetPriorityLabels.must },
+    { id: "prefer", label: budgetPriorityLabels.prefer },
+    { id: "optional", label: budgetPriorityLabels.optional },
+  ];
 
   useEffect(() => {
     if (!userId) return;
@@ -84,26 +140,50 @@ export default function ProfilePage() {
     setConnectionsVisible(false);
     setTimeout(() => setConnectionsOpen(false), 250);
   }
-  const [nameInput, setNameInput] = useState(displayName);
 
   const profileUrl = `https://meshimatch.app/u/${userId ?? ""}`;
 
-  function toggleGenre(id: string) {
-    setDislikedGenres((prev) =>
-      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
-    );
-  }
   function toggleAllergy(id: string) {
-    setAllergies((prev) =>
+    setEditingAllergies((prev) =>
       prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
     );
   }
 
-  async function saveProfile(updates: { display_name?: string; disliked_genres?: string[]; allergies?: string[] }) {
+  function toggleFavoriteGenre(id: string) {
+    setEditingFavoriteGenres((prev) =>
+      prev.includes(id) ? prev.filter((genreId) => genreId !== id) : [...prev, id]
+    );
+  }
+
+  function toggleDietaryRestriction(id: string) {
+    setEditingDietaryRestrictions((prev) =>
+      prev.includes(id) ? prev.filter((restrictionId) => restrictionId !== id) : [...prev, id]
+    );
+  }
+
+  function toggleUsualArea(area: string) {
+    setEditingUsualAreas((prev) =>
+      prev.includes(area) ? prev.filter((current) => current !== area) : [...prev, area]
+    );
+  }
+
+  async function saveProfile(updates: Record<string, unknown>) {
     if (!userId) return;
     const supabase = createClient();
     await supabase.from("profiles").update(updates).eq("id", userId);
     refresh();
+  }
+
+  function openDefaultsEditor() {
+    setEditingUsualAreas(usualAreas);
+    setEditingBudgetIdeal(
+      user?.usualBudgetIdealYen ? String(user.usualBudgetIdealYen) : ""
+    );
+    setEditingBudgetMax(
+      user?.usualBudgetMaxYen ? String(user.usualBudgetMaxYen) : ""
+    );
+    setEditingBudgetPriority(user?.usualBudgetPriority ?? "prefer");
+    setEditSection("defaults");
   }
 
   if (loading) {
@@ -309,10 +389,13 @@ export default function ProfilePage() {
             <div className="card" style={{ borderRadius: "14px 14px 0 0", padding: "14px 16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
-                  {t("profile.dislikedGenres")}
+                  {preferenceCopy.favoriteGenres}
                 </div>
                 <button
-                  onClick={() => setEditSection("genres")}
+                  onClick={() => {
+                    setEditingFavoriteGenres(favoriteGenreIds);
+                    setEditSection("favorites");
+                  }}
                   style={{
                     fontSize: 13,
                     color: "var(--primary)",
@@ -328,15 +411,119 @@ export default function ProfilePage() {
                   {t("common.edit")}
                 </button>
               </div>
-              {dislikedGenres.length === 0 ? (
-                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{t("common.notSet")}</div>
+              {favoriteGenreIds.length === 0 ? (
+                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{preferenceCopy.noFavoriteGenres}</div>
               ) : (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {dislikedGenres.map((id) => {
-                    const g = GENRES.find((x) => x.id === id);
-                    return g ? (
+                  {favoriteGenreIds.map((id) => {
+                    const genre = GENRES.find((item) => item.id === id);
+                    return genre ? (
                       <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
-                        {g.name}
+                        {genre.name}
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="card" style={{ borderRadius: 0, padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                  {preferenceCopy.sessionDefaults}
+                </div>
+                <button
+                  onClick={openDefaultsEditor}
+                  style={{
+                    fontSize: 13,
+                    color: "var(--primary)",
+                    fontWeight: 600,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px 8px",
+                    borderRadius: 8,
+                    backgroundColor: "rgba(204,119,85,0.08)",
+                  }}
+                >
+                  {t("common.edit")}
+                </button>
+              </div>
+              <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 12 }}>
+                {preferenceCopy.budgetHint}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {user?.usualBudgetIdealYen || user?.usualBudgetMaxYen ? (
+                    <>
+                      {user?.usualBudgetIdealYen ? (
+                        <span className="chip" style={{ fontSize: 13 }}>
+                          {preferenceCopy.idealBudget} {user.usualBudgetIdealYen}円
+                        </span>
+                      ) : null}
+                      {user?.usualBudgetMaxYen ? (
+                        <span className="chip" style={{ fontSize: 13 }}>
+                          {preferenceCopy.maxBudget} {user.usualBudgetMaxYen}円
+                        </span>
+                      ) : null}
+                      {user?.usualBudgetPriority ? (
+                        <span className="chip" style={{ fontSize: 13 }}>
+                          {budgetPriorityLabels[user.usualBudgetPriority]}
+                        </span>
+                      ) : null}
+                    </>
+                  ) : (
+                    <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{t("common.notSet")}</div>
+                  )}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {usualAreas.length === 0 ? (
+                    <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{preferenceCopy.noUsualAreas}</div>
+                  ) : (
+                    usualAreas.map((area) => (
+                      <span key={area} className="chip" style={{ fontSize: 13 }}>
+                        {area}
+                      </span>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="card" style={{ borderRadius: 0, padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                  {preferenceCopy.dietaryRestrictions}
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingDietaryRestrictions(dietaryRestrictionIds);
+                    setEditSection("dietary");
+                  }}
+                  style={{
+                    fontSize: 13,
+                    color: "var(--primary)",
+                    fontWeight: 600,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px 8px",
+                    borderRadius: 8,
+                    backgroundColor: "rgba(204,119,85,0.08)",
+                  }}
+                >
+                  {t("common.edit")}
+                </button>
+              </div>
+              {dietaryRestrictionIds.length === 0 ? (
+                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{preferenceCopy.noDietaryRestrictions}</div>
+              ) : (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {dietaryRestrictionIds.map((id) => {
+                    const restriction = DIETARY_RESTRICTIONS.find((item) => item.id === id);
+                    return restriction ? (
+                      <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
+                        {restriction.name}
                       </span>
                     ) : null;
                   })}
@@ -350,7 +537,10 @@ export default function ProfilePage() {
                   {t("profile.allergies")}
                 </div>
                 <button
-                  onClick={() => setEditSection("allergies")}
+                  onClick={() => {
+                    setEditingAllergies(allergies);
+                    setEditSection("allergies");
+                  }}
                   style={{
                     fontSize: 13,
                     color: "var(--primary)",
@@ -525,7 +715,7 @@ export default function ProfilePage() {
           />
           <button
             className="btn-primary"
-            onClick={() => { setDisplayName(nameInput); saveProfile({ display_name: nameInput }); setEditSection(null); }}
+            onClick={() => { saveProfile({ display_name: nameInput }); setEditSection(null); }}
             disabled={!nameInput.trim()}
           >
             {t("common.save")}
@@ -569,23 +759,142 @@ export default function ProfilePage() {
         </EditSheet>
       )}
 
-      {editSection === "genres" && (
-        <EditSheet title={t("profile.dislikedGenres")} onClose={() => setEditSection(null)}>
-          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-            {t("profile.dislikedGenresHint")}
-          </div>
+      {editSection === "favorites" && (
+        <EditSheet title={preferenceCopy.favoriteGenres} onClose={() => setEditSection(null)}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-            {GENRES.map((g) => (
+            {GENRES.map((genre) => (
               <button
-                key={g.id}
-                onClick={() => toggleGenre(g.id)}
-                className={`chip ${dislikedGenres.includes(g.id) ? "chip-selected" : ""}`}
+                key={genre.id}
+                onClick={() => toggleFavoriteGenre(genre.id)}
+                className={`chip ${editingFavoriteGenres.includes(genre.id) ? "chip-selected" : ""}`}
               >
-                {g.name}
+                {genre.name}
               </button>
             ))}
           </div>
-          <button className="btn-primary" onClick={() => { saveProfile({ disliked_genres: dislikedGenres }); setEditSection(null); }}>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              saveProfile({
+                favorite_genres: editingFavoriteGenres.map((genreId) => ({
+                  genreId,
+                  priority: "prefer",
+                })),
+              });
+              setEditSection(null);
+            }}
+          >
+            {t("common.done")}
+          </button>
+        </EditSheet>
+      )}
+
+      {editSection === "defaults" && (
+        <EditSheet title={preferenceCopy.sessionDefaults} onClose={() => setEditSection(null)}>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
+            {preferenceCopy.budgetHint}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            <input
+              inputMode="numeric"
+              value={editingBudgetIdeal}
+              onChange={(e) => setEditingBudgetIdeal(e.target.value.replace(/[^\d]/g, ""))}
+              placeholder={`${preferenceCopy.idealBudget} 3500`}
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: "1.5px solid var(--border)",
+                fontSize: 15,
+                color: "var(--text-primary)",
+                backgroundColor: "var(--bg)",
+                outline: "none",
+              }}
+            />
+            <input
+              inputMode="numeric"
+              value={editingBudgetMax}
+              onChange={(e) => setEditingBudgetMax(e.target.value.replace(/[^\d]/g, ""))}
+              placeholder={`${preferenceCopy.maxBudget} 5000`}
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: "1.5px solid var(--border)",
+                fontSize: 15,
+                color: "var(--text-primary)",
+                backgroundColor: "var(--bg)",
+                outline: "none",
+              }}
+            />
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+            {budgetPriorityOptions.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => setEditingBudgetPriority(option.id)}
+                className={`chip ${editingBudgetPriority === option.id ? "chip-selected" : ""}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
+            {preferenceCopy.usualAreas}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+            {PROFILE_AREAS.map((area) => (
+              <button
+                key={area}
+                onClick={() => toggleUsualArea(area)}
+                className={`chip ${editingUsualAreas.includes(area) ? "chip-selected" : ""}`}
+              >
+                {area}
+              </button>
+            ))}
+          </div>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              saveProfile({
+                usual_budget_ideal_yen: editingBudgetIdeal ? Number(editingBudgetIdeal) : null,
+                usual_budget_max_yen: editingBudgetMax ? Number(editingBudgetMax) : null,
+                usual_budget_priority: editingBudgetPriority,
+                usual_areas: editingUsualAreas,
+              });
+              setEditSection(null);
+            }}
+          >
+            {t("common.save")}
+          </button>
+        </EditSheet>
+      )}
+
+      {editSection === "dietary" && (
+        <EditSheet title={preferenceCopy.dietaryRestrictions} onClose={() => setEditSection(null)}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+            {DIETARY_RESTRICTIONS.map((restriction) => (
+              <button
+                key={restriction.id}
+                onClick={() => toggleDietaryRestriction(restriction.id)}
+                className={`chip ${editingDietaryRestrictions.includes(restriction.id) ? "chip-selected" : ""}`}
+              >
+                {restriction.name}
+              </button>
+            ))}
+          </div>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              saveProfile({
+                dietary_restrictions: editingDietaryRestrictions.map((restrictionId) => ({
+                  restrictionId,
+                  priority: "must",
+                })),
+              });
+              setEditSection(null);
+            }}
+          >
             {t("common.done")}
           </button>
         </EditSheet>
@@ -602,14 +911,14 @@ export default function ProfilePage() {
                 <button
                   key={a.id}
                   onClick={() => toggleAllergy(a.id)}
-                  className={`chip ${allergies.includes(a.id) ? "chip-selected" : ""}`}
+                  className={`chip ${editingAllergies.includes(a.id) ? "chip-selected" : ""}`}
                 >
                   {a.name}
                 </button>
               ))}
             </div>
           </div>
-          <button className="btn-primary" onClick={() => { saveProfile({ allergies }); setEditSection(null); }}>
+          <button className="btn-primary" onClick={() => { saveProfile({ allergies: editingAllergies }); setEditSection(null); }}>
             {t("common.done")}
           </button>
         </EditSheet>

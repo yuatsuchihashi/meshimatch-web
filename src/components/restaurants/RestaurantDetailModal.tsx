@@ -36,11 +36,10 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (restaurant) {
-      requestAnimationFrame(() => setVisible(true));
-    } else {
-      setVisible(false);
-    }
+    if (!restaurant) return;
+
+    const frame = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(frame);
   }, [restaurant]);
 
   if (!restaurant) return null;

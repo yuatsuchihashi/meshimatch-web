@@ -10,6 +10,7 @@ interface GroupData {
   id: string;
   name: string;
   invite_code: string;
+  group_size: number | null;
   members: { id: string; display_name: string; role: string; has_survey: boolean }[];
 }
 
@@ -26,7 +27,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
       const { data } = await supabase
         .from("groups")
         .select(`
-          id, name, invite_code,
+          id, name, invite_code, group_size,
           group_members (id, display_name, role, has_survey)
         `)
         .eq("id", id)
@@ -37,6 +38,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
           id: data.id,
           name: data.name,
           invite_code: data.invite_code,
+          group_size: data.group_size ?? null,
           members: data.group_members ?? [],
         });
       }
@@ -72,7 +74,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
   }
 
   const respondedCount = group.members.filter((m) => m.has_survey).length;
-  const totalCount = group.members.length;
+  const totalCount = Math.max(group.group_size ?? 0, group.members.length);
   const canSearch = respondedCount >= 1;
 
   function handleSearch() {

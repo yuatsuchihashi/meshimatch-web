@@ -1,205 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  useDroppable,
-  useDraggable,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
-import { GENRES } from "@/lib/mockData";
 import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
-import { nanoid } from "@/lib/utils/nanoid";
 import { useLocale } from "@/lib/i18n";
-import type { TierData, TierKey } from "@/lib/types";
+import { nanoid } from "@/lib/utils/nanoid";
+import type { SessionAtmosphere, SessionFocus } from "@/lib/types";
 
-type Step = "name" | "members" | "survey" | "complete";
+type Step = "name" | "members" | "details" | "complete";
 
-const AREAS = ["渋谷", "新宿", "池袋", "銀座", "六本木", "恵比寿", "表参道", "下北沢", "吉祥寺", "上野"];
-
-// ─── Draggable genre chip ───
-function DraggableGenreChip({
-  id,
-  emoji,
-  name,
-  color,
-}: {
+type Connection = {
   id: string;
-  emoji: string;
-  name: string;
-  color?: string;
-}) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 4,
-        padding: "6px 12px",
-        borderRadius: 20,
-        backgroundColor: color ? color + "15" : "var(--surface)",
-        border: `1.5px solid ${color ? color + "55" : "var(--border)"}`,
-        color: color ?? "var(--text-primary)",
-        fontSize: 14,
-        fontWeight: 500,
-        cursor: "grab",
-        userSelect: "none",
-        touchAction: "none",
-        opacity: isDragging ? 0.3 : 1,
-        transform: transform
-          ? `translate(${transform.x}px, ${transform.y}px)`
-          : undefined,
-        transition: isDragging ? undefined : "opacity 0.15s",
-        boxShadow: isDragging ? "0 4px 12px rgba(0,0,0,0.15)" : undefined,
-      }}
-    >
-      {emoji} {name}
-    </div>
-  );
-}
+  displayName: string;
+  mutualGroups: number;
+};
 
-// ─── Droppable tier zone ───
-function TierDropZone({
-  tier,
-  tiers,
-  activeGenreId,
-  onRemove,
-  label,
-  subtitle,
-  color,
-  dropHereText,
-  itemCountText,
-}: {
-  tier: TierKey;
-  tiers: TierData;
-  activeGenreId: string | null;
-  onRemove: (id: string) => void;
-  label: string;
-  subtitle: string;
-  color: string;
-  dropHereText: string;
-  itemCountText: string;
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id: `tier-${tier}` });
-  const items = tiers[tier];
+type PendingMember = {
+  id: string;
+  displayName: string;
+  profileId: string | null;
+};
 
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        backgroundColor: isOver ? color + "18" : "var(--surface)",
-        borderRadius: 16,
-        border: `2px ${items.length === 0 && !isOver ? "dashed" : "solid"} ${
-          isOver ? color : items.length === 0 ? "var(--border)" : color + "55"
-        }`,
-        padding: 14,
-        marginBottom: 12,
-        transition: "all 0.15s ease",
-        minHeight: 70,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: items.length > 0 ? 10 : 0,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              backgroundColor: color + "20",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-            }}
-          >
-          </div>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color }}>{label}</div>
-            <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{subtitle}</div>
-          </div>
-        </div>
-        <div
-          style={{
-            backgroundColor: color + "20",
-            color,
-            fontSize: 12,
-            fontWeight: 700,
-            padding: "2px 10px",
-            borderRadius: 20,
-          }}
-        >
-          {itemCountText}
-        </div>
-      </div>
+const SESSION_ATMOSPHERES: { id: SessionAtmosphere; label: string }[] = [
+  { id: "casual", label: "カジュアル" },
+  { id: "polished", label: "きれいめ" },
+  { id: "lively", label: "にぎやか" },
+  { id: "calm", label: "落ち着きたい" },
+];
 
-      {items.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {items.map((id) => {
-            const g = GENRES.find((x) => x.id === id);
-            return g ? (
-              <button
-                key={id}
-                onClick={() => onRemove(id)}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  padding: "6px 10px",
-                  borderRadius: 20,
-                  backgroundColor: color + "15",
-                  border: `1px solid ${color}55`,
-                  color,
-                  fontSize: 13,
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
-              >
-                {g.emoji} {g.name}
-                <span style={{ fontSize: 14, opacity: 0.6 }}>×</span>
-              </button>
-            ) : null;
-          })}
-        </div>
-      )}
-
-      {isOver && activeGenreId && (
-        <div
-          style={{
-            marginTop: items.length > 0 ? 8 : 0,
-            padding: "6px 12px",
-            borderRadius: 20,
-            border: `1.5px dashed ${color}`,
-            color,
-            fontSize: 13,
-            opacity: 0.6,
-            display: "inline-block",
-          }}
-        >
-          {dropHereText}
-        </div>
-      )}
-    </div>
-  );
-}
+const SESSION_FOCUSES: { id: SessionFocus; label: string }[] = [
+  { id: "balanced", label: "バランス重視" },
+  { id: "food_centered", label: "食事メイン" },
+  { id: "drink_centered", label: "飲みメイン" },
+];
 
 export default function CreateGroupPage() {
   const router = useRouter();
@@ -208,164 +42,260 @@ export default function CreateGroupPage() {
   const [step, setStep] = useState<Step>("name");
   const [groupName, setGroupName] = useState("");
   const [memberInput, setMemberInput] = useState("");
-  const [members, setMembers] = useState<string[]>([]);
-  const [anywhereOk, setAnywhereOk] = useState(true);
-  const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
-  const [tiers, setTiers] = useState<TierData>({ S: [], A: [], B: [] });
-  const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
+  const [members, setMembers] = useState<PendingMember[]>([]);
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [groupSizeInput, setGroupSizeInput] = useState("");
+  const [sessionAtmosphere, setSessionAtmosphere] =
+    useState<SessionAtmosphere>("casual");
+  const [sessionFocus, setSessionFocus] =
+    useState<SessionFocus>("balanced");
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [createdGroupId, setCreatedGroupId] = useState<string | null>(null);
-  const [inviteCode, setInviteCode] = useState<string>("");
 
-  const TIER_CONFIG: Record<TierKey, { label: string; subtitle: string; color: string }> = {
-    S: { label: "Tier S", subtitle: t("createGroup.tierS"), color: "var(--primary)" },
-    A: { label: "Tier A", subtitle: t("createGroup.tierA"), color: "var(--warning)" },
-    B: { label: "Tier B", subtitle: t("createGroup.tierB"), color: "var(--text-tertiary)" },
-  };
+  const resolvedGroupSize =
+    Number(groupSizeInput) > 0 ? Number(groupSizeInput) : members.length + 1;
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
-  );
-
-  const unranked = GENRES.filter(
-    (g) => !tiers.S.includes(g.id) && !tiers.A.includes(g.id) && !tiers.B.includes(g.id)
-  );
-  const rankedCount = tiers.S.length + tiers.A.length + tiers.B.length;
-
-  function handleDragStart(event: DragStartEvent) {
-    setActiveGenreId(event.active.id as string);
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { over, active } = event;
-    setActiveGenreId(null);
-    if (!over) return;
-    const overId = over.id as string;
-    if (!overId.startsWith("tier-")) return;
-    const tier = overId.replace("tier-", "") as TierKey;
-    const genreId = active.id as string;
-    setTiers((prev) => {
-      const next: TierData = {
-        S: prev.S.filter((id) => id !== genreId),
-        A: prev.A.filter((id) => id !== genreId),
-        B: prev.B.filter((id) => id !== genreId),
-      };
-      next[tier] = [...next[tier], genreId];
-      return next;
-    });
-  }
-
-  function removeFromTier(genreId: string) {
-    setTiers((prev) => ({
-      S: prev.S.filter((id) => id !== genreId),
-      A: prev.A.filter((id) => id !== genreId),
-      B: prev.B.filter((id) => id !== genreId),
-    }));
-  }
-
-  function toggleArea(area: string) {
-    setPreferredAreas((prev) =>
-      prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
-    );
-  }
-
-  function addMember() {
-    const name = memberInput.trim();
-    if (name && !members.includes(name)) {
-      setMembers((prev) => [...prev, name]);
-      setMemberInput("");
+  useEffect(() => {
+    if (!userId) {
+      return;
     }
+
+    async function fetchConnections() {
+      const supabase = createClient();
+      const { data: myMemberships } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .eq("profile_id", userId);
+
+      if (!myMemberships || myMemberships.length === 0) {
+        setConnections([]);
+        return;
+      }
+
+      const groupIds = myMemberships.map((membership) => membership.group_id);
+      const { data: allMembers } = await supabase
+        .from("group_members")
+        .select("profile_id, display_name, group_id")
+        .in("group_id", groupIds)
+        .not("profile_id", "is", null)
+        .neq("profile_id", userId);
+
+      if (!allMembers) {
+        setConnections([]);
+        return;
+      }
+
+      const connectionMap = new Map<
+        string,
+        { displayName: string; mutualGroups: number }
+      >();
+
+      for (const member of allMembers) {
+        const profileId = member.profile_id;
+        if (!profileId) {
+          continue;
+        }
+
+        const existing = connectionMap.get(profileId);
+        if (existing) {
+          existing.mutualGroups += 1;
+        } else {
+          connectionMap.set(profileId, {
+            displayName: member.display_name,
+            mutualGroups: 1,
+          });
+        }
+      }
+
+      setConnections(
+        Array.from(connectionMap.entries()).map(([id, connection]) => ({
+          id,
+          displayName: connection.displayName,
+          mutualGroups: connection.mutualGroups,
+        }))
+      );
+    }
+
+    void fetchConnections();
+  }, [userId]);
+
+  function addMember(nameOverride?: string, profileId: string | null = null) {
+    const name = (nameOverride ?? memberInput).trim();
+    const duplicate = members.some(
+      (member) =>
+        member.displayName === name ||
+        (profileId !== null && member.profileId === profileId)
+    );
+
+    if (!name || duplicate) {
+      return;
+    }
+
+    setMembers((current) => [
+      ...current,
+      {
+        id: profileId ?? `${name}-${current.length}`,
+        displayName: name,
+        profileId,
+      },
+    ]);
+    setMemberInput("");
   }
 
-  async function handleSubmitSurvey() {
-    if (!userId) return;
+  async function handleCreateGroup() {
+    if (!userId) {
+      return;
+    }
+
     setStep("complete");
 
     try {
       const supabase = createClient();
-      const code = nanoid(8);
+      const inviteCode = nanoid(8);
 
       const { data: group, error: groupError } = await supabase
         .from("groups")
         .insert({
           name: groupName,
-          invite_code: code,
+          invite_code: inviteCode,
           created_by: userId,
+          scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+          group_size: resolvedGroupSize,
+          session_atmosphere: sessionAtmosphere,
+          session_focus: sessionFocus,
         })
-        .select()
+        .select("id")
         .single();
 
       if (groupError || !group) {
         console.error("Group creation failed:", groupError);
+        setStep("details");
         return;
       }
 
-      setCreatedGroupId(group.id);
-      setInviteCode(code);
+      await supabase.from("group_members").insert({
+        group_id: group.id,
+        profile_id: userId,
+        display_name: user?.displayName ?? "ホスト",
+        role: "owner",
+      });
 
-      const { data: member } = await supabase
-        .from("group_members")
-        .insert({
-          group_id: group.id,
-          profile_id: userId,
-          display_name: user?.displayName ?? "ホスト",
-          role: "owner",
-        })
-        .select()
-        .single();
-
-      if (member) {
-        await supabase.from("survey_responses").insert({
-          group_id: group.id,
-          member_id: member.id,
-          tier_s: tiers.S,
-          tier_a: tiers.A,
-          tier_b: tiers.B,
-          disliked: [],
-          preferred_areas: anywhereOk ? [] : preferredAreas,
-        });
-
-        await supabase
-          .from("group_members")
-          .update({ has_survey: true })
-          .eq("id", member.id);
+      const guestMembers = members.filter((member) => member.profileId === null);
+      if (guestMembers.length > 0) {
+        await supabase.from("group_members").insert(
+          guestMembers.map((member) => ({
+            group_id: group.id,
+            profile_id: null,
+            display_name: member.displayName,
+            role: "member" as const,
+          }))
+        );
       }
 
-      setTimeout(() => {
-        router.push(`/groups/${group.id}/waiting`);
-      }, 2000);
-    } catch (err) {
-      console.error("Error creating group:", err);
+      const inviteeIds = members
+        .map((member) => member.profileId)
+        .filter((profileId): profileId is string => typeof profileId === "string");
+
+      if (inviteeIds.length > 0) {
+        await supabase.from("invitations").insert(
+          inviteeIds.map((inviteeId) => ({
+            group_id: group.id,
+            inviter_id: userId,
+            invitee_id: inviteeId,
+            status: "pending" as const,
+          }))
+        );
+      }
+
+      window.setTimeout(() => {
+        router.push(`/groups/${group.id}/survey`);
+      }, 1400);
+    } catch (error) {
+      console.error("Error creating group:", error);
+      setStep("details");
     }
   }
 
-  // ─── EXIT CONFIRM SHEET ───
   if (showExitConfirm) {
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 200,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+        }}
+      >
         <div
-          style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.5)" }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+          }}
           onClick={() => setShowExitConfirm(false)}
         />
-        <div style={{ position: "relative", backgroundColor: "var(--bg)", borderRadius: "24px 24px 0 0", padding: "20px 20px 48px" }}>
+        <div
+          style={{
+            position: "relative",
+            backgroundColor: "var(--bg)",
+            borderRadius: "24px 24px 0 0",
+            padding: "20px 20px 48px",
+          }}
+        >
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-            <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
+            <div
+              style={{
+                width: 40,
+                height: 4,
+                backgroundColor: "var(--border)",
+                borderRadius: 2,
+              }}
+            />
           </div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8, textAlign: "center" }}>
+          <div
+            style={{
+              fontSize: 20,
+              fontWeight: 800,
+              color: "var(--text-primary)",
+              marginBottom: 8,
+              textAlign: "center",
+            }}
+          >
             {t("createGroup.exitTitle")}
           </div>
-          <div style={{ fontSize: 14, color: "var(--text-secondary)", textAlign: "center", marginBottom: 28 }}>
+          <div
+            style={{
+              fontSize: 14,
+              color: "var(--text-secondary)",
+              textAlign: "center",
+              marginBottom: 28,
+            }}
+          >
             {t("createGroup.exitDesc")}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button
               onClick={() => router.push("/home")}
-              style={{ width: "100%", padding: "15px", borderRadius: 14, backgroundColor: "#E05252", color: "white", fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer" }}
+              style={{
+                width: "100%",
+                padding: "15px",
+                borderRadius: 14,
+                backgroundColor: "#E05252",
+                color: "white",
+                fontSize: 16,
+                fontWeight: 700,
+                border: "none",
+                cursor: "pointer",
+              }}
             >
               {t("createGroup.exitConfirm")}
             </button>
-            <button className="btn-secondary" onClick={() => setShowExitConfirm(false)}>
+            <button
+              className="btn-secondary"
+              onClick={() => setShowExitConfirm(false)}
+            >
               {t("createGroup.continue")}
             </button>
           </div>
@@ -374,73 +304,148 @@ export default function CreateGroupPage() {
     );
   }
 
-  // ─── STEP: NAME ───
   if (step === "name") {
     return (
       <PageShell onExit={() => setShowExitConfirm(true)} showExit>
         <BackButton onClick={() => router.push("/home")} label={t("common.back")} />
         <div style={{ padding: "16px 20px 40px" }}>
-          <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
-            {t("createGroup.step1Title")}
+          <div
+            style={{
+              fontSize: 24,
+              fontWeight: 800,
+              color: "var(--text-primary)",
+              marginBottom: 6,
+            }}
+          >
+            グループ名を決める
           </div>
-          <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 32 }}>
-            {t("createGroup.step1Desc")}
+          <div
+            style={{
+              fontSize: 15,
+              color: "var(--text-secondary)",
+              marginBottom: 32,
+            }}
+          >
+            まずは会の名前だけ決めれば大丈夫です
           </div>
 
-          <div style={{ marginBottom: 32 }}>
-            <label style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 8 }}>
-              {t("createGroup.groupName")}
-            </label>
-            <input
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              placeholder={t("createGroup.groupNamePlaceholder")}
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: 14,
-                border: "1.5px solid var(--border)",
-                fontSize: 16,
-                color: "var(--text-primary)",
-                backgroundColor: "var(--surface)",
-                outline: "none",
-                transition: "border-color 0.2s",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
-              onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-            />
-          </div>
+          <label
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "var(--text-secondary)",
+              display: "block",
+              marginBottom: 8,
+            }}
+          >
+            グループ名
+          </label>
+          <input
+            value={groupName}
+            onChange={(event) => setGroupName(event.target.value)}
+            placeholder="例: 金曜ごはん"
+            style={{
+              width: "100%",
+              padding: "14px 16px",
+              borderRadius: 14,
+              border: "1.5px solid var(--border)",
+              fontSize: 16,
+              color: "var(--text-primary)",
+              backgroundColor: "var(--surface)",
+              outline: "none",
+              marginBottom: 28,
+            }}
+          />
 
           <button
             className="btn-primary"
             onClick={() => setStep("members")}
             disabled={!groupName.trim()}
           >
-            {t("common.next")}
+            次へ
           </button>
         </div>
       </PageShell>
     );
   }
 
-  // ─── STEP: MEMBERS ───
   if (step === "members") {
     return (
       <PageShell onExit={() => setShowExitConfirm(true)} showExit>
         <BackButton onClick={() => setStep("name")} label={t("common.back")} />
         <div style={{ padding: "16px 20px 40px" }}>
-          <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
-            {t("createGroup.step2Title")}
+          <div
+            style={{
+              fontSize: 24,
+              fontWeight: 800,
+              color: "var(--text-primary)",
+              marginBottom: 6,
+            }}
+          >
+            誰と行くかを追加する
           </div>
-          <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 24 }}>
-            {t("createGroup.step2Desc")}
+          <div
+            style={{
+              fontSize: 15,
+              color: "var(--text-secondary)",
+              marginBottom: 24,
+            }}
+          >
+            繋がりのある人はここで追加して、ゲストは作成後の招待リンクで呼べます
           </div>
+
+          {connections.length > 0 && (
+            <div
+              style={{
+                backgroundColor: "var(--surface)",
+                borderRadius: 16,
+                padding: 16,
+                border: "1px solid var(--border-light)",
+                marginBottom: 16,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                  marginBottom: 10,
+                }}
+              >
+                繋がりから追加
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {connections.map((connection) => {
+                  const selected = members.some(
+                    (member) => member.profileId === connection.id
+                  );
+                  return (
+                    <button
+                      key={connection.id}
+                      type="button"
+                      onClick={() =>
+                        selected
+                          ? setMembers((current) =>
+                              current.filter((member) => member.profileId !== connection.id)
+                            )
+                          : addMember(connection.displayName, connection.id)
+                      }
+                      className={`chip ${selected ? "chip-selected" : ""}`}
+                      style={{ fontSize: 13 }}
+                    >
+                      {connection.displayName}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {members.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-              {members.map((name) => (
+              {members.map((member) => (
                 <div
-                  key={name}
+                  key={member.id}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -454,9 +459,13 @@ export default function CreateGroupPage() {
                     fontWeight: 600,
                   }}
                 >
-                  {name}
+                  {member.displayName}
                   <button
-                    onClick={() => setMembers((p) => p.filter((m) => m !== name))}
+                    onClick={() =>
+                      setMembers((current) =>
+                        current.filter((item) => item.id !== member.id)
+                      )
+                    }
                     style={{
                       background: "none",
                       border: "none",
@@ -474,12 +483,12 @@ export default function CreateGroupPage() {
             </div>
           )}
 
-          <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+          <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
             <input
               value={memberInput}
-              onChange={(e) => setMemberInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addMember()}
-              placeholder={t("createGroup.namePlaceholder")}
+              onChange={(event) => setMemberInput(event.target.value)}
+              onKeyDown={(event) => event.key === "Enter" && addMember()}
+              placeholder="名前を入力"
               style={{
                 flex: 1,
                 padding: "14px 16px",
@@ -490,11 +499,9 @@ export default function CreateGroupPage() {
                 backgroundColor: "var(--surface)",
                 outline: "none",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
-              onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
             />
             <button
-              onClick={addMember}
+              onClick={() => addMember()}
               disabled={!memberInput.trim()}
               style={{
                 padding: "0 20px",
@@ -509,7 +516,7 @@ export default function CreateGroupPage() {
                 opacity: !memberInput.trim() ? 0.4 : 1,
               }}
             >
-              {t("common.add")}
+              追加
             </button>
           </div>
 
@@ -519,259 +526,195 @@ export default function CreateGroupPage() {
               borderRadius: 14,
               padding: 16,
               border: "1px solid var(--border-light)",
-              marginBottom: 32,
+              marginBottom: 28,
             }}
           >
-            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
-              {t("createGroup.shareInviteLink")}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-              {t("createGroup.shareInviteLinkDesc")}
-            </div>
-            <button
-              className="btn-secondary"
-              style={{ height: 42, fontSize: 14 }}
-              onClick={() => {
-                const url = `${window.location.origin}/invite/${inviteCode || "preview"}`;
-                navigator.clipboard.writeText(url);
-                alert(t("createGroup.linkCopied"));
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "var(--text-primary)",
+                marginBottom: 8,
               }}
             >
-              {t("createGroup.copyLink")}
-            </button>
+              ゲスト参加もOK
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+              グループ作成後の待機室で招待リンクをコピーできます。アカウントがない人はそのリンクから回答します。
+            </div>
           </div>
 
-          <button
-            className="btn-primary"
-            onClick={() => setStep("survey")}
-          >
-            {t("createGroup.nextSurvey")}
+          <button className="btn-primary" onClick={() => setStep("details")}>
+            次へ
           </button>
         </div>
       </PageShell>
     );
   }
 
-  // ─── STEP: SURVEY ───
-  if (step === "survey") {
-    const activeGenre = activeGenreId ? GENRES.find((g) => g.id === activeGenreId) : null;
-
+  if (step === "details") {
     return (
       <PageShell onExit={() => setShowExitConfirm(true)} showExit>
         <BackButton onClick={() => setStep("members")} label={t("common.back")} />
         <div style={{ padding: "16px 20px 40px" }}>
-          <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
-            {t("createGroup.surveyTitle")}
+          <div
+            style={{
+              fontSize: 24,
+              fontWeight: 800,
+              color: "var(--text-primary)",
+              marginBottom: 6,
+            }}
+          >
+            セッション条件を決める
           </div>
-          <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 24 }}>
-            {t("createGroup.surveyDesc")}
+          <div
+            style={{
+              fontSize: 15,
+              color: "var(--text-secondary)",
+              marginBottom: 24,
+            }}
+          >
+            ここでは日時と会の雰囲気だけ決めます。細かい希望はこのあと各自が回答します。
           </div>
 
-          {/* Location section */}
           <div
             style={{
               backgroundColor: "var(--surface)",
               borderRadius: 16,
               padding: 16,
               border: "1px solid var(--border-light)",
-              marginBottom: 20,
-            }}
-          >
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
-              {t("createGroup.location")}
-            </div>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                marginBottom: anywhereOk ? 0 : 12,
-                cursor: "pointer",
-              }}
-            >
-              <div
-                onClick={() => setAnywhereOk(!anywhereOk)}
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 6,
-                  border: `2px solid ${anywhereOk ? "var(--primary)" : "var(--border)"}`,
-                  backgroundColor: anywhereOk ? "var(--primary)" : "transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  cursor: "pointer",
-                }}
-              >
-                {anywhereOk && <span style={{ color: "white", fontSize: 13, fontWeight: 700 }}>✓</span>}
-              </div>
-              <span style={{ fontSize: 15, color: "var(--text-primary)" }}>
-                {t("createGroup.anywhereOk")}
-              </span>
-            </label>
-            {!anywhereOk && (
-              <div>
-                <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
-                  {t("createGroup.preferredAreas")}
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {AREAS.map((area) => {
-                    const selected = preferredAreas.includes(area);
-                    return (
-                      <button
-                        key={area}
-                        onClick={() => toggleArea(area)}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                          padding: "7px 12px",
-                          borderRadius: 20,
-                          border: `1.5px solid ${selected ? "var(--primary)" : "var(--border)"}`,
-                          backgroundColor: selected ? "rgba(204,119,85,0.1)" : "var(--bg)",
-                          color: selected ? "var(--primary)" : "var(--text-primary)",
-                          fontSize: 13,
-                          fontWeight: selected ? 600 : 400,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {selected && (
-                          <span style={{ fontSize: 11, fontWeight: 700 }}>✓</span>
-                        )}
-                        {area}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Genre DnD section */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
-              {t("createGroup.genreRanking")}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 16 }}>
-              {t("createGroup.dragDropHint")}
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                color: "var(--text-tertiary)",
-                backgroundColor: "var(--bg-secondary)",
-                borderRadius: 10,
-                padding: "8px 12px",
-                marginBottom: 16,
-              }}
-            >
-              {t("createGroup.notAllRequired")}
-            </div>
-          </div>
-
-          <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-            {/* Unranked genres pool */}
-            {unranked.length > 0 && (
-              <div
-                style={{
-                  backgroundColor: "var(--bg-secondary)",
-                  borderRadius: 14,
-                  padding: 12,
-                  marginBottom: 16,
-                }}
-              >
-                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
-                  {t("createGroup.unranked")}
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {unranked.map((g) => (
-                    <DraggableGenreChip key={g.id} id={g.id} emoji={g.emoji} name={g.name} />
-                  ))}
-                </div>
-              </div>
-            )}
-            {unranked.length === 0 && (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "12px",
-                  fontSize: 13,
-                  color: "var(--secondary)",
-                  fontWeight: 600,
-                  marginBottom: 12,
-                }}
-              >
-                {t("createGroup.allRanked")}
-              </div>
-            )}
-
-            {/* Tier zones */}
-            {(["S", "A", "B"] as TierKey[]).map((tier) => (
-              <TierDropZone
-                key={tier}
-                tier={tier}
-                tiers={tiers}
-                activeGenreId={activeGenreId}
-                onRemove={removeFromTier}
-                label={TIER_CONFIG[tier].label}
-                subtitle={TIER_CONFIG[tier].subtitle}
-                color={TIER_CONFIG[tier].color}
-                dropHereText={t("createGroup.dropHere")}
-                itemCountText={t("createGroup.itemCount", { count: tiers[tier].length })}
-              />
-            ))}
-
-            {/* Drag overlay */}
-            <DragOverlay>
-              {activeGenre ? (
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "6px 12px",
-                    borderRadius: 20,
-                    backgroundColor: "var(--surface)",
-                    border: "1.5px solid var(--primary)",
-                    color: "var(--primary)",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-                    cursor: "grabbing",
-                  }}
-                >
-                  {activeGenre.emoji} {activeGenre.name}
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-
-          <div
-            style={{
-              fontSize: 14,
-              color: "var(--text-secondary)",
-              textAlign: "center",
               marginBottom: 24,
-              marginTop: 8,
             }}
           >
-            {t("createGroup.rankedCount", { count: rankedCount, total: GENRES.length })}
+            <div style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                日時
+              </div>
+              <input
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(event) => setScheduledAt(event.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border: "1.5px solid var(--border)",
+                  fontSize: 15,
+                  color: "var(--text-primary)",
+                  backgroundColor: "var(--bg)",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                想定人数
+              </div>
+              <input
+                type="number"
+                min="1"
+                inputMode="numeric"
+                value={groupSizeInput}
+                onChange={(event) => setGroupSizeInput(event.target.value)}
+                placeholder={`${members.length + 1}`}
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border: "1.5px solid var(--border)",
+                  fontSize: 15,
+                  color: "var(--text-primary)",
+                  backgroundColor: "var(--bg)",
+                  outline: "none",
+                }}
+              />
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "var(--text-tertiary)",
+                  marginTop: 6,
+                }}
+              >
+                未入力ならいま追加した人数ベースで {members.length + 1} 人として扱います
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                雰囲気
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {SESSION_ATMOSPHERES.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSessionAtmosphere(option.id)}
+                    className={`chip ${sessionAtmosphere === option.id ? "chip-selected" : ""}`}
+                    style={{ fontSize: 13 }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                会の重心
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {SESSION_FOCUSES.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSessionFocus(option.id)}
+                    className={`chip ${sessionFocus === option.id ? "chip-selected" : ""}`}
+                    style={{ fontSize: 13 }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <button
-            className="btn-primary"
-            onClick={handleSubmitSurvey}
-            disabled={rankedCount === 0}
-          >
-            {t("createGroup.submitSurvey")}
+          <button className="btn-primary" onClick={handleCreateGroup}>
+            グループを作成する
           </button>
         </div>
       </PageShell>
     );
   }
 
-  // ─── STEP: COMPLETE ───
   return (
     <PageShell>
       <div
@@ -798,17 +741,33 @@ export default function CreateGroupPage() {
           }}
           className="animate-bounce-in"
         >
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          <svg
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--secondary)"
+            strokeWidth={2.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
           </svg>
         </div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
-          {t("createGroup.completeTitle")}
+        <div
+          style={{
+            fontSize: 24,
+            fontWeight: 800,
+            color: "var(--text-primary)",
+            marginBottom: 8,
+          }}
+        >
+          グループを作成しました
         </div>
         <div style={{ fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.6 }}>
-          {t("createGroup.completeDesc").split("\n").map((line, i) => (
-            <span key={i}>{line}{i === 0 && <br />}</span>
-          ))}
+          続けて、あなた自身の希望を回答します。
         </div>
         <div
           style={{
@@ -830,7 +789,7 @@ export default function CreateGroupPage() {
               animation: "spin 0.8s linear infinite",
             }}
           />
-          {t("createGroup.movingToWaiting")}
+          アンケートへ移動しています
         </div>
       </div>
     </PageShell>

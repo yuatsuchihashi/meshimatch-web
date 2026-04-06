@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { GroupCard } from "@/components/groups/GroupCard";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
 import { useLocale } from "@/lib/i18n";
-import type { Invitation, MeshiGroup } from "@/lib/types";
+import type { Invitation } from "@/lib/types";
 
 function timeAgo(date: Date, locale: string): string {
   const diff = Date.now() - date.getTime();
@@ -157,9 +157,9 @@ export default function HomePage() {
             style={{
               width: 44,
               height: 44,
-              borderRadius: 14,
+              borderRadius: 100,
               backgroundColor: "var(--surface)",
-              border: "1px solid var(--border-light)",
+              border: "1px solid var(--border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -204,22 +204,20 @@ export default function HomePage() {
         {/* Create Group CTA */}
         <Link href="/groups/create" style={{ textDecoration: "none" }}>
           <div
+            className="card"
             style={{
-              background: "linear-gradient(135deg, var(--secondary), #3D3B6E)",
-              borderRadius: 20,
-              padding: 20,
+              padding: "20px 20px",
               display: "flex",
               alignItems: "center",
               gap: 16,
-              boxShadow: "0 4px 16px rgba(45,43,85,0.25)",
             }}
           >
             <div
               style={{
-                width: 52,
-                height: 52,
-                borderRadius: 16,
-                backgroundColor: "rgba(255,255,255,0.12)",
+                width: 48,
+                height: 48,
+                borderRadius: 14,
+                backgroundColor: "var(--primary)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -229,8 +227,8 @@ export default function HomePage() {
               <Image
                 src="/icons/add_line.svg"
                 alt="作成"
-                width={28}
-                height={28}
+                width={24}
+                height={24}
                 style={{ filter: "brightness(0) invert(1)" }}
               />
             </div>
@@ -242,13 +240,13 @@ export default function HomePage() {
                 {t("home.createGroupDesc")}
               </div>
             </div>
-            <div style={{ marginLeft: "auto", color: "rgba(255,255,255,0.5)" }}>
+            <div style={{ marginLeft: "auto", color: "var(--text-tertiary)" }}>
               <Image
                 src="/icons/arrow_right_line.svg"
                 alt=""
-                width={20}
-                height={20}
-                style={{ filter: "brightness(0) invert(1) opacity(0.5)" }}
+                width={18}
+                height={18}
+                style={{ filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)" }}
               />
             </div>
           </div>

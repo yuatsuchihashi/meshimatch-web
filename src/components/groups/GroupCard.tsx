@@ -14,20 +14,20 @@ interface GroupCardProps {
 
 function getStatusBadge(group: MeshiGroup) {
   if (group.decidedRestaurant) {
-    return { label: "レストラン決定済み", color: "var(--success)", bg: "rgba(74,138,90,0.1)" };
+    return { label: "レストラン決定済み", color: "var(--success)", bg: "rgba(61,139,94,0.08)" };
   }
   const totalCount = group.members.length;
   const respondedCount = group.surveyResponses.length;
   if (respondedCount === totalCount) {
-    return { label: "全員回答済み", color: "var(--success)", bg: "rgba(74,138,90,0.1)" };
+    return { label: "全員回答済み", color: "var(--success)", bg: "rgba(61,139,94,0.08)" };
   }
   if (respondedCount > 0) {
-    return { label: "回答待ち", color: "var(--primary)", bg: "rgba(204,119,85,0.1)" };
+    return { label: "回答待ち", color: "var(--primary)", bg: "rgba(194,106,74,0.08)" };
   }
   return { label: "未回答", color: "var(--text-tertiary)", bg: "var(--bg-secondary)" };
 }
 
-export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: GroupCardProps) {
+export function GroupCard({ group, onToggleHide, onRestore }: GroupCardProps) {
   const router = useRouter();
   const [showMembersModal, setShowMembersModal] = useState(false);
   const respondedCount = group.surveyResponses.length;
@@ -41,10 +41,10 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
         className="card"
         onClick={() => router.push(`/groups/${group.id}/results`)}
         style={{
-          padding: 16,
+          padding: "18px 18px",
           display: "flex",
           flexDirection: "column",
-          gap: 12,
+          gap: 14,
           cursor: "pointer",
         }}
       >
@@ -64,10 +64,10 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
             {group.decidedRestaurant && (
               <div
                 style={{
-                  backgroundColor: "rgba(74,138,90,0.08)",
-                  border: "1px solid rgba(74,138,90,0.2)",
-                  borderRadius: 12,
-                  padding: "8px 12px",
+                  backgroundColor: "rgba(61,139,94,0.06)",
+                  border: "1px solid rgba(61,139,94,0.15)",
+                  borderRadius: 14,
+                  padding: "10px 14px",
                 }}
               >
                 <div style={{ fontSize: 11, fontWeight: 700, color: "var(--success)", marginBottom: 2 }}>
@@ -87,11 +87,11 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
                 display: "flex",
                 alignItems: "center",
                 gap: 4,
-                backgroundColor: respondedCount === totalCount ? "rgba(74,138,90,0.1)" : "var(--bg-secondary)",
-                borderRadius: 20,
-                padding: "4px 10px",
-                fontSize: 13,
-                fontWeight: 600,
+                backgroundColor: respondedCount === totalCount ? "rgba(61,139,94,0.08)" : "var(--bg-secondary)",
+                borderRadius: 100,
+                padding: "4px 12px",
+                fontSize: 12,
+                fontWeight: 500,
                 color: respondedCount === totalCount ? "var(--success)" : "var(--text-secondary)",
               }}
             >
@@ -129,7 +129,7 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
                 style={{
                   background: "none",
                   border: "1px solid var(--primary)",
-                  borderRadius: 8,
+                  borderRadius: 100,
                   cursor: "pointer",
                   color: "var(--primary)",
                   padding: "3px 10px",
@@ -152,8 +152,8 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
               fontWeight: 600,
               color: status.color,
               backgroundColor: status.bg,
-              borderRadius: 20,
-              padding: "3px 10px",
+              borderRadius: 100,
+              padding: "4px 12px",
             }}
           >
             {status.label}
@@ -190,11 +190,11 @@ export function GroupCard({ group, isHidden = false, onToggleHide, onRestore }: 
               <span
                 key={area}
                 style={{
-                  fontSize: 12,
+                  fontSize: 11,
                   backgroundColor: "var(--bg-secondary)",
                   color: "var(--text-secondary)",
-                  borderRadius: 8,
-                  padding: "2px 8px",
+                  borderRadius: 100,
+                  padding: "3px 10px",
                   fontWeight: 500,
                 }}
               >

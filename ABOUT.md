@@ -5,23 +5,25 @@ MeshiMatch is a group restaurant recommendation app that helps friends, coworker
 ## How it works
 
 1. **Create a group** — The organizer creates a group and shares an invite link
-2. **Take the survey** — Each member ranks food genres (Japanese, Italian, BBQ, etc.) into tiers: S (love it), A (like it), B (fine with it)
-3. **AI matching** — The matching engine combines everyone's preferences, searches the HotPepper API for real restaurants, and scores each result
-4. **Pick a place** — Browse ranked results sorted by match score or rating, view details, and decide on a restaurant
+2. **Take the survey** — Participants can share departure area, preferred area, budget, genre preferences, dislikes, and restrictions. Partial participation is supported.
+3. **Find candidate areas** — The system proposes top meeting areas using lightweight heuristics around accessibility, supply, and discovery value.
+4. **Rank restaurants** — HotPepper API results are scored using group preference, budget fit, atmosphere, session focus, and restriction-aware rules.
+5. **Pick a place** — Browse ranked results with reason tags and structured explanations, then decide on a restaurant.
 
 ## Tech stack
 
-- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4
 - **Backend**: Supabase (PostgreSQL + Auth + RLS), Next.js API routes
 - **APIs**: HotPepper Gourmet Search API (restaurant data)
 - **Libraries**: dnd-kit (drag-and-drop tier ranking), qrcode.react (profile sharing)
 
 ## Key features
 
-- Tier-based genre ranking with drag-and-drop UI
+- Priority-oriented genre preference UI with backward-compatible tier-based input
 - Real-time group status tracking (who has responded)
-- Restaurant search with match scores based on group consensus
+- Candidate area recommendation plus restaurant ranking
 - Invite links and QR code sharing
 - Guest participation without account registration
-- Area-based filtering (Shibuya, Shinjuku, Roppongi, etc.)
+- Session-level atmosphere and food/drink focus
 - Allergy and dietary restriction awareness
+- Logic-based reason tags and one-line explanations

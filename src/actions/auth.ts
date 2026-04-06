@@ -10,7 +10,7 @@ export async function signUp(formData: FormData) {
   const password = formData.get("password") as string;
   const displayName = formData.get("display_name") as string;
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -24,7 +24,16 @@ export async function signUp(formData: FormData) {
     return { error: error.message };
   }
 
-  redirect("/find");
+  // プロフィールをDBに作成 (auth.users.id と同じUUIDを使う)
+  if (data.user) {
+    await supabase.from("profiles").upsert({
+      id: data.user.id,
+      display_name: displayName || "ユーザー",
+      allergies: [],
+    });
+  }
+
+  redirect("/home");
 }
 
 export async function signIn(formData: FormData) {
@@ -42,7 +51,7 @@ export async function signIn(formData: FormData) {
     return { error: error.message };
   }
 
-  redirect("/find");
+  redirect("/home");
 }
 
 export async function signOut() {

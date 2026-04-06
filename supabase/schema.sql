@@ -1,195 +1,222 @@
--- MeshiMatch Database Schema
--- Run this in Supabase SQL Editor to set up all tables
+-- ============================================================
+-- MeshiMatch – Database Schema (v1)
+-- ============================================================
+-- v1: 認証なし。全テーブル開放ポリシーで開発。
+-- v2: Supabase Auth有効化 → profiles.id を auth.users(id) に紐付け
+-- ============================================================
+
+-- 既存テーブルを削除（開発用。本番では使わない）
+drop table if exists invitations cascade;
+drop table if exists decisions cascade;
+drop table if exists survey_responses cascade;
+drop table if exists group_members cascade;
+drop table if exists groups cascade;
+drop table if exists area_catalog cascade;
+drop table if exists follows cascade;
+drop table if exists favorite_restaurants cascade;
+drop table if exists search_history cascade;
+drop table if exists dietary_restrictions cascade;
+drop table if exists genre_preferences cascade;
+drop table if exists profiles cascade;
+
+-- トリガーも削除
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists handle_new_user();
 
 -- ============================================
--- 1. Profiles (extends auth.users)
+-- 1. プロフィール
 -- ============================================
-CREATE TABLE public.profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  display_name TEXT NOT NULL DEFAULT 'ユーザー',
-  avatar_url TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+create table profiles (
+  id uuid primary key default gen_random_uuid(),
+  display_name text not null default 'ユーザー',
+  allergies text[] default '{}',
+  usual_budget_ideal_yen integer,
+  usual_budget_max_yen integer,
+  usual_budget_priority text
+    check (usual_budget_priority in ('must', 'prefer', 'optional')),
+  usual_areas text[] default '{}',
+  favorite_genres jsonb not null default '[]'::jsonb,
+  disliked_items text[] default '{}',
+  dietary_restrictions jsonb not null default '[]'::jsonb,
+  avatar_url text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Anyone can view profiles"
-  ON public.profiles FOR SELECT
-  USING (true);
-
-CREATE POLICY "Users can update own profile"
-  ON public.profiles FOR UPDATE
-  USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
-
--- Auto-create profile on signup
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger AS $$
-BEGIN
-  INSERT INTO public.profiles (id, display_name)
-  VALUES (
-    NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'display_name', 'ユーザー')
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW
-  EXECUTE FUNCTION public.handle_new_user();
-
 -- ============================================
--- 2. Genre Preferences
+-- 2. グループ
 -- ============================================
-CREATE TABLE public.genre_preferences (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  genre_code TEXT NOT NULL,
-  preference SMALLINT NOT NULL DEFAULT 0,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(user_id, genre_code),
-  CHECK (preference IN (-1, 0, 1))
+create table groups (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  invite_code text unique not null,
+  scheduled_at timestamptz,
+  group_size integer,
+  session_atmosphere text
+    check (session_atmosphere in ('casual', 'polished', 'lively', 'calm')),
+  session_focus text not null default 'balanced'
+    check (session_focus in ('drink_centered', 'food_centered', 'balanced')),
+  status text not null default 'active'
+    check (status in ('active', 'archived')),
+  created_by uuid references profiles(id),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
-ALTER TABLE public.genre_preferences ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own genre preferences"
-  ON public.genre_preferences FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own genre preferences"
-  ON public.genre_preferences FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own genre preferences"
-  ON public.genre_preferences FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own genre preferences"
-  ON public.genre_preferences FOR DELETE
-  USING (auth.uid() = user_id);
-
-CREATE INDEX idx_genre_preferences_user_id ON public.genre_preferences(user_id);
-
 -- ============================================
--- 3. Dietary Restrictions
+-- 3. グループメンバー
 -- ============================================
-CREATE TABLE public.dietary_restrictions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  restriction_type TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(user_id, restriction_type)
+create table group_members (
+  id uuid primary key default gen_random_uuid(),
+  group_id uuid not null references groups(id) on delete cascade,
+  profile_id uuid references profiles(id),
+  display_name text not null,
+  role text not null default 'member'
+    check (role in ('owner', 'member')),
+  has_survey boolean default false,
+  joined_at timestamptz default now(),
+  unique(group_id, profile_id)
 );
 
-ALTER TABLE public.dietary_restrictions ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own dietary restrictions"
-  ON public.dietary_restrictions FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own dietary restrictions"
-  ON public.dietary_restrictions FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own dietary restrictions"
-  ON public.dietary_restrictions FOR DELETE
-  USING (auth.uid() = user_id);
-
-CREATE INDEX idx_dietary_restrictions_user_id ON public.dietary_restrictions(user_id);
-
 -- ============================================
--- 4. Follows
+-- 4. サーベイ回答
 -- ============================================
-CREATE TABLE public.follows (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  follower_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  following_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(follower_id, following_id),
-  CHECK (follower_id != following_id)
+create table survey_responses (
+  id uuid primary key default gen_random_uuid(),
+  group_id uuid not null references groups(id) on delete cascade,
+  member_id uuid not null references group_members(id) on delete cascade,
+  response_version integer not null default 2,
+  departure_area text,
+  departure_station text,
+  preferred_areas text[] default '{}',
+  budget_ideal_yen integer,
+  budget_max_yen integer,
+  budget_priority text
+    check (budget_priority in ('must', 'prefer', 'optional')),
+  genre_preferences jsonb not null default '[]'::jsonb,
+  dietary_restrictions jsonb not null default '[]'::jsonb,
+  submitted_at timestamptz default now(),
+  unique(group_id, member_id)
 );
 
-ALTER TABLE public.follows ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own follows"
-  ON public.follows FOR SELECT
-  USING (auth.uid() = follower_id OR auth.uid() = following_id);
-
-CREATE POLICY "Users can insert own follows"
-  ON public.follows FOR INSERT
-  WITH CHECK (auth.uid() = follower_id);
-
-CREATE POLICY "Users can delete own follows"
-  ON public.follows FOR DELETE
-  USING (auth.uid() = follower_id);
-
-CREATE INDEX idx_follows_follower_id ON public.follows(follower_id);
-CREATE INDEX idx_follows_following_id ON public.follows(following_id);
-
 -- ============================================
--- 5. Favorite Restaurants
+-- 5. レストラン決定
 -- ============================================
-CREATE TABLE public.favorite_restaurants (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  hotpepper_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  genre_code TEXT,
-  genre_name TEXT,
-  address TEXT,
-  photo_url TEXT,
-  budget_name TEXT,
-  lat DOUBLE PRECISION,
-  lng DOUBLE PRECISION,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(user_id, hotpepper_id)
+create table decisions (
+  id uuid primary key default gen_random_uuid(),
+  group_id uuid unique not null references groups(id) on delete cascade,
+  restaurant_name text not null,
+  restaurant_id text,
+  genre_id text,
+  decided_by uuid references profiles(id),
+  decided_at timestamptz default now()
 );
 
-ALTER TABLE public.favorite_restaurants ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own favorites"
-  ON public.favorite_restaurants FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own favorites"
-  ON public.favorite_restaurants FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own favorites"
-  ON public.favorite_restaurants FOR DELETE
-  USING (auth.uid() = user_id);
-
-CREATE INDEX idx_favorite_restaurants_user_id ON public.favorite_restaurants(user_id);
-
 -- ============================================
--- 6. Search History
+-- 6. エリアメタデータ
 -- ============================================
-CREATE TABLE public.search_history (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  member_ids UUID[] NOT NULL,
-  mood TEXT,
-  location_text TEXT,
-  location_code TEXT,
-  time_slot TEXT,
-  result_count INTEGER,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+create table area_catalog (
+  id text primary key,
+  display_name text not null unique,
+  station_name text not null,
+  area_kind text not null default 'district'
+    check (area_kind in ('district', 'hub', 'discovery')),
+  prefecture text not null default 'Tokyo',
+  hub_score numeric(4,3) not null default 0
+    check (hub_score >= 0 and hub_score <= 1),
+  supply_score numeric(4,3) not null default 0
+    check (supply_score >= 0 and supply_score <= 1),
+  nightlife_score numeric(4,3) not null default 0
+    check (nightlife_score >= 0 and nightlife_score <= 1),
+  discovery_score numeric(4,3) not null default 0
+    check (discovery_score >= 0 and discovery_score <= 1),
+  reliability_score numeric(4,3) not null default 0
+    check (reliability_score >= 0 and reliability_score <= 1),
+  nearby_hubs text[] default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
-ALTER TABLE public.search_history ENABLE ROW LEVEL SECURITY;
+-- ============================================
+-- 7. 招待
+-- ============================================
+create table invitations (
+  id uuid primary key default gen_random_uuid(),
+  group_id uuid not null references groups(id) on delete cascade,
+  inviter_id uuid references profiles(id),
+  invitee_id uuid references profiles(id),
+  status text not null default 'pending'
+    check (status in ('pending', 'accepted', 'declined')),
+  created_at timestamptz default now()
+);
 
-CREATE POLICY "Users can view own search history"
-  ON public.search_history FOR SELECT
-  USING (auth.uid() = created_by);
+-- ============================================
+-- 8. 繋がり (フォロー)
+-- ============================================
+create table follows (
+  id uuid primary key default gen_random_uuid(),
+  follower_id uuid not null references profiles(id) on delete cascade,
+  following_id uuid not null references profiles(id) on delete cascade,
+  created_at timestamptz default now(),
+  unique(follower_id, following_id),
+  check (follower_id != following_id)
+);
 
-CREATE POLICY "Users can insert own search history"
-  ON public.search_history FOR INSERT
-  WITH CHECK (auth.uid() = created_by);
+-- ============================================
+-- インデックス
+-- ============================================
+create index idx_group_members_group on group_members(group_id);
+create index idx_group_members_profile on group_members(profile_id);
+create index idx_survey_responses_group on survey_responses(group_id);
+create index idx_survey_responses_member on survey_responses(member_id);
+create index idx_area_catalog_display_name on area_catalog(display_name);
+create index idx_invitations_invitee on invitations(invitee_id);
+create index idx_invitations_group on invitations(group_id);
+create index idx_groups_invite_code on groups(invite_code);
+create index idx_follows_follower on follows(follower_id);
+create index idx_follows_following on follows(following_id);
 
-CREATE INDEX idx_search_history_created_by ON public.search_history(created_by);
+-- ============================================
+-- updated_at 自動更新トリガー
+-- ============================================
+create or replace function update_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger profiles_updated_at
+  before update on profiles
+  for each row execute function update_updated_at();
+
+create trigger groups_updated_at
+  before update on groups
+  for each row execute function update_updated_at();
+
+create trigger area_catalog_updated_at
+  before update on area_catalog
+  for each row execute function update_updated_at();
+
+-- ============================================
+-- RLS: 開発用に全アクセス許可
+-- v2で認証有効化時に適切なポリシーに書き換え
+-- ============================================
+alter table profiles enable row level security;
+alter table groups enable row level security;
+alter table group_members enable row level security;
+alter table survey_responses enable row level security;
+alter table decisions enable row level security;
+alter table area_catalog enable row level security;
+alter table invitations enable row level security;
+alter table follows enable row level security;
+
+create policy "dev_all_profiles" on profiles for all using (true) with check (true);
+create policy "dev_all_groups" on groups for all using (true) with check (true);
+create policy "dev_all_group_members" on group_members for all using (true) with check (true);
+create policy "dev_all_survey_responses" on survey_responses for all using (true) with check (true);
+create policy "dev_all_decisions" on decisions for all using (true) with check (true);
+create policy "dev_all_area_catalog" on area_catalog for all using (true) with check (true);
+create policy "dev_all_invitations" on invitations for all using (true) with check (true);
+create policy "dev_all_follows" on follows for all using (true) with check (true);

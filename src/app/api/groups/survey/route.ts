@@ -7,6 +7,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import {
+  mapSurveyResponseRow,
+  normalizePreferredAreas,
+} from "@/lib/session-data";
 
 // ----- GET: グループのアンケート取得 -----
 export async function GET(request: NextRequest) {
@@ -40,16 +44,8 @@ export async function GET(request: NextRequest) {
 
   // フロント用に整形
   const surveys = (data ?? []).map((row) => ({
-    id: row.id,
-    memberId: row.member_id,
-    memberName: row.group_members?.display_name ?? "不明",
+    ...mapSurveyResponseRow(row),
     profileId: row.group_members?.profile_id,
-    tierS: row.tier_s ?? [],
-    tierA: row.tier_a ?? [],
-    tierB: row.tier_b ?? [],
-    disliked: row.disliked ?? [],
-    preferredAreas: row.preferred_areas ?? [],
-    submittedAt: row.submitted_at,
   }));
 
   return NextResponse.json({ surveys });
@@ -58,7 +54,20 @@ export async function GET(request: NextRequest) {
 // ----- POST: アンケート送信 -----
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { groupId, memberId, tierS, tierA, tierB, disliked, preferredAreas } = body;
+  const {
+    groupId,
+    memberId,
+    preferredAreas,
+    preferredArea,
+    departureArea,
+    departureStation,
+    budgetIdealYen,
+    budgetMaxYen,
+    budgetPriority,
+    genrePreferences,
+    dietaryRestrictions,
+    responseVersion,
+  } = body;
 
   if (!groupId || !memberId) {
     return NextResponse.json(
@@ -66,6 +75,12 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+
+  const normalizedPreferredAreas = normalizePreferredAreas(
+    preferredAreas,
+    preferredArea ?? null
+  );
+  const normalizedGenrePreferences = genrePreferences ?? [];
 
   const supabase = await createServiceClient();
 
@@ -76,11 +91,15 @@ export async function POST(request: NextRequest) {
       {
         group_id: groupId,
         member_id: memberId,
-        tier_s: tierS ?? [],
-        tier_a: tierA ?? [],
-        tier_b: tierB ?? [],
-        disliked: disliked ?? [],
-        preferred_areas: preferredAreas ?? [],
+        departure_area: departureArea ?? null,
+        departure_station: departureStation ?? null,
+        preferred_areas: normalizedPreferredAreas,
+        budget_ideal_yen: budgetIdealYen ?? null,
+        budget_max_yen: budgetMaxYen ?? null,
+        budget_priority: budgetPriority ?? null,
+        genre_preferences: normalizedGenrePreferences,
+        dietary_restrictions: dietaryRestrictions ?? [],
+        response_version: responseVersion ?? 2,
       },
       { onConflict: "group_id,member_id" }
     )

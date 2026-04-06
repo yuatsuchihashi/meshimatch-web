@@ -9,22 +9,22 @@ interface RestaurantCardProps {
 }
 
 const GENRE_COLORS: Record<string, string> = {
-  G001: "#CC7755",
-  G002: "#6B6896",
+  G001: "#C26A4A",
+  G002: "#6E6E7A",
   G003: "#8B6A4A",
-  G004: "#CC7755",
-  G005: "#8B1A1A",
-  G006: "#A03030",
-  G007: "#4A8A5A",
-  G008: "#6B6896",
-  G009: "#2D2B55",
+  G004: "#C26A4A",
+  G005: "#B33A3A",
+  G006: "#A04040",
+  G007: "#3D8B5E",
+  G008: "#6E6E7A",
+  G009: "#1A1A2E",
   G010: "#8A6B3A",
   G013: "#8A6B3A",
-  G014: "#CC7755",
+  G014: "#C26A4A",
   G016: "#6B3A2A",
   G017: "#2D6B8A",
-  G018: "#2D2B55",
-  G019: "#8B1A1A",
+  G018: "#1A1A2E",
+  G019: "#B33A3A",
 };
 
 function StarRating({ rating }: { rating: number }) {
@@ -58,6 +58,7 @@ function StarRating({ rating }: { rating: number }) {
 
 export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
   const genreColor = GENRE_COLORS[restaurant.genreId] ?? "var(--text-secondary)";
+  const hasRating = restaurant.rating > 0;
 
   return (
     <div
@@ -65,17 +66,18 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
       style={{ overflow: "hidden", cursor: "pointer" }}
       onClick={() => onClick(restaurant)}
     >
-      {/* Compact genre bar instead of large gradient hero */}
+      {/* Subtle genre accent bar */}
       <div
         style={{
-          height: 6,
+          height: 4,
           backgroundColor: genreColor,
+          opacity: 0.6,
           borderRadius: "20px 20px 0 0",
         }}
       />
 
       {/* Content */}
-      <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
         {/* Header: Name + Score badge */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
           <div
@@ -99,8 +101,8 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
               fontSize: 12,
               backgroundColor: "var(--bg-secondary)",
               color: "var(--text-secondary)",
-              borderRadius: 8,
-              padding: "3px 10px",
+              borderRadius: 100,
+              padding: "4px 12px",
               fontWeight: 500,
             }}
           >
@@ -111,8 +113,8 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
               fontSize: 12,
               backgroundColor: "var(--bg-secondary)",
               color: "var(--text-secondary)",
-              borderRadius: 8,
-              padding: "3px 10px",
+              borderRadius: 100,
+              padding: "4px 12px",
               fontWeight: 500,
             }}
           >
@@ -122,7 +124,7 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
             <span
               style={{
                 fontSize: 12,
-                backgroundColor: "rgba(45,43,85,0.08)",
+                backgroundColor: "rgba(26,26,46,0.06)",
                 color: "var(--secondary)",
                 borderRadius: 8,
                 padding: "3px 10px",
@@ -132,7 +134,28 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
               個室あり
             </span>
           )}
+          {restaurant.reasonTags?.slice(0, 3).map((tag) => (
+            <span
+              key={tag}
+              style={{
+                fontSize: 12,
+                backgroundColor: "rgba(194,106,74,0.08)",
+                color: "var(--primary)",
+                borderRadius: 100,
+                padding: "4px 12px",
+                fontWeight: 600,
+              }}
+            >
+              {tag}
+            </span>
+          ))}
         </div>
+
+        {restaurant.reasonExplanation && (
+          <div style={{ fontSize: 13, lineHeight: 1.5, color: "var(--text-secondary)" }}>
+            {restaurant.reasonExplanation}
+          </div>
+        )}
 
         {/* Match score bar */}
         <div>
@@ -144,7 +167,7 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
 
         {/* Rating & Access */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <StarRating rating={restaurant.rating} />
+          {hasRating ? <StarRating rating={restaurant.rating} /> : <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>条件との相性を表示中</span>}
           <span
             style={{
               fontSize: 12,

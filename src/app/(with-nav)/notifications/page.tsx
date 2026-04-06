@@ -25,17 +25,16 @@ function timeAgo(date: Date): string {
 }
 
 export default function NotificationsPage() {
-  const { userId } = useUser();
+  const { userId, loading: userLoading } = useUser();
   const [invitations, setInvitations] = useState<InvitationData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
+    if (!userId) return;
 
+    let cancelled = false;
     async function fetchInvitations() {
+      setLoading(true);
       const supabase = createClient();
 
       const { data } = await supabase
@@ -54,7 +53,7 @@ export default function NotificationsPage() {
         .eq("status", "pending")
         .order("created_at", { ascending: false });
 
-      if (data) {
+      if (!cancelled && data) {
         const mapped: InvitationData[] = data
           .filter((inv: Record<string, unknown>) => inv.groups)
           .map((inv: Record<string, unknown>) => {
@@ -73,10 +72,15 @@ export default function NotificationsPage() {
           });
         setInvitations(mapped);
       }
-      setLoading(false);
+      if (!cancelled) {
+        setLoading(false);
+      }
     }
 
-    fetchInvitations();
+    void fetchInvitations();
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   async function handleAccept(invitationId: string, groupId: string) {
@@ -107,7 +111,7 @@ export default function NotificationsPage() {
     setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
   }
 
-  if (loading) {
+  if (userLoading || loading) {
     return (
       <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%" }} />

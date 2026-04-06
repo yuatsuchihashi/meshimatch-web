@@ -33,6 +33,28 @@ export interface DietaryRestriction {
   emoji: string;
 }
 
+export type PriorityLevel = "must" | "prefer" | "optional";
+
+export type SessionAtmosphere = "casual" | "polished" | "lively" | "calm";
+
+export type SessionFocus = "drink_centered" | "food_centered" | "balanced";
+
+export interface GenrePreferenceInput {
+  genreId: string;
+  priority: PriorityLevel;
+}
+
+export interface DietaryRestrictionInput {
+  restrictionId: string;
+  priority: PriorityLevel;
+}
+
+export interface BudgetPreference {
+  idealYen?: number | null;
+  maxYen?: number | null;
+  priority?: PriorityLevel | null;
+}
+
 // --- Group ---
 export interface GroupMember {
   id: string;
@@ -45,13 +67,16 @@ export interface SurveyResponse {
   id: string;
   memberName: string;
   memberId?: string;
-  tierS: string[];
-  tierA: string[];
-  tierB: string[];
-  disliked?: string[];
+  responseVersion?: number;
   preferredAreas?: string[];
+  departureArea?: string | null;
   departureStation: string;
   preferredArea: string | null;
+  budgetIdealYen?: number | null;
+  budgetMaxYen?: number | null;
+  budgetPriority?: PriorityLevel | null;
+  genrePreferences?: GenrePreferenceInput[];
+  dietaryRestrictions?: DietaryRestrictionInput[];
   submittedAt: Date;
 }
 
@@ -59,6 +84,10 @@ export interface MeshiGroup {
   id: string;
   name: string;
   inviteCode: string;
+  scheduledAt?: Date | null;
+  groupSize?: number | null;
+  sessionAtmosphere?: SessionAtmosphere | null;
+  sessionFocus?: SessionFocus | null;
   status: "active" | "archived" | "decided" | "all_responded" | "completed";
   members: GroupMember[];
   surveyResponses: SurveyResponse[];
@@ -84,6 +113,9 @@ export interface Restaurant {
   openHours?: string;
   phoneNumber?: string;
   area: string;
+  reasonTags?: string[];
+  reasonExplanation?: string;
+  genreScore?: number;
 }
 
 // --- Invitation ---
@@ -101,20 +133,25 @@ export interface Invitation {
 export interface UserProfile {
   id: string;
   displayName: string;
-  dislikedGenres: string[];        // 苦手ジャンル → スコアに -0.8
   allergies: string[];             // アレルギー → 注意喚起のみ（スコアリング不使用）
-  // --- v2で追加予定 ---
+  usualBudgetIdealYen?: number | null;
+  usualBudgetMaxYen?: number | null;
+  usualBudgetPriority?: PriorityLevel | null;
+  usualAreas?: string[];
+  favoriteGenres?: GenrePreferenceInput[];
+  dislikedItems?: string[];
   dietaryPresets?: string[];
   dietaryStrictness?: DietaryStrictness;
+  dietaryRestrictions?: DietaryRestrictionInput[];
 }
 
-// --- Survey / Tier ---
-export type TierKey = "S" | "A" | "B";
+// --- Survey / Genre Preference Buckets ---
+export type GenrePreferenceBucketKey = "prioritize" | "nice_to_have" | "open_to_it";
 
-export interface TierData {
-  S: string[];
-  A: string[];
-  B: string[];
+export interface GenrePreferenceBucketData {
+  prioritize: string[];
+  nice_to_have: string[];
+  open_to_it: string[];
 }
 
 // --- Matching Engine 出力 ---

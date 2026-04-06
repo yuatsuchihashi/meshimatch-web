@@ -18,6 +18,7 @@ export default function SearchingPage({ params }: { params: Promise<{ id: string
     t("searching.msg3"),
     t("searching.msg4"),
   ];
+  const messageCount = MESSAGES.length;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -33,14 +34,14 @@ export default function SearchingPage({ params }: { params: Promise<{ id: string
     }, 60);
 
     const msgInterval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % MESSAGES.length);
+      setMessageIndex((prev) => (prev + 1) % messageCount);
     }, 1200);
 
     return () => {
       clearInterval(interval);
       clearInterval(msgInterval);
     };
-  }, [id, router]);
+  }, [id, messageCount, router]);
 
   const percent = Math.round(progress * 100);
 

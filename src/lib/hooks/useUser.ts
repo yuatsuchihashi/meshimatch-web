@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { mapProfileRow } from "@/lib/session-data";
 import type { UserProfile } from "@/lib/types";
 
 interface UseUserResult {
@@ -31,21 +32,35 @@ export function useUser(): UseUserResult {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("id, display_name, disliked_genres, allergies")
+        .select(`
+          id,
+          display_name,
+          allergies,
+          usual_budget_ideal_yen,
+          usual_budget_max_yen,
+          usual_budget_priority,
+          usual_areas,
+          favorite_genres,
+          disliked_items,
+          dietary_restrictions
+        `)
         .eq("id", authUser.id)
         .single();
 
       if (!cancelled) {
         setUserId(authUser.id);
         if (profile) {
-          setUser({
-            id: profile.id,
-            displayName: profile.display_name ?? "ユーザー",
-            dislikedGenres: profile.disliked_genres ?? [],
-            allergies: profile.allergies ?? [],
-          });
+          setUser(mapProfileRow(profile));
         } else {
-          setUser({ id: authUser.id, displayName: "ユーザー", dislikedGenres: [], allergies: [] });
+          setUser({
+            id: authUser.id,
+            displayName: "ユーザー",
+            allergies: [],
+            usualAreas: [],
+            favoriteGenres: [],
+            dislikedItems: [],
+            dietaryRestrictions: [],
+          });
         }
         setLoading(false);
       }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { mapSurveyResponseRow, normalizePreferredAreas } from "@/lib/session-data";
 import type { MeshiGroup } from "@/lib/types";
 
 interface UseGroupsResult {
@@ -11,32 +12,80 @@ interface UseGroupsResult {
   leaveGroup: (id: string) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toMeshiGroup(raw: any): MeshiGroup {
+interface RawGroupMember {
+  id: string;
+  display_name?: string;
+  role?: "owner" | "member";
+  has_survey?: boolean;
+}
+
+interface RawSurveyResponse {
+  id: string;
+  member_id?: string;
+  member_name?: string;
+  preferred_areas?: string[];
+  preferred_area?: string | null;
+  departure_area?: string | null;
+  departure_station?: string | null;
+  budget_ideal_yen?: number | null;
+  budget_max_yen?: number | null;
+  budget_priority?: "must" | "prefer" | "optional" | null;
+  genre_preferences?: unknown[];
+  dietary_restrictions?: unknown[];
+  response_version?: number;
+  submitted_at: string;
+}
+
+interface RawGroup {
+  id: string;
+  name: string;
+  invite_code?: string;
+  scheduled_at?: string | null;
+  group_size?: number | null;
+  session_atmosphere?: "casual" | "polished" | "lively" | "calm" | null;
+  session_focus?: "drink_centered" | "food_centered" | "balanced" | null;
+  status?: MeshiGroup["status"];
+  group_members?: RawGroupMember[];
+  survey_responses?: RawSurveyResponse[];
+  resolved_areas?: string[];
+  decisions?: { restaurant_name?: string }[];
+}
+
+function toMeshiGroup(raw: RawGroup): MeshiGroup {
+  const memberNameById = new Map(
+    (raw.group_members ?? []).map((member) => [
+      member.id,
+      member.display_name ?? "メンバー",
+    ])
+  );
+
   return {
     id: raw.id,
     name: raw.name,
     inviteCode: raw.invite_code ?? "",
+    scheduledAt: raw.scheduled_at ? new Date(raw.scheduled_at) : null,
+    groupSize: raw.group_size ?? null,
+    sessionAtmosphere: raw.session_atmosphere ?? null,
+    sessionFocus: raw.session_focus ?? null,
     status: raw.status ?? "active",
-    members: (raw.group_members ?? []).map((m: any) => ({
+    members: (raw.group_members ?? []).map((m) => ({
       id: m.id,
       displayName: m.display_name ?? "メンバー",
       role: m.role ?? "member",
       hasSurvey: m.has_survey ?? false,
     })),
-    surveyResponses: (raw.survey_responses ?? []).map((s: any) => ({
-      id: s.id,
-      memberName: s.member_id ?? "",
-      memberId: s.member_id,
-      tierS: s.tier_s ?? [],
-      tierA: s.tier_a ?? [],
-      tierB: s.tier_b ?? [],
-      disliked: s.disliked ?? [],
-      preferredAreas: s.preferred_areas ?? [],
-      departureStation: "",
-      preferredArea: null,
-      submittedAt: new Date(s.submitted_at),
-    })),
+    surveyResponses: (raw.survey_responses ?? []).map((s) =>
+      mapSurveyResponseRow(
+        {
+          ...s,
+          preferred_areas: normalizePreferredAreas(
+            s.preferred_areas,
+            s.preferred_area ?? null
+          ),
+        },
+        s.member_name ?? memberNameById.get(s.member_id ?? "")
+      )
+    ),
     resolvedAreas: raw.resolved_areas ?? [],
     decidedRestaurant: raw.decisions?.[0]?.restaurant_name,
   };
@@ -58,9 +107,9 @@ const MOCK_GROUPS: MeshiGroup[] = [
       { id: "m4", displayName: "山田", role: "member", hasSurvey: false },
     ],
     surveyResponses: [
-      { id: "s1", memberName: "田中", tierS: ["izakaya"], tierA: ["yakiniku"], tierB: [], departureStation: "渋谷", preferredArea: "渋谷", submittedAt: new Date() },
-      { id: "s2", memberName: "鈴木", tierS: ["yakiniku"], tierA: ["izakaya"], tierB: [], departureStation: "渋谷", preferredArea: "渋谷", submittedAt: new Date() },
-      { id: "s3", memberName: "佐藤", tierS: ["izakaya"], tierA: [], tierB: ["ramen"], departureStation: "渋谷", preferredArea: "渋谷", submittedAt: new Date() },
+      { id: "s1", memberName: "田中", genrePreferences: [{ genreId: "izakaya", priority: "prefer" }, { genreId: "yakiniku", priority: "optional" }], preferredAreas: ["渋谷"], departureStation: "渋谷", preferredArea: "渋谷", submittedAt: new Date() },
+      { id: "s2", memberName: "鈴木", genrePreferences: [{ genreId: "yakiniku", priority: "prefer" }, { genreId: "izakaya", priority: "optional" }], preferredAreas: ["渋谷"], departureStation: "渋谷", preferredArea: "渋谷", submittedAt: new Date() },
+      { id: "s3", memberName: "佐藤", genrePreferences: [{ genreId: "izakaya", priority: "prefer" }, { genreId: "ramen", priority: "optional" }], preferredAreas: ["渋谷"], departureStation: "渋谷", preferredArea: "渋谷", submittedAt: new Date() },
     ],
     resolvedAreas: ["渋谷"],
     decidedRestaurant: "炭焼きや 渋谷店",
@@ -75,8 +124,8 @@ const MOCK_GROUPS: MeshiGroup[] = [
       { id: "m6", displayName: "渡辺", role: "member", hasSurvey: true },
     ],
     surveyResponses: [
-      { id: "s4", memberName: "伊藤", tierS: ["ramen"], tierA: ["curry"], tierB: [], departureStation: "新宿", preferredArea: "新宿", submittedAt: new Date() },
-      { id: "s5", memberName: "渡辺", tierS: ["curry"], tierA: ["ramen"], tierB: [], departureStation: "新宿", preferredArea: "新宿", submittedAt: new Date() },
+      { id: "s4", memberName: "伊藤", genrePreferences: [{ genreId: "ramen", priority: "prefer" }, { genreId: "curry", priority: "optional" }], preferredAreas: ["新宿"], departureStation: "新宿", preferredArea: "新宿", submittedAt: new Date() },
+      { id: "s5", memberName: "渡辺", genrePreferences: [{ genreId: "curry", priority: "prefer" }, { genreId: "ramen", priority: "optional" }], preferredAreas: ["新宿"], departureStation: "新宿", preferredArea: "新宿", submittedAt: new Date() },
     ],
     resolvedAreas: ["新宿"],
   },
