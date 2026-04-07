@@ -7,7 +7,6 @@ const AREA_REASON_TAGS: Record<AreaReasonCode, string> = {
   easy_access: "アクセスしやすい",
   strong_restaurant: "店数が豊富",
   good_for_large_group: "大人数向き",
-  great_discovery: "穴場発見しやすい",
   matches_preference: "希望エリア",
 };
 
@@ -26,7 +25,6 @@ const AREA_REASON_PHRASES: Record<AreaReasonCode, string> = {
   easy_access: "みんなが集まりやすく",
   strong_restaurant: "店の選択肢が十分あり",
   good_for_large_group: "大人数でも候補を確保しやすく",
-  great_discovery: "定番すぎない穴場を見つけやすく",
   matches_preference: "参加者の希望エリアに合っていて",
 };
 

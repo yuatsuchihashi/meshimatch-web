@@ -10,7 +10,6 @@ export type AreaReasonCode =
   | "easy_access"
   | "strong_restaurant"
   | "good_for_large_group"
-  | "great_discovery"
   | "matches_preference";
 
 export interface Station {

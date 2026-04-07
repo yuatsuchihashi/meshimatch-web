@@ -25,8 +25,6 @@ import type {
 // --- Constants ---
 
 const MAX_REASONABLE_COST = 60;
-const RESTAURANT_SWEET_SPOT = 500;
-const DISCOVERY_SIGMA = 1.2;
 const MIN_RESTAURANT_COUNT = 50;
 const MIN_ACCESS_SCORE = 0.2;
 
@@ -74,24 +72,21 @@ function getRestaurantCount(station: Station): number {
   return RESTAURANT_COUNTS[station.name] ?? DEFAULT_RESTAURANT_COUNT;
 }
 
-// --- Weight Matrix (group size adaptive) ---
+// --- Weight Profiles ---
+// Two modes: with preferred areas (preference-heavy) and without (access-heavy)
 
 interface WeightProfile {
   access: number;
   restaurant: number;
   scale: number;
-  discovery: number;
   preference: number;
 }
 
-function getWeights(groupSize: number): WeightProfile {
-  if (groupSize >= 6) {
-    return { access: 0.35, restaurant: 0.35, scale: 0.20, discovery: 0.05, preference: 0.05 };
+function getWeights(hasPreferred: boolean): WeightProfile {
+  if (hasPreferred) {
+    return { access: 0.35, restaurant: 0.10, scale: 0.05, preference: 0.50 };
   }
-  if (groupSize >= 4) {
-    return { access: 0.35, restaurant: 0.20, scale: 0.15, discovery: 0.20, preference: 0.10 };
-  }
-  return { access: 0.30, restaurant: 0.10, scale: 0.05, discovery: 0.40, preference: 0.15 };
+  return { access: 0.55, restaurant: 0.30, scale: 0.15, preference: 0.0 };
 }
 
 // --- Scoring Functions ---
@@ -111,13 +106,6 @@ function computeRestaurantScore(count: number, maxCount: number): number {
 
 function computeScaleScore(stationId: string): number {
   return 0.6 * normalizedPassengerCount(stationId) + 0.4 * normalizedLineCount(stationId);
-}
-
-function computeDiscoveryScore(count: number): number {
-  if (count <= 0) return 0;
-  const logCount = Math.log(count);
-  const logSweet = Math.log(RESTAURANT_SWEET_SPOT);
-  return Math.exp(-Math.pow((logCount - logSweet) / DISCOVERY_SIGMA, 2));
 }
 
 function computePreferenceScore(
@@ -200,7 +188,8 @@ export function recommendCandidateAreas(
   // (skip for now, would need adjacency lookup)
 
   // Score all candidates
-  const weights = getWeights(groupSize);
+  const hasPreferred = preferredIds.length > 0;
+  const weights = getWeights(hasPreferred);
   const scored: CandidateArea[] = [];
 
   for (const candidateId of candidateSet) {
@@ -224,14 +213,12 @@ export function recommendCandidateAreas(
 
     const restaurantScore = computeRestaurantScore(restaurantCount, maxRestaurantCount);
     const scaleScore = computeScaleScore(candidateId);
-    const discoveryScore = computeDiscoveryScore(restaurantCount);
     const preferenceScore = computePreferenceScore(candidateId, preferredIds, adjacentPreferred);
 
     const combined = clamp(
       weights.access * accessScore +
       weights.restaurant * restaurantScore +
       weights.scale * scaleScore +
-      weights.discovery * discoveryScore +
       weights.preference * preferenceScore
     );
 
@@ -240,14 +227,13 @@ export function recommendCandidateAreas(
     if (accessScore >= 0.7) reasons.push("easy_access");
     if (restaurantScore >= 0.7) reasons.push("strong_restaurant");
     if (groupSize >= 5 && scaleScore >= 0.6) reasons.push("good_for_large_group");
-    if (discoveryScore >= 0.7) reasons.push("great_discovery");
     if (preferenceScore >= 0.5) reasons.push("matches_preference");
 
     const scores: CandidateAreaScores = {
       access: accessScore,
       restaurant: restaurantScore,
       scale: scaleScore,
-      discovery: discoveryScore,
+      discovery: 0,
       preference: preferenceScore,
       combined,
     };
