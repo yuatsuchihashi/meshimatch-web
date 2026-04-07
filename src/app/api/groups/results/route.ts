@@ -60,8 +60,20 @@ function makeRestaurant(shop: Record<string, unknown>, areaName: string): Restau
     hotpepperUrl: urls.pc,
     hasPrivateRoom: shop.private_room === "あり",
     address: (shop.address as string) ?? "",
+    openHours: (shop.open as string) ?? "",
     area: areaName,
   };
+}
+
+/** Filter out likely closed/invalid restaurants */
+function isLikelyOpen(shop: Record<string, unknown>): boolean {
+  const open = (shop.open as string) ?? "";
+  const address = (shop.address as string) ?? "";
+  // Skip shops with no opening hours or no address (likely closed/removed)
+  if (!open || !address) return false;
+  // Skip shops explicitly marked as closed
+  if (open.includes("閉店") || open.includes("休業")) return false;
+  return true;
 }
 
 async function fetchAreaRestaurants(params: {
@@ -117,7 +129,9 @@ async function fetchAreaRestaurants(params: {
     try {
       const result = await task;
       for (const shop of result.shops) {
-        const restaurant = makeRestaurant(shop as Record<string, unknown>, area.areaName);
+        const shopRecord = shop as Record<string, unknown>;
+        if (!isLikelyOpen(shopRecord)) continue;
+        const restaurant = makeRestaurant(shopRecord, area.areaName);
         if (!restaurants.has(restaurant.id)) {
           restaurants.set(restaurant.id, restaurant);
         }
