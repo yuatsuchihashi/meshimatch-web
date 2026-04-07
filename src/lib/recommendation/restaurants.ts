@@ -89,6 +89,10 @@ export function parseBudgetText(text: string | null | undefined): RestaurantBudg
   };
 }
 
+/**
+ * Continuous distance-based budget scoring.
+ * Within tolerance band = 1.0, then linear decay: 1000 yen away = 0.0
+ */
 export function scoreBudgetFit(
   restaurantBudget: RestaurantBudgetRange,
   aggregate: AggregatedBudgetPreference
@@ -118,11 +122,11 @@ export function scoreBudgetFit(
       ? (restaurantBudget.minYen + restaurantBudget.maxYen) / 2
       : (restaurantBudget.minYen ?? restaurantBudget.maxYen)!;
 
-  const ideal = aggregate.medianTier;
-  const lo = aggregate.toleranceLower ?? ideal;
-  const hi = aggregate.toleranceUpper ?? ideal;
+  const lo = aggregate.toleranceLower ?? aggregate.medianTier;
+  const hi = aggregate.toleranceUpper ?? aggregate.medianTier;
 
-  if (restMid >= ideal * 0.8 && restMid <= ideal * 1.2) {
+  // Within tolerance band = perfect fit
+  if (restMid >= lo && restMid <= hi) {
     reasons.push("budget_overlap");
     return {
       score: 1.0,
@@ -132,18 +136,16 @@ export function scoreBudgetFit(
     };
   }
 
-  if (restMid >= lo && restMid <= hi) {
+  // Outside band: linear decay, 1000 yen distance = score 0
+  const dist = restMid < lo ? lo - restMid : restMid - hi;
+  const score = Math.max(0, 1 - dist / 1000);
+
+  if (score >= 0.5) {
     reasons.push("budget_safe");
-    return {
-      score: 0.5,
-      reasons,
-      tags: restaurantReasonTags(reasons),
-      explanation: buildRestaurantExplanation(reasons),
-    };
   }
 
   return {
-    score: 0.0,
+    score,
     reasons,
     tags: restaurantReasonTags(reasons),
     explanation: buildRestaurantExplanation(reasons),
@@ -198,11 +200,11 @@ export function scoreRestaurantForSession(params: {
   }
 
   const finalScore = clamp(
-    baseMatch * 0.5 +
-      budgetFit.score * 0.2 +
-      focusScore * 0.1 +
-      atmosphereScore * 0.1 +
-      groupSizeScore * 0.1
+    baseMatch * 0.35 +
+      budgetFit.score * 0.30 +
+      focusScore * 0.15 +
+      atmosphereScore * 0.10 +
+      groupSizeScore * 0.10
   );
 
   return {

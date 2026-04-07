@@ -263,19 +263,19 @@ describe("budget recommendation helpers", () => {
     expect(aggregate.medianTier).toBe(3000);
   });
 
-  test("scoreBudgetFit scores 1.0 for ideal, 0.5 for band, 0.0 for outside", () => {
+  test("scoreBudgetFit: in-band=1.0, near-band decays, far=0.0", () => {
     const aggregate = aggregateBudgetSignals([
       { tier: 3000 },
     ]);
+    // tier=3000, tolerance=[2000, 5000]
 
-    const goodFit = scoreBudgetFit(parseBudgetText("¥2,800〜¥3,200"), aggregate);
-    const bandFit = scoreBudgetFit(parseBudgetText("¥4,500〜¥5,000"), aggregate);
+    const inBand = scoreBudgetFit(parseBudgetText("¥2,800〜¥3,200"), aggregate);
+    const nearBand = scoreBudgetFit(parseBudgetText("¥5,500"), aggregate); // 500 outside
     const outside = scoreBudgetFit(parseBudgetText("¥7,000〜¥9,000"), aggregate);
 
-    expect(goodFit.score).toBe(1.0);
-    expect(goodFit.reasons).toContain("budget_overlap");
-    expect(bandFit.score).toBe(0.5);
-    expect(bandFit.reasons).toContain("budget_safe");
+    expect(inBand.score).toBe(1.0);
+    expect(inBand.reasons).toContain("budget_overlap");
+    expect(nearBand.score).toBe(0.5);
     expect(outside.score).toBe(0.0);
   });
 

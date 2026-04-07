@@ -69,15 +69,16 @@ describe("aggregateBudgetSignals (v2 tier-based)", () => {
   });
 });
 
-describe("scoreBudgetFit (v2 tier-based)", () => {
+describe("scoreBudgetFit (continuous distance-based)", () => {
   const aggregate3000 = aggregateBudgetSignals([
     { tier: 2000 },
     { tier: 3000 },
     { tier: 3000 },
     { tier: 5000 },
   ]);
+  // median=3000, tolerance=[2000, 5000]
 
-  test("restaurant within ±20% of ideal scores 1.0", () => {
+  test("restaurant within tolerance band scores 1.0", () => {
     const result = scoreBudgetFit(
       { minYen: 2500, maxYen: 3500 },
       aggregate3000
@@ -86,7 +87,7 @@ describe("scoreBudgetFit (v2 tier-based)", () => {
     expect(result.reasons).toContain("budget_overlap");
   });
 
-  test("restaurant at exact ideal scores 1.0", () => {
+  test("restaurant at exact median scores 1.0", () => {
     const result = scoreBudgetFit(
       { minYen: 3000, maxYen: 3000 },
       aggregate3000
@@ -94,22 +95,31 @@ describe("scoreBudgetFit (v2 tier-based)", () => {
     expect(result.score).toBe(1.0);
   });
 
-  test("restaurant within ±1 tier band scores 0.5", () => {
+  test("restaurant 500 yen outside band scores 0.5", () => {
+    // tolerance upper=5000, restaurant mid=5500 → dist=500 → 1-500/1000=0.5
     const result = scoreBudgetFit(
-      { minYen: 4500, maxYen: 5000 },
+      { minYen: 5500, maxYen: 5500 },
       aggregate3000
     );
     expect(result.score).toBe(0.5);
     expect(result.reasons).toContain("budget_safe");
   });
 
-  test("restaurant outside band scores 0.0", () => {
+  test("restaurant 1000+ yen outside band scores 0.0", () => {
+    // tolerance upper=5000, restaurant mid=6000 → dist=1000 → 0.0
+    const result = scoreBudgetFit(
+      { minYen: 6000, maxYen: 6000 },
+      aggregate3000
+    );
+    expect(result.score).toBe(0.0);
+  });
+
+  test("far outside band scores 0.0", () => {
     const result = scoreBudgetFit(
       { minYen: 7000, maxYen: 9000 },
       aggregate3000
     );
     expect(result.score).toBe(0.0);
-    expect(result.reasons).toHaveLength(0);
   });
 
   test("no respondents returns neutral 0.5", () => {
