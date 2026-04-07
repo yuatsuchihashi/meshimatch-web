@@ -228,17 +228,16 @@ describe("place recommendations", () => {
 });
 
 describe("budget recommendation helpers", () => {
-  test("aggregateBudgetSignals computes tier median and tolerance band", () => {
+  test("aggregateBudgetSignals uses lower-weighted average", () => {
     const aggregate = aggregateBudgetSignals([
-      { tier: 3000 },
-      { tier: 3000 },
-      { tier: 5000 },
+      { ceiling: 3000 },
+      { ceiling: 3000 },
+      { ceiling: 5000 },
     ]);
 
     expect(aggregate.respondentCount).toBe(3);
+    expect(aggregate.weightedBudget).toBeLessThan(3700); // pulled toward lower
     expect(aggregate.medianTier).toBe(3000);
-    expect(aggregate.toleranceLower).toBe(2000);
-    expect(aggregate.toleranceUpper).toBe(5000);
   });
 
   test("parseBudgetText extracts numeric ranges", () => {
@@ -252,22 +251,22 @@ describe("budget recommendation helpers", () => {
     });
   });
 
-  test("aggregateBudgetSignals ignores null tiers", () => {
+  test("aggregateBudgetSignals ignores null ceilings", () => {
     const aggregate = aggregateBudgetSignals([
       {},
-      { tier: null },
-      { tier: 3000 },
+      { ceiling: null },
+      { ceiling: 3000 },
     ]);
 
     expect(aggregate.respondentCount).toBe(1);
-    expect(aggregate.medianTier).toBe(3000);
+    expect(aggregate.weightedBudget).toBe(3000);
   });
 
   test("scoreBudgetFit: in-band=1.0, near-band decays, far=0.0", () => {
     const aggregate = aggregateBudgetSignals([
-      { tier: 3000 },
+      { ceiling: 3000 },
     ]);
-    // tier=3000, tolerance=[2000, 5000]
+    // ceiling=3000, tier=3000, tolerance=[2000, 5000]
 
     const inBand = scoreBudgetFit(parseBudgetText("¥2,800〜¥3,200"), aggregate);
     const nearBand = scoreBudgetFit(parseBudgetText("¥5,500"), aggregate); // 500 outside
@@ -291,7 +290,7 @@ describe("budget recommendation helpers", () => {
       sessionAtmosphere: "lively",
       sessionFocus: "drink_centered",
       budgetSignals: aggregateBudgetSignals([
-        { tier: 3000 },
+        { ceiling: 3000 },
       ]),
     });
 

@@ -6,119 +6,105 @@ import {
   scoreBudgetFit,
 } from "../recommendation/restaurants";
 
-describe("aggregateBudgetSignals (v2 tier-based)", () => {
-  test("computes median and ±1 tier band", () => {
+describe("aggregateBudgetSignals (lower-weighted average)", () => {
+  test("3 people: lower budgets weighted more heavily", () => {
+    // [3500, 4000, 5000] → sorted desc [5000, 4000, 3500]
+    // weights: [1/6, 2/6, 3/6]
+    // 5000*1/6 + 4000*2/6 + 3500*3/6 = 3917
+    // nearest tier to 3917 = 3000 (diff 917 < diff to 5000 which is 1083)
     const result = aggregateBudgetSignals([
-      { tier: 2000 },
-      { tier: 3000 },
-      { tier: 3000 },
-      { tier: 5000 },
+      { ceiling: 3500 },
+      { ceiling: 4000 },
+      { ceiling: 5000 },
     ]);
-    expect(result.respondentCount).toBe(4);
+    expect(result.respondentCount).toBe(3);
+    expect(result.weightedBudget).toBe(3917);
     expect(result.medianTier).toBe(3000);
     expect(result.toleranceLower).toBe(2000);
     expect(result.toleranceUpper).toBe(5000);
+    expect(result.minCeiling).toBe(3500);
+    expect(result.hasVariance).toBe(false); // 3917 - 3500 = 417 < 2000
   });
 
-  test("single respondent still expands ±1 tier", () => {
-    const result = aggregateBudgetSignals([{ tier: 2000 }]);
-    expect(result.medianTier).toBe(2000);
-    expect(result.toleranceLower).toBe(1000);
-    expect(result.toleranceUpper).toBe(3000);
-  });
-
-  test("all same answer", () => {
+  test("variance detected when spread is large", () => {
+    // [2000, 3000, 8000] → sorted desc [8000, 3000, 2000]
+    // 8000*1/6 + 3000*2/6 + 2000*3/6 = 3333
+    // 3333 - 2000 = 1333 < 2000 → no variance
+    // Need bigger spread: [1000, 3000, 10000]
+    // sorted desc [10000, 3000, 1000]
+    // 10000*1/6 + 3000*2/6 + 1000*3/6 = 3167
+    // 3167 - 1000 = 2167 >= 2000 → variance!
     const result = aggregateBudgetSignals([
-      { tier: 5000 },
-      { tier: 5000 },
-      { tier: 5000 },
+      { ceiling: 1000 },
+      { ceiling: 3000 },
+      { ceiling: 10000 },
     ]);
-    expect(result.medianTier).toBe(5000);
-    expect(result.toleranceLower).toBe(3000);
-    expect(result.toleranceUpper).toBe(8000);
+    expect(result.minCeiling).toBe(1000);
+    expect(result.hasVariance).toBe(true);
   });
 
-  test("lowest tier clamps lower bound", () => {
-    const result = aggregateBudgetSignals([{ tier: 1000 }]);
-    expect(result.medianTier).toBe(1000);
-    expect(result.toleranceLower).toBe(1000);
-    expect(result.toleranceUpper).toBe(2000);
+  test("single respondent", () => {
+    const result = aggregateBudgetSignals([{ ceiling: 4000 }]);
+    expect(result.respondentCount).toBe(1);
+    expect(result.weightedBudget).toBe(4000);
+    expect(result.medianTier).toBe(3000); // nearest tier to 4000
+    expect(result.hasVariance).toBe(false);
   });
 
-  test("highest tier clamps upper bound", () => {
-    const result = aggregateBudgetSignals([{ tier: 8000 }]);
-    expect(result.medianTier).toBe(8000);
-    expect(result.toleranceLower).toBe(5000);
-    expect(result.toleranceUpper).toBe(8000);
-  });
-
-  test("no respondents returns neutral", () => {
+  test("no respondents", () => {
     const result = aggregateBudgetSignals([]);
     expect(result.respondentCount).toBe(0);
-    expect(result.medianTier).toBeNull();
+    expect(result.weightedBudget).toBeNull();
+    expect(result.hasVariance).toBe(false);
   });
 
-  test("null tiers are excluded", () => {
+  test("null ceilings excluded", () => {
     const result = aggregateBudgetSignals([
-      { tier: null },
-      { tier: 3000 },
-      { tier: null },
+      { ceiling: null },
+      { ceiling: 3000 },
+      { ceiling: null },
     ]);
     expect(result.respondentCount).toBe(1);
-    expect(result.medianTier).toBe(3000);
+    expect(result.weightedBudget).toBe(3000);
   });
 });
 
 describe("scoreBudgetFit (continuous distance-based)", () => {
-  const aggregate3000 = aggregateBudgetSignals([
-    { tier: 2000 },
-    { tier: 3000 },
-    { tier: 3000 },
-    { tier: 5000 },
+  // ceilings [3500, 4000, 5000] → weighted=3917, tier=3000, tolerance=[2000, 5000]
+  const agg = aggregateBudgetSignals([
+    { ceiling: 3500 },
+    { ceiling: 4000 },
+    { ceiling: 5000 },
   ]);
-  // median=3000, tolerance=[2000, 5000]
 
-  test("restaurant within tolerance band scores 1.0", () => {
-    const result = scoreBudgetFit(
-      { minYen: 2500, maxYen: 3500 },
-      aggregate3000
-    );
+  test("within tolerance band scores 1.0", () => {
+    const result = scoreBudgetFit({ minYen: 3500, maxYen: 4500 }, agg);
     expect(result.score).toBe(1.0);
     expect(result.reasons).toContain("budget_overlap");
   });
 
-  test("restaurant at exact median scores 1.0", () => {
-    const result = scoreBudgetFit(
-      { minYen: 3000, maxYen: 3000 },
-      aggregate3000
-    );
+  test("at band edge scores 1.0", () => {
+    const result = scoreBudgetFit({ minYen: 2000, maxYen: 2000 }, agg);
     expect(result.score).toBe(1.0);
   });
 
-  test("restaurant 500 yen outside band scores 0.5", () => {
-    // tolerance upper=5000, restaurant mid=5500 → dist=500 → 1-500/1000=0.5
-    const result = scoreBudgetFit(
-      { minYen: 5500, maxYen: 5500 },
-      aggregate3000
-    );
+  test("500 yen below band scores 0.5", () => {
+    // tolerance lower=2000, restaurant mid=1500 → dist=500
+    const result = scoreBudgetFit({ minYen: 1500, maxYen: 1500 }, agg);
     expect(result.score).toBe(0.5);
     expect(result.reasons).toContain("budget_safe");
   });
 
-  test("restaurant 1000+ yen outside band scores 0.0", () => {
-    // tolerance upper=5000, restaurant mid=6000 → dist=1000 → 0.0
-    const result = scoreBudgetFit(
-      { minYen: 6000, maxYen: 6000 },
-      aggregate3000
-    );
-    expect(result.score).toBe(0.0);
+  test("500 yen above band scores 0.5", () => {
+    // tolerance upper=5000, restaurant mid=5500 → dist=500
+    const result = scoreBudgetFit({ minYen: 5500, maxYen: 5500 }, agg);
+    expect(result.score).toBe(0.5);
+    expect(result.reasons).toContain("budget_safe");
   });
 
-  test("far outside band scores 0.0", () => {
-    const result = scoreBudgetFit(
-      { minYen: 7000, maxYen: 9000 },
-      aggregate3000
-    );
+  test("1000+ yen outside band scores 0.0", () => {
+    // tolerance upper=5000, restaurant mid=6500 → dist=1500
+    const result = scoreBudgetFit({ minYen: 6500, maxYen: 6500 }, agg);
     expect(result.score).toBe(0.0);
   });
 
@@ -128,11 +114,8 @@ describe("scoreBudgetFit (continuous distance-based)", () => {
     expect(result.score).toBe(0.5);
   });
 
-  test("unparseable restaurant budget returns neutral 0.5", () => {
-    const result = scoreBudgetFit(
-      { minYen: null, maxYen: null },
-      aggregate3000
-    );
+  test("null restaurant budget returns neutral 0.5", () => {
+    const result = scoreBudgetFit({ minYen: null, maxYen: null }, agg);
     expect(result.score).toBe(0.5);
   });
 });

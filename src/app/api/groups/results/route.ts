@@ -235,7 +235,7 @@ export async function GET(request: NextRequest) {
   const resolvedAreas = resolveAreas(surveys);
   const budgetSignals = aggregateBudgetSignals(
     surveys.map((survey) => ({
-      tier: survey.budgetTier ?? null,
+      ceiling: survey.budgetCeiling ?? null,
     }))
   );
 
@@ -321,5 +321,11 @@ export async function GET(request: NextRequest) {
     candidateAreas: areaGroups,
     results: flatResults,
     totalRestaurants: flatResults.length,
+    budgetSummary: {
+      weightedBudget: budgetSignals.weightedBudget,
+      toleranceLower: budgetSignals.toleranceLower,
+      toleranceUpper: budgetSignals.toleranceUpper,
+      hasVariance: budgetSignals.hasVariance,
+    },
   });
 }

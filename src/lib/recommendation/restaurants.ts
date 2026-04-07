@@ -21,14 +21,6 @@ function isDrinkFriendly(restaurant: Restaurant) {
   return /(居酒屋|バー|バル|焼肉|韓国|ダイニング)/.test(restaurant.genre);
 }
 
-function getMedian(values: number[]): number {
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 0
-    ? (sorted[mid - 1] + sorted[mid]) / 2
-    : sorted[mid];
-}
-
 function nearestTierIndex(value: number): number {
   let bestIdx = 0;
   let bestDist = Infinity;
@@ -42,27 +34,53 @@ function nearestTierIndex(value: number): number {
   return bestIdx;
 }
 
+/**
+ * Lower-weighted average: lower budgets get more weight.
+ * Sorted descending, rank i gets weight (i+1) / totalRank.
+ */
+function getLowerWeightedBudget(budgets: number[]): number {
+  const sorted = [...budgets].sort((a, b) => b - a);
+  const n = sorted.length;
+  const totalRank = (n * (n + 1)) / 2;
+  return sorted.reduce((sum, b, i) => {
+    const weight = (i + 1) / totalRank;
+    return sum + b * weight;
+  }, 0);
+}
+
 export function aggregateBudgetSignals(
   signals: BudgetSignal[]
 ): AggregatedBudgetPreference {
-  const tierValues = signals
-    .map((s) => s.tier)
+  const ceilings = signals
+    .map((s) => s.ceiling)
     .filter((v): v is number => typeof v === "number" && v > 0);
 
-  if (tierValues.length === 0) {
-    return { respondentCount: 0, medianTier: null, toleranceLower: null, toleranceUpper: null };
+  if (ceilings.length === 0) {
+    return {
+      respondentCount: 0,
+      weightedBudget: null,
+      medianTier: null,
+      toleranceLower: null,
+      toleranceUpper: null,
+      minCeiling: null,
+      hasVariance: false,
+    };
   }
 
-  const median = getMedian(tierValues);
-  const tierIdx = nearestTierIndex(median);
+  const weightedBudget = Math.round(getLowerWeightedBudget(ceilings));
+  const minCeiling = Math.min(...ceilings);
+  const tierIdx = nearestTierIndex(weightedBudget);
   const lo = BUDGET_TIERS[Math.max(0, tierIdx - 1)];
   const hi = BUDGET_TIERS[Math.min(BUDGET_TIERS.length - 1, tierIdx + 1)];
 
   return {
-    respondentCount: tierValues.length,
+    respondentCount: ceilings.length,
+    weightedBudget,
     medianTier: BUDGET_TIERS[tierIdx],
     toleranceLower: lo,
     toleranceUpper: hi,
+    minCeiling,
+    hasVariance: weightedBudget - minCeiling >= 2000,
   };
 }
 

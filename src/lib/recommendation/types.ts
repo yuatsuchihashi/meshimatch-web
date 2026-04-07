@@ -84,18 +84,21 @@ export type RestaurantReasonCode =
   | "group_size_fit";
 
 export interface BudgetSignal {
-  tier?: number | null;
-  /** @deprecated v1 fields kept for backward compat */
-  idealYen?: number | null;
-  maxYen?: number | null;
-  priority?: PriorityLevel | null;
+  ceiling?: number | null;
 }
 
 export interface AggregatedBudgetPreference {
   respondentCount: number;
+  /** Lower-weighted average of all ceilings */
+  weightedBudget: number | null;
+  /** Nearest tier snap of weightedBudget */
   medianTier: number | null;
   toleranceLower: number | null;
   toleranceUpper: number | null;
+  /** Minimum ceiling in the group */
+  minCeiling: number | null;
+  /** True if weightedBudget - minCeiling >= 2000 */
+  hasVariance: boolean;
 }
 
 export interface RestaurantBudgetRange {

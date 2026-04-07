@@ -393,7 +393,7 @@ export default function SurveyPage({
   const [departureArea, setDepartureArea] = useState("");
   const [departureStation, setDepartureStation] = useState("");
   const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
-  const [budgetTier, setBudgetTier] = useState<number | null>(null);
+  const [budgetCeiling, setBudgetCeiling] = useState("");
   const [budgetIdealYen, setBudgetIdealYen] = useState("");
   const [budgetMaxYen, setBudgetMaxYen] = useState("");
   const [preferenceBuckets, setPreferenceBuckets] =
@@ -615,7 +615,8 @@ export default function SurveyPage({
           departure_area: departureArea || null,
           departure_station: departureStation || null,
           preferred_areas: preferredAreas,
-          budget_tier: budgetTier,
+          budget_ceiling: budgetCeiling ? Number(budgetCeiling) : null,
+          budget_tier: null,
           budget_ideal_yen: null,
           budget_max_yen: null,
           budget_priority: null,
@@ -788,26 +789,39 @@ export default function SurveyPage({
             予算
           </div>
           <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 12 }}>
-            1人あたりの予算感を選んでください
+            これ以上は出せない金額（1人あたり上限）
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {([
-              { value: 1000, label: "~1,000円" },
-              { value: 2000, label: "~2,000円" },
-              { value: 3000, label: "~3,000円" },
-              { value: 5000, label: "~5,000円" },
-              { value: 8000, label: "~8,000円+" },
-            ] as const).map((tier) => (
-              <button
-                key={tier.value}
-                type="button"
-                onClick={() => setBudgetTier(budgetTier === tier.value ? null : tier.value)}
-                className={`chip ${budgetTier === tier.value ? "chip-selected" : ""}`}
-                style={{ fontSize: 13 }}
-              >
-                {tier.label}
-              </button>
-            ))}
+          <div style={{ position: "relative" }}>
+            <input
+              inputMode="numeric"
+              value={budgetCeiling}
+              onChange={(event) =>
+                setBudgetCeiling(event.target.value.replace(/[^\d]/g, ""))
+              }
+              placeholder="例: 4000"
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                paddingRight: 40,
+                borderRadius: 12,
+                border: "1.5px solid var(--border)",
+                fontSize: 15,
+                color: "var(--text-primary)",
+                backgroundColor: "var(--bg)",
+                outline: "none",
+              }}
+            />
+            <span style={{
+              position: "absolute",
+              right: 14,
+              top: "50%",
+              transform: "translateY(-50%)",
+              fontSize: 14,
+              color: "var(--text-tertiary)",
+            }}>円</span>
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 6 }}>
+            他のメンバーには公開されません
           </div>
         </div>
 

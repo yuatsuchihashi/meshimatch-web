@@ -76,8 +76,9 @@ export interface SurveyResponse {
   departureArea?: string | null;
   departureStation: string;
   preferredArea: string | null;
+  budgetCeiling?: number | null;
+  /** @deprecated legacy fields */
   budgetTier?: number | null;
-  /** @deprecated v1 fields */
   budgetIdealYen?: number | null;
   budgetMaxYen?: number | null;
   budgetPriority?: PriorityLevel | null;
@@ -140,8 +141,9 @@ export interface UserProfile {
   id: string;
   displayName: string;
   allergies: string[];             // アレルギー → 注意喚起のみ（スコアリング不使用）
+  usualBudgetCeiling?: number | null;
+  /** @deprecated legacy fields */
   usualBudgetTier?: number | null;
-  /** @deprecated v1 fields */
   usualBudgetIdealYen?: number | null;
   usualBudgetMaxYen?: number | null;
   usualBudgetPriority?: PriorityLevel | null;
