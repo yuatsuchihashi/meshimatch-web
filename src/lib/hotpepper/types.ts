@@ -10,6 +10,7 @@ export type HotPepperSearchParams = {
   budget?: string;
   count?: number;
   start?: number;
+  order?: 1 | 2 | 3 | 4; // 1=name, 2=genre, 3=area, 4=recommendation
   private_room?: 0 | 1;
   free_drink?: 0 | 1;
   free_food?: 0 | 1;

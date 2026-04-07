@@ -188,6 +188,7 @@ export function scoreRestaurantForSession(params: {
   } = params;
   const budgetFit = scoreBudgetFit(parseBudgetText(restaurant.budget), budgetSignals);
   const reasons: RestaurantReasonCode[] = [...budgetFit.reasons];
+  const popularityScore = restaurant.popularity ?? 0.5;
   let focusScore = 0.55;
   let atmosphereScore = 0.55;
   let groupSizeScore = groupSize >= 5 ? 0.45 : 0.6;
@@ -218,11 +219,12 @@ export function scoreRestaurantForSession(params: {
   }
 
   const finalScore = clamp(
-    baseMatch * 0.35 +
-      budgetFit.score * 0.30 +
-      focusScore * 0.15 +
+    baseMatch * 0.30 +
+      budgetFit.score * 0.25 +
+      popularityScore * 0.15 +
+      focusScore * 0.12 +
       atmosphereScore * 0.10 +
-      groupSizeScore * 0.10
+      groupSizeScore * 0.08
   );
 
   return {

@@ -43,6 +43,7 @@ export async function searchRestaurants(
     budget: params.budget,
     count: params.count ?? 30,
     start: params.start ?? 1,
+    order: params.order,
     private_room: params.private_room,
     free_drink: params.free_drink,
     free_food: params.free_food,

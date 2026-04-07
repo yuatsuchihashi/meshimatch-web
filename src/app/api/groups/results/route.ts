@@ -101,7 +101,7 @@ async function fetchAreaRestaurants(params: {
   const atmosphereKeyword = sessionAtmosphere ? ATMOSPHERE_KEYWORDS[sessionAtmosphere] : undefined;
   const restaurants = new Map<string, Restaurant>();
 
-  // Use lat/lng search with 800m radius (range=2 in HotPepper API)
+  // Use lat/lng search with 800m radius (range=2), ordered by recommendation (order=4)
   const searchTasks = [
     ...genreCodes.map((genreCode) =>
       searchRestaurants({
@@ -109,6 +109,7 @@ async function fetchAreaRestaurants(params: {
         lat: area.lat,
         lng: area.lng,
         range: 2,
+        order: 4,
         keyword: atmosphereKeyword,
         count: 8,
         free_drink: sessionFocus === "drink_centered" ? 1 : undefined,
@@ -120,6 +121,7 @@ async function fetchAreaRestaurants(params: {
         lat: area.lat,
         lng: area.lng,
         range: 2,
+        order: 4,
         count: 5,
       })
     ),
@@ -128,13 +130,19 @@ async function fetchAreaRestaurants(params: {
   for (const task of searchTasks) {
     try {
       const result = await task;
+      const totalInBatch = result.shops.length;
+      let position = 0;
       for (const shop of result.shops) {
         const shopRecord = shop as Record<string, unknown>;
         if (!isLikelyOpen(shopRecord)) continue;
         const restaurant = makeRestaurant(shopRecord, area.areaName);
+        // Popularity: position in HotPepper recommendation order
+        const popularity = totalInBatch > 1 ? 1 - position / (totalInBatch - 1) : 1.0;
+        restaurant.popularity = popularity;
         if (!restaurants.has(restaurant.id)) {
           restaurants.set(restaurant.id, restaurant);
         }
+        position++;
       }
     } catch (error) {
       console.error(`Failed to fetch restaurants for ${area.areaName}:`, error);

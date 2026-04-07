@@ -120,6 +120,7 @@ export interface Restaurant {
   openHours?: string;
   phoneNumber?: string;
   area: string;
+  popularity?: number;
   reasonTags?: string[];
   reasonExplanation?: string;
   genreScore?: number;
