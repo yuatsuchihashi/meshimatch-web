@@ -3,6 +3,7 @@
 interface MemberAvatarProps {
   name: string;
   size?: number;
+  imageUrl?: string | null;
 }
 
 const AVATAR_COLORS = [
@@ -22,9 +23,27 @@ function getColor(name: string) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-export function MemberAvatar({ name, size = 36 }: MemberAvatarProps) {
+export function MemberAvatar({ name, size = 36, imageUrl }: MemberAvatarProps) {
   const [c1, c2] = getColor(name);
   const initial = name.charAt(0);
+
+  if (imageUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imageUrl}
+        alt={name}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          objectFit: "cover",
+          flexShrink: 0,
+          border: "2px solid var(--surface)",
+        }}
+      />
+    );
+  }
 
   return (
     <div

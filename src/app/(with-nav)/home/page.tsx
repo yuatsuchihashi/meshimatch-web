@@ -8,8 +8,11 @@ import { useUser } from "@/lib/hooks/useUser";
 import { useGroups } from "@/lib/hooks/useGroups";
 import { createClient } from "@/lib/supabase/client";
 import { GroupCard } from "@/components/groups/GroupCard";
+import { RecommendCarousel, type RecommendedRestaurant } from "@/components/home/RecommendCarousel";
+import { RestaurantDetailModal } from "@/components/restaurants/RestaurantDetailModal";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
 import { useLocale } from "@/lib/i18n";
+import { track, AnalyticsEvent } from "@/lib/analytics";
 import type { Invitation } from "@/lib/types";
 
 function timeAgo(date: Date, locale: string): string {
@@ -31,13 +34,21 @@ export default function HomePage() {
   const router = useRouter();
   const { t, locale } = useLocale();
   const { user, userId, loading: userLoading } = useUser();
-  const { groups, loading: groupsLoading, refresh: refreshGroups } = useGroups(userId);
+  const {
+    groups,
+    loading: groupsLoading,
+    refresh: refreshGroups,
+    deleteGroup,
+    archiveGroup,
+    leaveGroup,
+  } = useGroups(userId);
   const [showArchived, setShowArchived] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
   const [hiddenGroupIds, setHiddenGroupIds] = useState<Set<string>>(new Set());
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [selectedRecommend, setSelectedRecommend] = useState<RecommendedRestaurant | null>(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -54,8 +65,15 @@ export default function HomePage() {
         .eq("status", "pending");
 
       if (data) {
+        type InvitationRow = {
+          id: string;
+          group_id: string;
+          created_at: string;
+          groups?: { name?: string } | null;
+          inviter?: { display_name?: string } | null;
+        };
         setInvitations(
-          data.map((inv) => ({
+          (data as InvitationRow[]).map((inv) => ({
             id: inv.id,
             groupId: inv.group_id,
             groupName: inv.groups?.name ?? "不明",
@@ -72,6 +90,53 @@ export default function HomePage() {
 
   const loading = userLoading || groupsLoading;
 
+  // 「また行きたい？」: 決定から20時間以上経ったグループを、1回だけ聞く
+  const [revisitDismissed, setRevisitDismissed] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      return new Set(JSON.parse(localStorage.getItem("mm_revisit_asked") ?? "[]"));
+    } catch {
+      return new Set();
+    }
+  });
+  const [revisitCutoff] = useState(() => Date.now() - 20 * 60 * 60 * 1000);
+  const revisitGroup = groups.find(
+    (g) =>
+      g.decidedRestaurant &&
+      g.decidedAt &&
+      g.decidedAt.getTime() < revisitCutoff &&
+      !revisitDismissed.has(g.id)
+  );
+
+  function dismissRevisit(groupId: string) {
+    setRevisitDismissed((prev) => {
+      const next = new Set(prev).add(groupId);
+      localStorage.setItem("mm_revisit_asked", JSON.stringify([...next]));
+      return next;
+    });
+  }
+
+  async function handleRevisit(yes: boolean) {
+    if (!revisitGroup) return;
+    // visit_confirmed: 翌日フィードバック（実行率＝decided→visit の計測）
+    track(AnalyticsEvent.VISIT_CONFIRMED, { groupId: revisitGroup.id, wouldReturn: yes });
+    if (yes && userId && revisitGroup.decidedRestaurantId) {
+      // 「また行きたい」= お気に入り登録 (公開して候補プールにも貢献)
+      const supabase = createClient();
+      await supabase.from("restaurant_sources").upsert(
+        {
+          restaurant_id: revisitGroup.decidedRestaurantId,
+          source_type: "user_favorite",
+          visibility: "public",
+          added_by: userId,
+          note: `「${revisitGroup.name}」の会でまた行きたいと回答`,
+        },
+        { onConflict: "restaurant_id,source_type,added_by" }
+      );
+    }
+    dismissRevisit(revisitGroup.id);
+  }
+
   const allActiveGroups = groups.filter((g) => g.status === "active");
   const visibleActiveGroups = allActiveGroups.filter((g) => !hiddenGroupIds.has(g.id));
   const hiddenActiveGroups = allActiveGroups.filter((g) => hiddenGroupIds.has(g.id));
@@ -84,6 +149,48 @@ export default function HomePage() {
       else next.add(groupId);
       return next;
     });
+  }
+
+  async function handleArchiveGroup(groupId: string) {
+    if (!userId) return;
+    archiveGroup(groupId);
+    const res = await fetch("/api/groups", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ groupId, profileId: userId, status: "archived" }),
+    });
+    if (!res.ok) {
+      refreshGroups();
+      const json = await res.json().catch(() => null);
+      alert(json?.error ?? t("groupCard.archiveFailed"));
+    }
+  }
+
+  async function handleSwipeDeleteGroup(groupId: string) {
+    if (!userId) return;
+    const group = groups.find((item) => item.id === groupId);
+    const myMembership = group?.members.find((member) => member.profileId === userId);
+    const action = myMembership?.role === "member" ? "leave" : "delete";
+    const confirmed = window.confirm(
+      action === "delete"
+        ? `${t("results.deleteGroup")}\n${t("results.deleteGroupDesc")}`
+        : `${t("results.leaveGroup")}\n${t("results.leaveGroupDesc")}`
+    );
+    if (!confirmed) return;
+
+    if (action === "delete") deleteGroup(groupId);
+    else leaveGroup(groupId);
+
+    const res = await fetch("/api/groups", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ groupId, profileId: userId, action }),
+    });
+    if (!res.ok) {
+      refreshGroups();
+      const json = await res.json().catch(() => null);
+      alert(json?.error ?? t("groupCard.deleteFailed"));
+    }
   }
 
   function openNotifications() {
@@ -130,7 +237,7 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
+    <div className="service-canvas" style={{ minHeight: "100dvh" }}>
       {/* Header */}
       <div
         style={{
@@ -149,6 +256,7 @@ export default function HomePage() {
           </div>
         </div>
 
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <button
           onClick={openNotifications}
           style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer" }}
@@ -198,30 +306,50 @@ export default function HomePage() {
             </div>
           )}
         </button>
+        </div>
       </div>
 
       <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
         {/* Create Group CTA */}
         <Link href="/groups/create" style={{ textDecoration: "none" }}>
           <div
-            className="card"
+            className="card service-create-card"
             style={{
-              padding: "20px 20px",
+              padding: "20px 88px 20px 20px",
               display: "flex",
               alignItems: "center",
               gap: 16,
+              minHeight: 104,
             }}
           >
+            <Image
+              src="/img/service/02-create-group-plate.webp"
+              alt=""
+              width={112}
+              height={90}
+              className="service-deco"
+              style={{
+                position: "absolute",
+                right: 6,
+                bottom: 0,
+                width: 82,
+                height: "auto",
+                opacity: 0.96,
+              }}
+            />
             <div
               style={{
                 width: 48,
                 height: 48,
                 borderRadius: 14,
-                backgroundColor: "var(--primary)",
+                background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
+                boxShadow: "0 8px 18px rgba(240,90,40,0.24)",
+                position: "relative",
+                zIndex: 1,
               }}
             >
               <Image
@@ -232,11 +360,11 @@ export default function HomePage() {
                 style={{ filter: "brightness(0) invert(1)" }}
               />
             </div>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "white", marginBottom: 4 }}>
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
                 {t("home.createGroup")}
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
+              <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.45 }}>
                 {t("home.createGroupDesc")}
               </div>
             </div>
@@ -252,6 +380,43 @@ export default function HomePage() {
           </div>
         </Link>
 
+        {/* また行きたい？カード (決定の翌日に1回だけ) */}
+        {revisitGroup && (
+          <div className="card animate-fade-in" style={{ padding: "16px 18px" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--primary)", marginBottom: 4 }}>
+              {t("home.revisitEyebrow", { group: revisitGroup.name })}
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>
+              {t("home.revisitQuestion", { name: revisitGroup.decidedRestaurant ?? "" })}
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+              <button
+                onClick={() => handleRevisit(true)}
+                style={{
+                  flex: 1, height: 42, borderRadius: 100, border: "none",
+                  background: "var(--success)", color: "white", fontWeight: 700,
+                  fontSize: 14, cursor: "pointer",
+                }}
+              >
+                ○ {t("home.revisitYes")}
+              </button>
+              <button
+                onClick={() => handleRevisit(false)}
+                style={{
+                  flex: 1, height: 42, borderRadius: 100,
+                  border: "1.5px solid var(--border-strong)", background: "var(--surface)",
+                  color: "var(--text-secondary)", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                }}
+              >
+                {t("home.revisitNo")}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* おすすめカルーセル (新規CTAの直下: 発見枠) */}
+        <RecommendCarousel userId={userId} onSelect={setSelectedRecommend} />
+
         {/* Active Groups */}
         <div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
@@ -265,7 +430,8 @@ export default function HomePage() {
                 <GroupCard
                   key={group.id}
                   group={group}
-                  onToggleHide={() => toggleHide(group.id)}
+                  onSwipeArchive={() => void handleArchiveGroup(group.id)}
+                  onSwipeDelete={() => void handleSwipeDeleteGroup(group.id)}
                 />
               ))}
             </div>
@@ -494,6 +660,12 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {/* おすすめ店の詳細 (マップ埋め込み付き) */}
+      <RestaurantDetailModal
+        restaurant={selectedRecommend}
+        onClose={() => setSelectedRecommend(null)}
+      />
     </div>
   );
 }
@@ -502,9 +674,10 @@ function EmptyState() {
   const { t } = useLocale();
   return (
     <div
+      className="card service-create-card"
       style={{
         textAlign: "center",
-        padding: "40px 20px",
+        padding: "28px 20px 30px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -512,11 +685,12 @@ function EmptyState() {
       }}
     >
       <Image
-        src="/icons/search_line.svg"
+        src="/img/service/02-create-group-plate.webp"
         alt=""
-        width={48}
-        height={48}
-        style={{ filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)", opacity: 0.4 }}
+        width={132}
+        height={106}
+        className="service-deco"
+        style={{ width: 126, height: "auto" }}
       />
       <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-secondary)" }}>
         {t("home.noGroups")}

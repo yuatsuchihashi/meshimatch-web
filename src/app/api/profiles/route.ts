@@ -12,6 +12,11 @@ function buildProfilePayload(body: Record<string, unknown>) {
   const payload: Record<string, unknown> = {};
 
   if (body.displayName !== undefined) payload.display_name = body.displayName;
+  if (body.bio !== undefined) payload.bio = body.bio;
+  if (body.allergyNote !== undefined) payload.allergy_note = body.allergyNote;
+  if (body.dietaryNote !== undefined) payload.dietary_note = body.dietaryNote;
+  if (body.usualPreferMoods !== undefined) payload.usual_prefer_moods = body.usualPreferMoods;
+  if (body.usualAvoidMoods !== undefined) payload.usual_avoid_moods = body.usualAvoidMoods;
   if (body.allergies !== undefined) payload.allergies = body.allergies;
   if (body.avatarUrl !== undefined) payload.avatar_url = body.avatarUrl;
   if (body.usualBudgetIdealYen !== undefined) {

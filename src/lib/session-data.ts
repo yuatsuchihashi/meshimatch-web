@@ -45,6 +45,12 @@ export function mapSurveyResponseRow(
       (row.genre_preferences as SurveyResponse["genrePreferences"]) ?? [],
     dietaryRestrictions:
       (row.dietary_restrictions as SurveyResponse["dietaryRestrictions"]) ?? [],
+    allergyNote: (row.allergy_note as string) ?? null,
+    dietaryNote: (row.dietary_note as string) ?? null,
+    preferMoods: (row.prefer_moods as string[]) ?? [],
+    avoidMoods: (row.avoid_moods as string[]) ?? [],
+    suggestedRestaurants:
+      (row.suggested_restaurants as SurveyResponse["suggestedRestaurants"]) ?? [],
     submittedAt: new Date(row.submitted_at as string),
   };
 }
@@ -53,6 +59,12 @@ export function mapProfileRow(row: RawProfileRow): UserProfile {
   return {
     id: row.id as string,
     displayName: (row.display_name as string) ?? "ユーザー",
+    bio: (row.bio as string) ?? null,
+    avatarUrl: (row.avatar_url as string) ?? null,
+    allergyNote: (row.allergy_note as string) ?? null,
+    dietaryNote: (row.dietary_note as string) ?? null,
+    usualPreferMoods: (row.usual_prefer_moods as string[]) ?? [],
+    usualAvoidMoods: (row.usual_avoid_moods as string[]) ?? [],
     allergies: (row.allergies as string[]) ?? [],
     usualBudgetIdealYen: (row.usual_budget_ideal_yen as number) ?? null,
     usualBudgetMaxYen: (row.usual_budget_max_yen as number) ?? null,

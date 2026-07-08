@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { QRCodeSVG } from "qrcode.react";
-import { ALLERGIES, DIETARY_RESTRICTIONS, GENRES } from "@/lib/mockData";
+import Link from "next/link";
+import { SURVEY_AREAS } from "@/lib/areas";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
+import { BudgetCapPicker } from "@/components/survey/GenreTiles";
+import { MoodPickGrid, MoodAvoidSection } from "@/components/survey/MoodPills";
+import { MOODS, buildGenrePreferencesFromMoods } from "@/lib/moods";
+import { QrSheet } from "@/components/profile/QrSheet";
 import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { signOut } from "@/actions/auth";
 import { useLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
-import type { PriorityLevel } from "@/lib/types";
 
 interface Connection {
   id: string;
@@ -18,79 +21,37 @@ interface Connection {
   mutualGroups: number;
 }
 
-const PROFILE_AREAS = ["渋谷", "新宿", "池袋", "銀座", "六本木", "恵比寿", "表参道", "下北沢", "吉祥寺", "上野"];
+const MAX_MOODS = 2;
 
 export default function ProfilePage() {
   const { t, locale, setLocale } = useLocale();
   const { user, userId, loading, refresh } = useUser();
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [editingAllergies, setEditingAllergies] = useState<string[]>([]);
-  const [editingFavoriteGenres, setEditingFavoriteGenres] = useState<string[]>([]);
-  const [editingDietaryRestrictions, setEditingDietaryRestrictions] = useState<string[]>([]);
-  const [editingUsualAreas, setEditingUsualAreas] = useState<string[]>([]);
-  const [editingBudgetIdeal, setEditingBudgetIdeal] = useState("");
-  const [editingBudgetMax, setEditingBudgetMax] = useState("");
-  const [editingBudgetPriority, setEditingBudgetPriority] =
-    useState<PriorityLevel>("prefer");
+
   const [editSection, setEditSection] =
-    useState<null | "name" | "allergies" | "share" | "favorites" | "defaults" | "dietary">(null);
+    useState<null | "profile" | "notes" | "defaults">(null);
+  const [qrOpen, setQrOpen] = useState(false);
   const [connectionsOpen, setConnectionsOpen] = useState(false);
   const [connectionsVisible, setConnectionsVisible] = useState(false);
+  const [avatarCropSrc, setAvatarCropSrc] = useState<string | null>(null);
+
+  // --- editing buffers ---
   const [nameInput, setNameInput] = useState("");
+  const [bioInput, setBioInput] = useState("");
+  const [allergyNoteInput, setAllergyNoteInput] = useState("");
+  const [dietaryNoteInput, setDietaryNoteInput] = useState("");
+  const [likedMoods, setLikedMoods] = useState<string[]>([]);
+  const [avoidMoods, setAvoidMoods] = useState<string[]>([]);
+  const [budgetMax, setBudgetMax] = useState<number | null>(null);
+  const [usualAreasBuf, setUsualAreasBuf] = useState<string[]>([]);
+
   const displayName = user?.displayName ?? "ユーザー";
-  const allergies = user?.allergies ?? [];
-  const favoriteGenres = user?.favoriteGenres ?? [];
-  const favoriteGenreIds = favoriteGenres.map((genre) => genre.genreId);
+  const bio = user?.bio?.trim() ?? "";
+  const allergyNote = user?.allergyNote?.trim() ?? "";
+  const dietaryNote = user?.dietaryNote?.trim() ?? "";
+  const usualPreferMoods = user?.usualPreferMoods ?? [];
+  const usualAvoidMoods = user?.usualAvoidMoods ?? [];
   const usualAreas = user?.usualAreas ?? [];
-  const dietaryRestrictions = user?.dietaryRestrictions ?? [];
-  const dietaryRestrictionIds = dietaryRestrictions.map(
-    (restriction) => restriction.restrictionId
-  );
-  const budgetPriorityLabels =
-    locale === "en"
-      ? {
-          must: "Strict",
-          prefer: "Prefer",
-          optional: "Flexible",
-        }
-      : {
-          must: "厳守したい",
-          prefer: "できれば守りたい",
-          optional: "参考程度",
-        };
-  const preferenceCopy =
-    locale === "en"
-      ? {
-          sessionDefaults: "Session Defaults",
-          favoriteGenres: "Favorite Genres",
-          defaultBudget: "Usual Budget",
-          usualAreas: "Usual Areas",
-          dietaryRestrictions: "Dietary Restrictions",
-          budgetHint: "Saved defaults are used when a session answer is empty",
-          idealBudget: "Ideal",
-          maxBudget: "Max",
-          noDietaryRestrictions: "No dietary restrictions saved",
-          noFavoriteGenres: "No favorite genres saved",
-          noUsualAreas: "No usual areas saved",
-        }
-      : {
-          sessionDefaults: "ふだんの設定",
-          favoriteGenres: "よく選ぶジャンル",
-          defaultBudget: "いつもの予算感",
-          usualAreas: "よく使うエリア",
-          dietaryRestrictions: "食事制限",
-          budgetHint: "session 回答が空のときだけ、この設定を初期値として使います",
-          idealBudget: "理想",
-          maxBudget: "上限",
-          noDietaryRestrictions: "食事制限は未設定です",
-          noFavoriteGenres: "よく選ぶジャンルは未設定です",
-          noUsualAreas: "よく使うエリアは未設定です",
-        };
-  const budgetPriorityOptions: { id: PriorityLevel; label: string }[] = [
-    { id: "must", label: budgetPriorityLabels.must },
-    { id: "prefer", label: budgetPriorityLabels.prefer },
-    { id: "optional", label: budgetPriorityLabels.optional },
-  ];
 
   useEffect(() => {
     if (!userId) return;
@@ -143,28 +104,22 @@ export default function ProfilePage() {
 
   const profileUrl = `https://meshimatch.app/u/${userId ?? ""}`;
 
-  function toggleAllergy(id: string) {
-    setEditingAllergies((prev) =>
-      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
-    );
+  async function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (avatarCropSrc) URL.revokeObjectURL(avatarCropSrc);
+    setAvatarCropSrc(URL.createObjectURL(file));
   }
 
-  function toggleFavoriteGenre(id: string) {
-    setEditingFavoriteGenres((prev) =>
-      prev.includes(id) ? prev.filter((genreId) => genreId !== id) : [...prev, id]
-    );
+  function closeAvatarCrop() {
+    if (avatarCropSrc) URL.revokeObjectURL(avatarCropSrc);
+    setAvatarCropSrc(null);
   }
 
-  function toggleDietaryRestriction(id: string) {
-    setEditingDietaryRestrictions((prev) =>
-      prev.includes(id) ? prev.filter((restrictionId) => restrictionId !== id) : [...prev, id]
-    );
-  }
-
-  function toggleUsualArea(area: string) {
-    setEditingUsualAreas((prev) =>
-      prev.includes(area) ? prev.filter((current) => current !== area) : [...prev, area]
-    );
+  async function handleAvatarCropSave(dataUrl: string) {
+    await saveProfile({ avatar_url: dataUrl });
+    closeAvatarCrop();
   }
 
   async function saveProfile(updates: Record<string, unknown>) {
@@ -174,17 +129,64 @@ export default function ProfilePage() {
     refresh();
   }
 
+  function openProfileEditor() {
+    setNameInput(displayName);
+    setBioInput(bio);
+    setEditSection("profile");
+  }
+
+  function openNotesEditor() {
+    setAllergyNoteInput(allergyNote);
+    setDietaryNoteInput(dietaryNote);
+    setEditSection("notes");
+  }
+
   function openDefaultsEditor() {
-    setEditingUsualAreas(usualAreas);
-    setEditingBudgetIdeal(
-      user?.usualBudgetIdealYen ? String(user.usualBudgetIdealYen) : ""
-    );
-    setEditingBudgetMax(
-      user?.usualBudgetMaxYen ? String(user.usualBudgetMaxYen) : ""
-    );
-    setEditingBudgetPriority(user?.usualBudgetPriority ?? "prefer");
+    setLikedMoods(usualPreferMoods);
+    setAvoidMoods(usualAvoidMoods);
+    setBudgetMax(user?.usualBudgetMaxYen ?? null);
+    setUsualAreasBuf(usualAreas);
     setEditSection("defaults");
   }
+
+  function toggleLiked(moodId: string) {
+    setLikedMoods((current) => {
+      if (current.includes(moodId)) {
+        return current.filter((id) => id !== moodId);
+      }
+      if (current.length >= MAX_MOODS) {
+        return current;
+      }
+      setAvoidMoods((avoid) => avoid.filter((id) => id !== moodId));
+      return [...current, moodId];
+    });
+  }
+
+  function toggleAvoid(moodId: string) {
+    setAvoidMoods((current) => {
+      if (current.includes(moodId)) {
+        return current.filter((id) => id !== moodId);
+      }
+      if (current.length >= MAX_MOODS) {
+        return current;
+      }
+      setLikedMoods((liked) => liked.filter((id) => id !== moodId));
+      return [...current, moodId];
+    });
+  }
+
+  function toggleUsualArea(area: string) {
+    setUsualAreasBuf((prev) =>
+      prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
+    );
+  }
+
+  const moodName = (id: string) => {
+    const fallback = MOODS.find((m) => m.id === id)?.label ?? id;
+    const key = `survey.mood_${id}`;
+    const translated = t(key);
+    return translated === key ? fallback : translated;
+  };
 
   if (loading) {
     return (
@@ -198,53 +200,79 @@ export default function ProfilePage() {
   }
 
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", paddingBottom: 80 }}>
+    <div className="service-canvas" style={{ minHeight: "100dvh", paddingBottom: 80 }}>
 
-      {/* Hero Header */}
+      {/* Profile banner */}
       <div
         style={{
-          background: "linear-gradient(160deg, var(--secondary) 0%, #3D3B6E 100%)",
-          padding: "60px 20px 32px",
+          background:
+            "radial-gradient(circle at 86% 20%, rgba(255,255,255,0.24), transparent 28%), linear-gradient(135deg, var(--primary), var(--primary-light))",
+          padding: "56px 20px 28px",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.06)" }} />
-        <div style={{ position: "absolute", bottom: -20, left: 10, width: 80, height: 80, borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.04)" }} />
+        <button
+          onClick={openProfileEditor}
+          aria-label={t("profile.editProfile")}
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            backgroundColor: "rgba(255,255,255,0.2)",
+            color: "white",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+          </svg>
+        </button>
 
-        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <MemberAvatar name={displayName} size={80} />
-            <button
-              onClick={() => { setNameInput(displayName); setEditSection("name"); }}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {/* アバター: タップで写真変更 (クライアント側で縮小して data URL 保存) */}
+          <label style={{ flexShrink: 0, cursor: "pointer", position: "relative", display: "block" }}>
+            <MemberAvatar name={displayName} size={72} imageUrl={user?.avatarUrl} />
+            <span
               style={{
-                position: "absolute",
-                bottom: 0,
-                right: 0,
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                backgroundColor: "white",
-                color: "var(--primary)",
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                position: "absolute", right: -2, bottom: -2, width: 24, height: 24,
+                borderRadius: "50%", backgroundColor: "white", color: "var(--primary)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 1px 4px rgba(74,53,42,0.25)",
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 8h2.5l1.5-2h8l1.5 2H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+                <circle cx="12" cy="13" r="3.2" />
               </svg>
-            </button>
-          </div>
-          <div>
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              style={{ display: "none" }}
+            />
+          </label>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 24, fontWeight: 800, color: "white", lineHeight: 1.2 }}>
               {displayName}
             </div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
-              {t("profile.subtitle")}
+            <div
+              style={{
+                fontSize: 13,
+                color: bio ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.6)",
+                marginTop: 4,
+                lineHeight: 1.4,
+              }}
+            >
+              {bio || t("profile.bioEmpty")}
             </div>
           </div>
         </div>
@@ -252,99 +280,69 @@ export default function ProfilePage() {
 
       <div style={{ padding: "20px 16px", display: "flex", flexDirection: "column", gap: 24 }}>
 
-        {/* 基本情報 */}
-        <section>
-          <SectionLabel>{t("profile.basicInfo")}</SectionLabel>
-          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-            <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border-light)" }}>
-              <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 6, fontWeight: 600, letterSpacing: "0.04em" }}>
-                {t("profile.userId")}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div
-                  style={{
-                    flex: 1,
-                    fontFamily: "monospace",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: "var(--text-primary)",
-                    backgroundColor: "var(--bg-secondary)",
-                    borderRadius: 8,
-                    padding: "8px 12px",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  {userId ?? ""}
-                </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard?.writeText(userId ?? "").catch(() => {});
-                    alert(t("profile.idCopied"));
-                  }}
-                  style={{
-                    padding: "8px 14px",
-                    height: 40,
-                    borderRadius: 10,
-                    backgroundColor: "var(--bg-secondary)",
-                    border: "1px solid var(--border)",
-                    color: "var(--text-secondary)",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    flexShrink: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  <Image src="/icons/copy_line.svg" alt="" width={14} height={14} style={{ filter: "brightness(0) saturate(100%) invert(45%) sepia(10%) saturate(500%) hue-rotate(210deg)" }} />
-                  {t("common.copy")}
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={() => { setNameInput(displayName); setEditSection("name"); }}
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600, letterSpacing: "0.04em", marginBottom: 2 }}>
-                  {t("profile.displayName")}
-                </div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
-                  {displayName}
-                </div>
-              </div>
-              <Image src="/icons/arrow_right_line.svg" alt="" width={16} height={16} style={{ filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)" }} />
-            </button>
-          </div>
-        </section>
-
-        {/* 共有方法 */}
+        {/* 共有方法 – QR 統合 */}
         <section>
           <SectionLabel>{t("profile.shareWithFriends")}</SectionLabel>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <ShareButton
-              icon="/icons/code_reader_line.svg"
-              label={t("profile.qrCode")}
-              onClick={() => setEditSection("share")}
+          <button
+            onClick={() => setQrOpen(true)}
+            className="card service-card"
+            style={{
+              position: "relative",
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "16px 102px 16px 16px",
+              cursor: "pointer",
+              border: "none",
+              textAlign: "left",
+            }}
+          >
+            <Image
+              src="/img/service/06-profile-qr-share.webp"
+              alt=""
+              width={104}
+              height={90}
+              className="service-deco"
+              style={{
+                position: "absolute",
+                right: 8,
+                bottom: -8,
+                width: 94,
+                height: "auto",
+                opacity: 0.98,
+              }}
             />
-            <ShareButton
-              icon="/icons/search_line.svg"
-              label={t("profile.idSearch")}
-              onClick={() => alert(t("profile.idSearchDemo"))}
-            />
-          </div>
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                backgroundColor: "rgba(240,90,40,0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Image
+                src="/icons/code_reader_line.svg"
+                alt=""
+                width={24}
+                height={24}
+                style={{ filter: "brightness(0) saturate(100%) invert(45%) sepia(80%) saturate(2500%) hue-rotate(340deg)" }}
+              />
+            </div>
+            <div style={{ flex: 1, position: "relative", zIndex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+                {t("profile.qrCode")}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2 }}>
+                {t("profile.qrMyCode")} · {t("profile.qrScan")}
+              </div>
+            </div>
+            <Image src="/icons/arrow_right_line.svg" alt="" width={16} height={16} style={{ position: "relative", zIndex: 1, filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)" }} />
+          </button>
         </section>
 
         {/* 繋がり */}
@@ -382,194 +380,123 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* 食の好み */}
+        {/* お気に入りのお店 */}
         <section>
-          <SectionLabel>{t("profile.foodPreferences")}</SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            <div className="card" style={{ borderRadius: "14px 14px 0 0", padding: "14px 16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
-                  {preferenceCopy.favoriteGenres}
-                </div>
-                <button
-                  onClick={() => {
-                    setEditingFavoriteGenres(favoriteGenreIds);
-                    setEditSection("favorites");
-                  }}
-                  style={{
-                    fontSize: 13,
-                    color: "var(--primary)",
-                    fontWeight: 600,
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "4px 8px",
-                    borderRadius: 8,
-                    backgroundColor: "rgba(204,119,85,0.08)",
-                  }}
-                >
-                  {t("common.edit")}
-                </button>
+          <SectionLabel>{t("favorites.title")}</SectionLabel>
+          <Link
+            href="/profile/favorites"
+            className="card service-card"
+            style={{
+              position: "relative",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "14px 16px", textDecoration: "none",
+            }}
+          >
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                {t("favorites.importTitle")}
               </div>
-              {favoriteGenreIds.length === 0 ? (
-                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{preferenceCopy.noFavoriteGenres}</div>
-              ) : (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {favoriteGenreIds.map((id) => {
-                    const genre = GENRES.find((item) => item.id === id);
-                    return genre ? (
-                      <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
-                        {genre.name}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-              )}
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2 }}>
+                {t("favorites.subtitle")}
+              </div>
             </div>
+            <span style={{ position: "relative", zIndex: 1, color: "var(--primary)", fontWeight: 700 }}>→</span>
+          </Link>
+        </section>
 
-            <div className="card" style={{ borderRadius: 0, padding: "14px 16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
-                  {preferenceCopy.sessionDefaults}
-                </div>
-                <button
-                  onClick={openDefaultsEditor}
-                  style={{
-                    fontSize: 13,
-                    color: "var(--primary)",
-                    fontWeight: 600,
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "4px 8px",
-                    borderRadius: 8,
-                    backgroundColor: "rgba(204,119,85,0.08)",
-                  }}
-                >
-                  {t("common.edit")}
-                </button>
+        {/* 普段の設定 */}
+        <section>
+          <SectionLabel>{t("profile.defaultsTitle")}</SectionLabel>
+          <div className="card service-card" style={{ position: "relative", padding: "14px 16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>
+                {t("profile.defaultsHint")}
               </div>
-              <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 12 }}>
-                {preferenceCopy.budgetHint}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {user?.usualBudgetIdealYen || user?.usualBudgetMaxYen ? (
-                    <>
-                      {user?.usualBudgetIdealYen ? (
-                        <span className="chip" style={{ fontSize: 13 }}>
-                          {preferenceCopy.idealBudget} {user.usualBudgetIdealYen}円
-                        </span>
-                      ) : null}
-                      {user?.usualBudgetMaxYen ? (
-                        <span className="chip" style={{ fontSize: 13 }}>
-                          {preferenceCopy.maxBudget} {user.usualBudgetMaxYen}円
-                        </span>
-                      ) : null}
-                      {user?.usualBudgetPriority ? (
-                        <span className="chip" style={{ fontSize: 13 }}>
-                          {budgetPriorityLabels[user.usualBudgetPriority]}
-                        </span>
-                      ) : null}
-                    </>
-                  ) : (
-                    <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{t("common.notSet")}</div>
-                  )}
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {usualAreas.length === 0 ? (
-                    <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{preferenceCopy.noUsualAreas}</div>
-                  ) : (
-                    usualAreas.map((area) => (
+              <EditButton onClick={openDefaultsEditor} label={t("common.edit")} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <DefaultRow label={t("profile.likedMoods")}>
+                {usualPreferMoods.length === 0 ? (
+                  <NotSet t={t} />
+                ) : (
+                  <ChipRow>
+                    {usualPreferMoods.map((id) => (
+                      <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
+                        {moodName(id)}
+                      </span>
+                    ))}
+                  </ChipRow>
+                )}
+              </DefaultRow>
+
+              <DefaultRow label={t("profile.avoidMoods")}>
+                {usualAvoidMoods.length === 0 ? (
+                  <NotSet t={t} />
+                ) : (
+                  <ChipRow>
+                    {usualAvoidMoods.map((id) => (
+                      <span key={id} className="chip" style={{ fontSize: 13, textDecoration: "line-through" }}>
+                        {moodName(id)}
+                      </span>
+                    ))}
+                  </ChipRow>
+                )}
+              </DefaultRow>
+
+              <DefaultRow label={t("profile.budgetLabel")}>
+                {user?.usualBudgetMaxYen ? (
+                  <ChipRow>
+                    <span className="chip" style={{ fontSize: 13 }}>
+                      〜{user.usualBudgetMaxYen.toLocaleString()}円
+                    </span>
+                  </ChipRow>
+                ) : (
+                  <NotSet t={t} />
+                )}
+              </DefaultRow>
+
+              <DefaultRow label={t("profile.usualAreasLabel")}>
+                {usualAreas.length === 0 ? (
+                  <NotSet t={t} />
+                ) : (
+                  <ChipRow>
+                    {usualAreas.map((area) => (
                       <span key={area} className="chip" style={{ fontSize: 13 }}>
                         {area}
                       </span>
-                    ))
-                  )}
-                </div>
-              </div>
+                    ))}
+                  </ChipRow>
+                )}
+              </DefaultRow>
             </div>
+          </div>
+        </section>
 
-            <div className="card" style={{ borderRadius: 0, padding: "14px 16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
-                  {preferenceCopy.dietaryRestrictions}
-                </div>
-                <button
-                  onClick={() => {
-                    setEditingDietaryRestrictions(dietaryRestrictionIds);
-                    setEditSection("dietary");
-                  }}
-                  style={{
-                    fontSize: 13,
-                    color: "var(--primary)",
-                    fontWeight: 600,
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "4px 8px",
-                    borderRadius: 8,
-                    backgroundColor: "rgba(204,119,85,0.08)",
-                  }}
-                >
-                  {t("common.edit")}
-                </button>
+        {/* 食のこだわり – アレルギー / 食事制限 自由記入 */}
+        <section>
+          <SectionLabel>{t("profile.foodPreferences")}</SectionLabel>
+          <div className="card" style={{ padding: "14px 16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                {t("profile.allergies")}
               </div>
-              {dietaryRestrictionIds.length === 0 ? (
-                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{preferenceCopy.noDietaryRestrictions}</div>
-              ) : (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {dietaryRestrictionIds.map((id) => {
-                    const restriction = DIETARY_RESTRICTIONS.find((item) => item.id === id);
-                    return restriction ? (
-                      <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
-                        {restriction.name}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-              )}
+              <EditButton onClick={openNotesEditor} label={t("common.edit")} />
             </div>
-
-            <div className="card" style={{ borderRadius: "0 0 14px 14px", padding: "14px 16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
-                  {t("profile.allergies")}
-                </div>
-                <button
-                  onClick={() => {
-                    setEditingAllergies(allergies);
-                    setEditSection("allergies");
-                  }}
-                  style={{
-                    fontSize: 13,
-                    color: "var(--primary)",
-                    fontWeight: 600,
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "4px 8px",
-                    borderRadius: 8,
-                    backgroundColor: "rgba(204,119,85,0.08)",
-                  }}
-                >
-                  {t("common.edit")}
-                </button>
-              </div>
-              {allergies.length === 0 ? (
-                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{t("common.notSet")}</div>
-              ) : (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {allergies.map((id) => {
-                    const a = ALLERGIES.find((x) => x.id === id);
-                    return a ? (
-                      <span key={id} className="chip chip-selected" style={{ fontSize: 13 }}>
-                        {a.name}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-              )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <DefaultRow label={t("profile.allergyLabel")}>
+                {allergyNote ? (
+                  <div style={{ fontSize: 14, color: "var(--text-primary)" }}>{allergyNote}</div>
+                ) : (
+                  <NotSet t={t} />
+                )}
+              </DefaultRow>
+              <DefaultRow label={t("profile.dietaryLabel")}>
+                {dietaryNote ? (
+                  <div style={{ fontSize: 14, color: "var(--text-primary)" }}>{dietaryNote}</div>
+                ) : (
+                  <NotSet t={t} />
+                )}
+              </DefaultRow>
             </div>
           </div>
         </section>
@@ -594,7 +521,7 @@ export default function ProfilePage() {
                       padding: "9px 12px",
                       borderRadius: 10,
                       border: `1.5px solid ${locale === lang ? "var(--primary)" : "var(--border)"}`,
-                      backgroundColor: locale === lang ? "rgba(204,119,85,0.1)" : "var(--surface)",
+                      backgroundColor: locale === lang ? "rgba(240,90,40,0.1)" : "var(--surface)",
                       color: locale === lang ? "var(--primary)" : "var(--text-secondary)",
                       fontSize: 14,
                       fontWeight: locale === lang ? 700 : 500,
@@ -691,31 +618,64 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Edit sheets */}
-      {editSection === "name" && (
-        <EditSheet title={t("profile.editName")} onClose={() => setEditSection(null)}>
+      {/* QR 統合シート */}
+      {qrOpen && (
+        <QrSheet
+          profileUrl={profileUrl}
+          displayName={displayName}
+          t={t}
+          onClose={() => setQrOpen(false)}
+        />
+      )}
+
+      {avatarCropSrc && (
+        <AvatarCropSheet
+          src={avatarCropSrc}
+          t={t}
+          onCancel={closeAvatarCrop}
+          onSave={handleAvatarCropSave}
+        />
+      )}
+
+      {/* プロフィール編集 (表示名 + ひとこと) */}
+      {editSection === "profile" && (
+        <EditSheet title={t("profile.editProfile")} onClose={() => setEditSection(null)}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 8 }}>
+            {t("profile.displayName")}
+          </div>
           <input
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "14px 16px",
-              borderRadius: 12,
-              border: "1.5px solid var(--border)",
-              fontSize: 16,
-              color: "var(--text-primary)",
-              backgroundColor: "var(--bg)",
-              marginBottom: 16,
-              outline: "none",
-            }}
+            style={inputStyle}
             placeholder={t("profile.namePlaceholder")}
             onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
             onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
             autoFocus
           />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 16, marginBottom: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)" }}>
+              {t("profile.bioLabel")}
+            </span>
+            <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+              {bioInput.length}/60
+            </span>
+          </div>
+          <textarea
+            value={bioInput}
+            maxLength={60}
+            onChange={(e) => setBioInput(e.target.value)}
+            style={{ ...inputStyle, minHeight: 72, resize: "none" }}
+            placeholder={t("profile.bioPlaceholder")}
+            onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+          />
           <button
             className="btn-primary"
-            onClick={() => { saveProfile({ display_name: nameInput }); setEditSection(null); }}
+            style={{ marginTop: 16 }}
+            onClick={() => {
+              saveProfile({ display_name: nameInput.trim(), bio: bioInput.trim() || null });
+              setEditSection(null);
+            }}
             disabled={!nameInput.trim()}
           >
             {t("common.save")}
@@ -723,144 +683,47 @@ export default function ProfilePage() {
         </EditSheet>
       )}
 
-      {editSection === "share" && (
-        <EditSheet title={t("profile.shareQR")} onClose={() => setEditSection(null)}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
-            <div
-              style={{
-                padding: 24,
-                backgroundColor: "white",
-                borderRadius: 20,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-              }}
-            >
-              <QRCodeSVG value={profileUrl} size={180} />
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
-                {t("profile.profileOf", { name: displayName })}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{profileUrl}</div>
-            </div>
-            <button
-              className="btn-primary"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({ title: "MeshiMatch", url: profileUrl });
-                } else {
-                  navigator.clipboard?.writeText(profileUrl).catch(() => {});
-                  alert(t("profile.linkCopied"));
-                }
-              }}
-            >
-              {t("profile.shareLink")}
-            </button>
+      {/* 食のこだわり編集 (自由記入) */}
+      {editSection === "notes" && (
+        <EditSheet title={t("profile.allergies")} onClose={() => setEditSection(null)}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)" }}>
+              {t("profile.allergyLabel")}
+            </span>
+            <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{allergyNoteInput.length}/50</span>
           </div>
-        </EditSheet>
-      )}
-
-      {editSection === "favorites" && (
-        <EditSheet title={preferenceCopy.favoriteGenres} onClose={() => setEditSection(null)}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-            {GENRES.map((genre) => (
-              <button
-                key={genre.id}
-                onClick={() => toggleFavoriteGenre(genre.id)}
-                className={`chip ${editingFavoriteGenres.includes(genre.id) ? "chip-selected" : ""}`}
-              >
-                {genre.name}
-              </button>
-            ))}
+          <input
+            value={allergyNoteInput}
+            maxLength={50}
+            onChange={(e) => setAllergyNoteInput(e.target.value)}
+            style={inputStyle}
+            placeholder={t("profile.allergyNotePlaceholder")}
+            onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+            autoFocus
+          />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 16, marginBottom: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)" }}>
+              {t("profile.dietaryLabel")}
+            </span>
+            <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{dietaryNoteInput.length}/50</span>
           </div>
+          <input
+            value={dietaryNoteInput}
+            maxLength={50}
+            onChange={(e) => setDietaryNoteInput(e.target.value)}
+            style={inputStyle}
+            placeholder={t("profile.dietaryNotePlaceholder")}
+            onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+          />
           <button
             className="btn-primary"
+            style={{ marginTop: 16 }}
             onClick={() => {
               saveProfile({
-                favorite_genres: editingFavoriteGenres.map((genreId) => ({
-                  genreId,
-                  priority: "prefer",
-                })),
-              });
-              setEditSection(null);
-            }}
-          >
-            {t("common.done")}
-          </button>
-        </EditSheet>
-      )}
-
-      {editSection === "defaults" && (
-        <EditSheet title={preferenceCopy.sessionDefaults} onClose={() => setEditSection(null)}>
-          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-            {preferenceCopy.budgetHint}
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-            <input
-              inputMode="numeric"
-              value={editingBudgetIdeal}
-              onChange={(e) => setEditingBudgetIdeal(e.target.value.replace(/[^\d]/g, ""))}
-              placeholder={`${preferenceCopy.idealBudget} 3500`}
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                borderRadius: 12,
-                border: "1.5px solid var(--border)",
-                fontSize: 15,
-                color: "var(--text-primary)",
-                backgroundColor: "var(--bg)",
-                outline: "none",
-              }}
-            />
-            <input
-              inputMode="numeric"
-              value={editingBudgetMax}
-              onChange={(e) => setEditingBudgetMax(e.target.value.replace(/[^\d]/g, ""))}
-              placeholder={`${preferenceCopy.maxBudget} 5000`}
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                borderRadius: 12,
-                border: "1.5px solid var(--border)",
-                fontSize: 15,
-                color: "var(--text-primary)",
-                backgroundColor: "var(--bg)",
-                outline: "none",
-              }}
-            />
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-            {budgetPriorityOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setEditingBudgetPriority(option.id)}
-                className={`chip ${editingBudgetPriority === option.id ? "chip-selected" : ""}`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
-            {preferenceCopy.usualAreas}
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-            {PROFILE_AREAS.map((area) => (
-              <button
-                key={area}
-                onClick={() => toggleUsualArea(area)}
-                className={`chip ${editingUsualAreas.includes(area) ? "chip-selected" : ""}`}
-              >
-                {area}
-              </button>
-            ))}
-          </div>
-          <button
-            className="btn-primary"
-            onClick={() => {
-              saveProfile({
-                usual_budget_ideal_yen: editingBudgetIdeal ? Number(editingBudgetIdeal) : null,
-                usual_budget_max_yen: editingBudgetMax ? Number(editingBudgetMax) : null,
-                usual_budget_priority: editingBudgetPriority,
-                usual_areas: editingUsualAreas,
+                allergy_note: allergyNoteInput.trim() || null,
+                dietary_note: dietaryNoteInput.trim() || null,
               });
               setEditSection(null);
             }}
@@ -870,62 +733,91 @@ export default function ProfilePage() {
         </EditSheet>
       )}
 
-      {editSection === "dietary" && (
-        <EditSheet title={preferenceCopy.dietaryRestrictions} onClose={() => setEditSection(null)}>
+      {/* 普段の設定 編集 */}
+      {editSection === "defaults" && (
+        <EditSheet title={t("profile.defaultsTitle")} onClose={() => setEditSection(null)}>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16 }}>
+            {t("profile.defaultsHint")}
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <MoodPickGrid
+              hint={t("profile.moodsHint")}
+              remaining={
+                likedMoods.length >= MAX_MOODS
+                  ? t("survey.slotFull")
+                  : t("survey.slotRemaining", { count: MAX_MOODS - likedMoods.length })
+              }
+              selected={likedMoods}
+              onToggle={toggleLiked}
+              maxReached={likedMoods.length >= MAX_MOODS}
+              t={t}
+            />
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <MoodAvoidSection
+              selected={avoidMoods}
+              onToggle={toggleAvoid}
+              maxReached={avoidMoods.length >= MAX_MOODS}
+              t={t}
+            />
+          </div>
+
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
+            {t("profile.budgetLabel")}
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <BudgetCapPicker value={budgetMax} onChange={setBudgetMax} t={t} />
+          </div>
+
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
+            {t("profile.usualAreasLabel")}
+          </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-            {DIETARY_RESTRICTIONS.map((restriction) => (
+            {SURVEY_AREAS.map((area) => (
               <button
-                key={restriction.id}
-                onClick={() => toggleDietaryRestriction(restriction.id)}
-                className={`chip ${editingDietaryRestrictions.includes(restriction.id) ? "chip-selected" : ""}`}
+                key={area}
+                onClick={() => toggleUsualArea(area)}
+                className={`chip ${usualAreasBuf.includes(area) ? "chip-selected" : ""}`}
               >
-                {restriction.name}
+                {area}
               </button>
             ))}
           </div>
+
           <button
             className="btn-primary"
             onClick={() => {
               saveProfile({
-                dietary_restrictions: editingDietaryRestrictions.map((restrictionId) => ({
-                  restrictionId,
-                  priority: "must",
-                })),
+                usual_prefer_moods: likedMoods,
+                usual_avoid_moods: avoidMoods,
+                favorite_genres: buildGenrePreferencesFromMoods(likedMoods, avoidMoods),
+                usual_budget_max_yen: budgetMax,
+                usual_areas: usualAreasBuf,
               });
               setEditSection(null);
             }}
           >
-            {t("common.done")}
-          </button>
-        </EditSheet>
-      )}
-
-      {editSection === "allergies" && (
-        <EditSheet title={t("profile.allergies")} onClose={() => setEditSection(null)}>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
-              {t("profile.allergyTitle")}
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {ALLERGIES.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => toggleAllergy(a.id)}
-                  className={`chip ${editingAllergies.includes(a.id) ? "chip-selected" : ""}`}
-                >
-                  {a.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <button className="btn-primary" onClick={() => { saveProfile({ allergies: editingAllergies }); setEditSection(null); }}>
-            {t("common.done")}
+            {t("common.save")}
           </button>
         </EditSheet>
       )}
     </div>
   );
 }
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "14px 16px",
+  borderRadius: 12,
+  border: "1.5px solid var(--border)",
+  fontSize: 16,
+  color: "var(--text-primary)",
+  backgroundColor: "var(--bg)",
+  outline: "none",
+  fontFamily: "inherit",
+};
 
 function SectionLabel({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
@@ -946,45 +838,44 @@ function SectionLabel({ children, style }: { children: React.ReactNode; style?: 
   );
 }
 
-function ShareButton({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: string;
-  label: string;
-  onClick: () => void;
-}) {
+function EditButton({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <button
       onClick={onClick}
       style={{
-        padding: "16px 8px",
-        borderRadius: 14,
-        border: "1.5px solid var(--border)",
-        backgroundColor: "var(--surface)",
-        color: "var(--text-primary)",
         fontSize: 13,
+        color: "var(--primary)",
         fontWeight: 600,
+        background: "none",
+        border: "none",
         cursor: "pointer",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 8,
-        minHeight: 80,
-        transition: "background-color 0.15s",
+        padding: "4px 8px",
+        borderRadius: 8,
+        backgroundColor: "rgba(240,90,40,0.08)",
       }}
     >
-      <Image
-        src={icon}
-        alt={label}
-        width={24}
-        height={24}
-        style={{ filter: "brightness(0) saturate(100%) invert(25%) sepia(20%) saturate(600%) hue-rotate(210deg)" }}
-      />
-      <span style={{ lineHeight: 1.2 }}>{label}</span>
+      {label}
     </button>
   );
+}
+
+function DefaultRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600, marginBottom: 6 }}>
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function ChipRow({ children }: { children: React.ReactNode }) {
+  return <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{children}</div>;
+}
+
+function NotSet({ t }: { t: (key: string) => string }) {
+  return <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{t("common.notSet")}</div>;
 }
 
 function EditSheet({
@@ -1049,6 +940,259 @@ function EditSheet({
           </button>
         </div>
         {children}
+      </div>
+    </div>
+  );
+}
+
+const AVATAR_CROP_VIEW_SIZE = 260;
+const AVATAR_OUTPUT_SIZE = 256;
+
+function AvatarCropSheet({
+  src,
+  t,
+  onCancel,
+  onSave,
+}: {
+  src: string;
+  t: (key: string) => string;
+  onCancel: () => void;
+  onSave: (dataUrl: string) => void;
+}) {
+  const imgRef = useRef<HTMLImageElement>(null);
+  const dragRef = useRef<{ pointerId: number; x: number; y: number; startX: number; startY: number } | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [ready, setReady] = useState(false);
+  const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
+
+  function clampOffset(nextOffset: { x: number; y: number }, nextZoom = zoom) {
+    const image = imgRef.current;
+    if (!image?.naturalWidth || !image?.naturalHeight) return nextOffset;
+
+    const baseScale = Math.max(
+      AVATAR_CROP_VIEW_SIZE / image.naturalWidth,
+      AVATAR_CROP_VIEW_SIZE / image.naturalHeight
+    );
+    const scaledWidth = image.naturalWidth * baseScale * nextZoom;
+    const scaledHeight = image.naturalHeight * baseScale * nextZoom;
+    const maxX = Math.max(0, (scaledWidth - AVATAR_CROP_VIEW_SIZE) / 2);
+    const maxY = Math.max(0, (scaledHeight - AVATAR_CROP_VIEW_SIZE) / 2);
+
+    return {
+      x: Math.max(-maxX, Math.min(maxX, nextOffset.x)),
+      y: Math.max(-maxY, Math.min(maxY, nextOffset.y)),
+    };
+  }
+
+  function handleZoomChange(value: number) {
+    setZoom(value);
+    setOffset((current) => clampOffset(current, value));
+  }
+
+  function saveCrop() {
+    const image = imgRef.current;
+    if (!image?.naturalWidth || !image?.naturalHeight) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = AVATAR_OUTPUT_SIZE;
+    canvas.height = AVATAR_OUTPUT_SIZE;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const baseScale = Math.max(
+      AVATAR_CROP_VIEW_SIZE / image.naturalWidth,
+      AVATAR_CROP_VIEW_SIZE / image.naturalHeight
+    );
+    const outputScale = AVATAR_OUTPUT_SIZE / AVATAR_CROP_VIEW_SIZE;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, AVATAR_OUTPUT_SIZE, AVATAR_OUTPUT_SIZE);
+    ctx.translate(
+      AVATAR_OUTPUT_SIZE / 2 + offset.x * outputScale,
+      AVATAR_OUTPUT_SIZE / 2 + offset.y * outputScale
+    );
+    ctx.scale(baseScale * zoom * outputScale, baseScale * zoom * outputScale);
+    ctx.drawImage(image, -image.naturalWidth / 2, -image.naturalHeight / 2);
+
+    onSave(canvas.toDataURL("image/jpeg", 0.86));
+  }
+
+  const previewBaseScale =
+    naturalSize.width > 0 && naturalSize.height > 0
+      ? Math.max(
+          AVATAR_CROP_VIEW_SIZE / naturalSize.width,
+          AVATAR_CROP_VIEW_SIZE / naturalSize.height
+        )
+      : 1;
+  const previewScale = previewBaseScale * zoom;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 110,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-end",
+      }}
+    >
+      <div
+        style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.55)" }}
+        onClick={onCancel}
+      />
+      <div
+        style={{
+          position: "relative",
+          backgroundColor: "var(--bg)",
+          borderRadius: "24px 24px 0 0",
+          padding: "20px 20px 48px",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+          <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+          <button
+            onClick={onCancel}
+            style={{
+              border: "none",
+              background: "none",
+              color: "var(--text-secondary)",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: "pointer",
+              padding: "8px 4px",
+            }}
+          >
+            {t("common.cancel")}
+          </button>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)" }}>
+            {t("profile.cropAvatar")}
+          </div>
+          <button
+            onClick={saveCrop}
+            disabled={!ready}
+            style={{
+              border: "none",
+              background: "none",
+              color: ready ? "var(--primary)" : "var(--text-tertiary)",
+              fontSize: 14,
+              fontWeight: 800,
+              cursor: ready ? "pointer" : "default",
+              padding: "8px 4px",
+            }}
+          >
+            {t("common.save")}
+          </button>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 18,
+          }}
+        >
+          <div
+            style={{
+              width: AVATAR_CROP_VIEW_SIZE,
+              height: AVATAR_CROP_VIEW_SIZE,
+              borderRadius: "50%",
+              overflow: "hidden",
+              backgroundColor: "var(--bg-secondary)",
+              position: "relative",
+              touchAction: "none",
+              cursor: "grab",
+              boxShadow: "0 0 0 1px var(--border)",
+            }}
+            onPointerDown={(event) => {
+              event.currentTarget.setPointerCapture(event.pointerId);
+              dragRef.current = {
+                pointerId: event.pointerId,
+                x: event.clientX,
+                y: event.clientY,
+                startX: offset.x,
+                startY: offset.y,
+              };
+            }}
+            onPointerMove={(event) => {
+              const drag = dragRef.current;
+              if (!drag || drag.pointerId !== event.pointerId) return;
+              setOffset(
+                clampOffset({
+                  x: drag.startX + event.clientX - drag.x,
+                  y: drag.startY + event.clientY - drag.y,
+                })
+              );
+            }}
+            onPointerUp={(event) => {
+              if (dragRef.current?.pointerId === event.pointerId) dragRef.current = null;
+            }}
+            onPointerCancel={() => {
+              dragRef.current = null;
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              ref={imgRef}
+              src={src}
+              alt=""
+              onLoad={() => {
+                const image = imgRef.current;
+                if (image) {
+                  const baseScale = Math.max(
+                    AVATAR_CROP_VIEW_SIZE / image.naturalWidth,
+                    AVATAR_CROP_VIEW_SIZE / image.naturalHeight
+                  );
+                  const initialY =
+                    image.naturalHeight > image.naturalWidth
+                      ? -Math.min(48, Math.max(0, (image.naturalHeight * baseScale - AVATAR_CROP_VIEW_SIZE) / 2))
+                      : 0;
+                  setNaturalSize({
+                    width: image.naturalWidth,
+                    height: image.naturalHeight,
+                  });
+                  setZoom(1);
+                  setOffset(clampOffset({ x: 0, y: initialY }, 1));
+                }
+                setReady(true);
+              }}
+              draggable={false}
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${previewScale})`,
+                transformOrigin: "center center",
+                width: naturalSize.width || AVATAR_CROP_VIEW_SIZE,
+                height: naturalSize.height || "auto",
+                maxWidth: "none",
+                maxHeight: "none",
+                opacity: ready ? 1 : 0,
+                userSelect: "none",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
+        </div>
+
+        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 8 }}>
+          {t("profile.cropZoom")}
+        </label>
+        <input
+          type="range"
+          min={1}
+          max={3}
+          step={0.01}
+          value={zoom}
+          onChange={(event) => handleZoomChange(Number(event.target.value))}
+          style={{ width: "100%", accentColor: "var(--primary)" }}
+        />
+        <div style={{ fontSize: 12, color: "var(--text-tertiary)", textAlign: "center", marginTop: 12 }}>
+          {t("profile.cropHint")}
+        </div>
       </div>
     </div>
   );

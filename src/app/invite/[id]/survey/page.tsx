@@ -1,247 +1,80 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  TouchSensor,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
-import {
-  ALLERGIES,
-  DIETARY_RESTRICTIONS,
-  GENRES,
-} from "@/lib/mockData";
+import { use, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/lib/hooks/useUser";
 import { useLocale } from "@/lib/i18n";
-import type {
-  Genre,
-  GenrePreferenceBucketData,
-  GenrePreferenceBucketKey,
-} from "@/lib/types";
+import { SURVEY_AREAS } from "@/lib/areas";
+import { BudgetCapPicker } from "@/components/survey/GenreTiles";
+import { MoodPickGrid, MoodAvoidSection } from "@/components/survey/MoodPills";
+import { SuggestPicker, type SuggestPick } from "@/components/survey/SuggestPicker";
+import { buildGenrePreferencesFromMoods } from "@/lib/moods";
+import { track, AnalyticsEvent } from "@/lib/analytics";
+import { markParticipated } from "@/lib/anon-id";
 
 const STORAGE_KEY = "meshimatch-guest-prefs";
+const MAX_SLOT = 2;
 
 type Step = "name" | "restrictions" | "survey" | "done";
 
 interface GuestPrefs {
-  allergies: string[];
-  dietaryRestrictions: string[];
+  allergyNote: string;
+  dietaryNote: string;
 }
 
 function readGuestPrefs(): GuestPrefs {
   if (typeof window === "undefined") {
-    return { allergies: [], dietaryRestrictions: [] };
+    return { allergyNote: "", dietaryNote: "" };
   }
 
   try {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (!saved) {
-      return { allergies: [], dietaryRestrictions: [] };
+      return { allergyNote: "", dietaryNote: "" };
     }
 
-    const prefs: GuestPrefs = JSON.parse(saved);
+    // 新形式は文字列フィールド。旧形式 (allergies/dietaryRestrictions 配列) は無視する。
+    const prefs = JSON.parse(saved) as Partial<GuestPrefs>;
     return {
-      allergies: prefs.allergies ?? [],
-      dietaryRestrictions: prefs.dietaryRestrictions ?? [],
+      allergyNote: typeof prefs.allergyNote === "string" ? prefs.allergyNote : "",
+      dietaryNote: typeof prefs.dietaryNote === "string" ? prefs.dietaryNote : "",
     };
   } catch {
-    return { allergies: [], dietaryRestrictions: [] };
+    return { allergyNote: "", dietaryNote: "" };
   }
 }
 
-function buildGenrePreferences(buckets: GenrePreferenceBucketData) {
-  return [
-    ...buckets.prioritize.map((genreId) => ({
-      genreId,
-      priority: "prefer" as const,
-    })),
-    ...buckets.nice_to_have.map((genreId) => ({
-      genreId,
-      priority: "optional" as const,
-    })),
-    ...buckets.open_to_it.map((genreId) => ({
-      genreId,
-      priority: "optional" as const,
-    })),
-  ];
-}
+const cardStyle: React.CSSProperties = {
+  backgroundColor: "var(--surface)",
+  borderRadius: 20,
+  padding: 16,
+  border: "1px solid var(--border-light)",
+  marginBottom: 16,
+};
 
-function GenreChip({
-  genre,
-  color,
-  size = "md",
-}: {
-  genre: Genre;
-  color?: string;
-  size?: "sm" | "md";
-}) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: genre.id });
+const titleStyle: React.CSSProperties = {
+  fontSize: 15,
+  fontWeight: 700,
+  color: "var(--text-primary)",
+  marginBottom: 4,
+};
 
-  return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 4,
-        padding: size === "sm" ? "6px 10px" : "8px 14px",
-        borderRadius: 20,
-        backgroundColor: color ? color + "15" : "var(--surface)",
-        border: `1.5px solid ${color ? color + "55" : "var(--border)"}`,
-        color: color ?? "var(--text-primary)",
-        fontSize: size === "sm" ? 13 : 14,
-        fontWeight: color ? 500 : 400,
-        cursor: isDragging ? "grabbing" : "grab",
-        opacity: isDragging ? 0.3 : 1,
-        transform: CSS.Translate.toString(transform),
-        touchAction: "none",
-        userSelect: "none",
-        WebkitUserSelect: "none",
-      }}
-    >
-      {genre.emoji} {genre.name}
-    </div>
-  );
-}
+const captionStyle: React.CSSProperties = {
+  fontSize: 13,
+  color: "var(--text-secondary)",
+  marginBottom: 12,
+};
 
-function UnrankedPool({ unranked }: { unranked: Genre[] }) {
-  const { setNodeRef, isOver } = useDroppable({ id: "unranked" });
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        minHeight: 56,
-        borderRadius: 12,
-        padding: "8px 4px",
-        backgroundColor: isOver ? "rgba(204,119,85,0.05)" : "transparent",
-        border: isOver ? "2px dashed var(--primary)" : "2px dashed transparent",
-        transition: "all 0.15s ease",
-      }}
-    >
-      {unranked.length === 0 ? (
-        <span style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
-          すべて分類済みです
-        </span>
-      ) : (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {unranked.map((genre) => (
-            <GenreChip key={genre.id} genre={genre} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PreferenceBucketZone({
-  bucketKey,
-  label,
-  subtitle,
-  color,
-  items,
-}: {
-  bucketKey: GenrePreferenceBucketKey;
-  label: string;
-  subtitle: string;
-  color: string;
-  items: string[];
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id: bucketKey });
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        borderRadius: 16,
-        border: `2px ${items.length === 0 && !isOver ? "dashed" : "solid"} ${
-          isOver ? color : items.length === 0 ? "var(--border)" : color + "55"
-        }`,
-        padding: 14,
-        marginBottom: 12,
-        minHeight: 80,
-        transition: "all 0.15s ease",
-        backgroundColor: isOver ? color + "08" : "var(--surface)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: items.length > 0 ? 10 : 0,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              backgroundColor: color + "20",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-            }}
-          />
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color }}>{label}</div>
-            <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-              {subtitle}
-            </div>
-          </div>
-        </div>
-        <div
-          style={{
-            backgroundColor: color + "20",
-            color,
-            fontSize: 12,
-            fontWeight: 700,
-            padding: "2px 10px",
-            borderRadius: 20,
-          }}
-        >
-          {items.length}件
-        </div>
-      </div>
-
-      {items.length > 0 ? (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {items.map((id) => {
-            const genre = GENRES.find((item) => item.id === id);
-            return genre ? (
-              <GenreChip key={id} genre={genre} color={color} size="sm" />
-            ) : null;
-          })}
-        </div>
-      ) : (
-        <div
-          style={{
-            textAlign: "center",
-            color: "var(--text-tertiary)",
-            fontSize: 13,
-            paddingTop: 2,
-          }}
-        >
-          ここにドラッグ
-        </div>
-      )}
-    </div>
-  );
-}
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "12px 14px",
+  borderRadius: 12,
+  border: "1.5px solid var(--border)",
+  fontSize: 15,
+  color: "var(--text-primary)",
+  backgroundColor: "var(--bg)",
+  outline: "none",
+};
 
 export default function GuestSurveyPage({
   params,
@@ -250,50 +83,25 @@ export default function GuestSurveyPage({
 }) {
   const { id } = use(params);
   const { userId } = useUser();
-  const { locale } = useLocale();
+  const { t } = useLocale();
   const [groupName, setGroupName] = useState("グループ");
   const [groupId, setGroupId] = useState<string | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [step, setStep] = useState<Step>("name");
   const [guestName, setGuestName] = useState("");
-  const [allergies, setAllergies] = useState<string[]>(() => readGuestPrefs().allergies);
-  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(
-    () => readGuestPrefs().dietaryRestrictions
-  );
+  const [allergyNote, setAllergyNote] = useState<string>(() => readGuestPrefs().allergyNote);
+  const [dietaryNote, setDietaryNote] = useState<string>(() => readGuestPrefs().dietaryNote);
   const [submitting, setSubmitting] = useState(false);
-  const [preferenceBuckets, setPreferenceBuckets] =
-    useState<GenrePreferenceBucketData>({
-      prioritize: [],
-      nice_to_have: [],
-      open_to_it: [],
-    });
-  const [activeGenreId, setActiveGenreId] = useState<string | null>(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 100, tolerance: 5 },
-    })
-  );
-
-  const bucketConfig = {
-    prioritize: {
-      label: locale === "en" ? "Prioritize" : "優先したい",
-      subtitle: locale === "en" ? "Show these first" : "まず候補に入れたい",
-      color: "var(--primary)",
-    },
-    nice_to_have: {
-      label: locale === "en" ? "Nice to have" : "あればうれしい",
-      subtitle: locale === "en" ? "Would be nice to include" : "合うなら入れたい",
-      color: "var(--warning)",
-    },
-    open_to_it: {
-      label: locale === "en" ? "Open to it" : "候補に入ってOK",
-      subtitle: locale === "en" ? "Fine as one of the options" : "選択肢に入っていて大丈夫",
-      color: "var(--text-tertiary)",
-    },
-  } as const;
+  const [showOtherArea, setShowOtherArea] = useState(false);
+  const [otherAreaInput, setOtherAreaInput] = useState("");
+  const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
+  const [budgetMaxYen, setBudgetMaxYen] = useState<number | null>(null);
+  const [preferMoods, setPreferMoods] = useState<string[]>([]);
+  const [avoidMoods, setAvoidMoods] = useState<string[]>([]);
+  const [suggestedPicks, setSuggestedPicks] = useState<SuggestPick[]>([]);
+  const [suggestShowName, setSuggestShowName] = useState(false);
+  const [quickPicks, setQuickPicks] = useState<{ id: string; name: string; area?: string | null }[]>([]);
 
   useEffect(() => {
     async function fetchGroup() {
@@ -329,70 +137,141 @@ export default function GuestSurveyPage({
     void fetchGroup();
   }, [id]);
 
+  // link_opened: 招待リンクからフォームを開いた（ファネル入口）
+  useEffect(() => {
+    track(AnalyticsEvent.LINK_OPENED, { inviteCode: id });
+  }, [id]);
+
+  // 既存の回答をプリフィル (localStorage の memberId から)
+  useEffect(() => {
+    if (!groupId) {
+      return;
+    }
+    const storedMemberId =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem(`mm_member_${groupId}`)
+        : null;
+    if (!storedMemberId) {
+      return;
+    }
+    let cancelled = false;
+    async function fetchExisting() {
+      const supabase = createClient();
+      const { data: existing } = await supabase
+        .from("survey_responses")
+        .select("*")
+        .eq("group_id", groupId!)
+        .eq("member_id", storedMemberId!)
+        .maybeSingle();
+      if (cancelled || !existing) {
+        return;
+      }
+      setPreferredAreas((existing.preferred_areas as string[]) ?? []);
+      setBudgetMaxYen((existing.budget_max_yen as number | null) ?? null);
+      setPreferMoods((existing.prefer_moods as string[]) ?? []);
+      setAvoidMoods((existing.avoid_moods as string[]) ?? []);
+      if (existing.allergy_note) setAllergyNote(existing.allergy_note as string);
+      if (existing.dietary_note) setDietaryNote(existing.dietary_note as string);
+      const suggested = (existing.suggested_restaurants as SuggestPick[] | null) ?? [];
+      if (suggested.length > 0) {
+        setSuggestedPicks(suggested);
+        setSuggestShowName(suggested.some((pick) => pick.showName));
+      }
+    }
+    void fetchExisting();
+    return () => {
+      cancelled = true;
+    };
+  }, [groupId]);
+
+  // ログインユーザーのお気に入りをクイック追加候補として読む (ゲストは対象外)
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+    let cancelled = false;
+    async function loadFavorites() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("restaurant_sources")
+        .select("id, restaurants (id, name, nearest_area)")
+        .eq("added_by", userId)
+        .eq("source_type", "user_favorite")
+        .limit(6);
+      if (cancelled || !data) {
+        return;
+      }
+      const picks = (data as unknown as {
+        restaurants: { id: string; name: string; nearest_area: string | null } | null;
+      }[])
+        .map((row) => row.restaurants)
+        .filter((r): r is { id: string; name: string; nearest_area: string | null } => !!r)
+        .map((r) => ({ id: r.id, name: r.name, area: r.nearest_area }));
+      setQuickPicks(picks);
+    }
+    void loadFavorites();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  // form_started: 最初のチップをタップした瞬間に一度だけ
+  const formStartedRef = useRef(false);
+  function markStarted() {
+    if (formStartedRef.current) return;
+    formStartedRef.current = true;
+    track(AnalyticsEvent.FORM_STARTED, { groupId });
+  }
+
   function savePrefs() {
     try {
       window.localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ allergies, dietaryRestrictions })
+        JSON.stringify({
+          allergyNote: allergyNote.trim(),
+          dietaryNote: dietaryNote.trim(),
+        })
       );
     } catch {
       // noop
     }
   }
 
-  function toggleAllergy(allergyId: string) {
-    setAllergies((current) =>
-      current.includes(allergyId)
-        ? current.filter((id) => id !== allergyId)
-        : [...current, allergyId]
+  function toggleArea(area: string) {
+    markStarted();
+    setPreferredAreas((current) =>
+      current.includes(area)
+        ? current.filter((item) => item !== area)
+        : [...current, area]
     );
   }
 
-  function toggleDietary(restrictionId: string) {
-    setDietaryRestrictions((current) =>
-      current.includes(restrictionId)
-        ? current.filter((id) => id !== restrictionId)
-        : [...current, restrictionId]
-    );
+  function togglePrefer(moodId: string) {
+    markStarted();
+    setPreferMoods((current) => {
+      if (current.includes(moodId)) {
+        return current.filter((id) => id !== moodId);
+      }
+      if (current.length >= MAX_SLOT) {
+        return current;
+      }
+      setAvoidMoods((avoid) => avoid.filter((id) => id !== moodId));
+      return [...current, moodId];
+    });
   }
 
-  function handleDragStart(event: DragStartEvent) {
-    setActiveGenreId(event.active.id as string);
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    setActiveGenreId(null);
-    if (!over) {
-      return;
-    }
-
-    const genreId = active.id as string;
-    const destination = over.id as string;
-
-    if (destination === "unranked") {
-      setPreferenceBuckets((previous) => ({
-        prioritize: previous.prioritize.filter((id) => id !== genreId),
-        nice_to_have: previous.nice_to_have.filter((id) => id !== genreId),
-        open_to_it: previous.open_to_it.filter((id) => id !== genreId),
-      }));
-      return;
-    }
-
-    if (["prioritize", "nice_to_have", "open_to_it"].includes(destination)) {
-      setPreferenceBuckets((previous) => {
-        const next = {
-          prioritize: previous.prioritize.filter((id) => id !== genreId),
-          nice_to_have: previous.nice_to_have.filter((id) => id !== genreId),
-          open_to_it: previous.open_to_it.filter((id) => id !== genreId),
-        };
-        next[destination as GenrePreferenceBucketKey] = [
-          ...next[destination as GenrePreferenceBucketKey],
-          genreId,
-        ];
-        return next;
-      });
-    }
+  function toggleAvoid(moodId: string) {
+    markStarted();
+    setAvoidMoods((current) => {
+      if (current.includes(moodId)) {
+        return current.filter((id) => id !== moodId);
+      }
+      if (current.length >= MAX_SLOT) {
+        return current;
+      }
+      setPreferMoods((prefer) => prefer.filter((id) => id !== moodId));
+      return [...current, moodId];
+    });
   }
 
   async function handleSubmit() {
@@ -444,6 +323,13 @@ export default function GuestSurveyPage({
         return;
       }
 
+      // ゲスト (アカウントなし) でも後で○×投票できるよう、memberId を保存
+      try {
+        window.localStorage.setItem(`mm_member_${groupId}`, memberId);
+      } catch {
+        // noop
+      }
+
       const response = await fetch("/api/groups/survey", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -451,17 +337,26 @@ export default function GuestSurveyPage({
           groupId,
           memberId,
           responseVersion: 2,
-          genrePreferences: buildGenrePreferences(preferenceBuckets),
-          dietaryRestrictions: [
-            ...allergies.map((restrictionId) => ({
-              restrictionId,
-              priority: "must" as const,
-            })),
-            ...dietaryRestrictions.map((restrictionId) => ({
-              restrictionId,
-              priority: "must" as const,
-            })),
-          ],
+          departureArea: null,
+          departureStation: null, // 出発駅は v2 (Transit API 統合時) に復活予定
+          preferredAreas,
+          budgetIdealYen: null,
+          budgetMaxYen,
+          budgetPriority: budgetMaxYen ? "prefer" : null,
+          preferMoods,
+          avoidMoods,
+          genrePreferences: buildGenrePreferencesFromMoods(
+            preferMoods,
+            avoidMoods
+          ),
+          allergyNote: allergyNote.trim() || null,
+          dietaryNote: dietaryNote.trim() || null,
+          suggestedRestaurants: suggestedPicks.map((pick) => ({
+            id: pick.id,
+            name: pick.name,
+            showName: suggestShowName,
+          })),
+          dietaryRestrictions: [],
         }),
       });
 
@@ -473,38 +368,22 @@ export default function GuestSurveyPage({
         await supabase
           .from("profiles")
           .update({
-            allergies,
-            dietary_restrictions: dietaryRestrictions.map((restrictionId) => ({
-              restrictionId,
-              priority: "must" as const,
-            })),
+            allergy_note: allergyNote.trim() || null,
+            dietary_note: dietaryNote.trim() || null,
           })
           .eq("id", userId);
       }
 
+      // form_completed + 参加実績を記録（後日この端末が幹事になれば participant_converted）
+      track(AnalyticsEvent.FORM_COMPLETED, { groupId });
+      markParticipated();
+
       setStep("done");
-      window.setTimeout(() => {
-        window.location.href = `/groups/${groupId}/waiting`;
-      }, 1800);
     } catch (error) {
       console.error("Submit error:", error);
       setSubmitting(false);
     }
   }
-
-  const unranked = GENRES.filter(
-    (genre) =>
-      !preferenceBuckets.prioritize.includes(genre.id) &&
-      !preferenceBuckets.nice_to_have.includes(genre.id) &&
-      !preferenceBuckets.open_to_it.includes(genre.id)
-  );
-  const rankedCount =
-    preferenceBuckets.prioritize.length +
-    preferenceBuckets.nice_to_have.length +
-    preferenceBuckets.open_to_it.length;
-  const activeGenre = activeGenreId
-    ? GENRES.find((genre) => genre.id === activeGenreId)
-    : null;
 
   if (pageLoading) {
     return (
@@ -588,11 +467,65 @@ export default function GuestSurveyPage({
         <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
           {guestName}さん、回答完了
         </div>
-        <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 8 }}>
+        <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 28 }}>
           食事制限は次回から自動入力されます
         </div>
-        <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
-          待機室に移動します...
+
+        <div style={{ width: "100%", maxWidth: 360, display: "flex", flexDirection: "column", gap: 12 }}>
+          <a
+            href={`/groups/${groupId}/waiting`}
+            className="btn-primary"
+            style={{ width: "100%", textDecoration: "none", textAlign: "center" }}
+          >
+            結果を待つ
+          </a>
+
+          {/* グロースCTA: 参加者 → 次の幹事への転化（要件セクション6） */}
+          <a
+            href="/groups/create?from=survey_done"
+            style={{
+              width: "100%",
+              textDecoration: "none",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+              padding: "14px 16px",
+              borderRadius: 16,
+              border: "1px dashed var(--border)",
+              backgroundColor: "var(--surface)",
+            }}
+          >
+            <span style={{ fontSize: 15, fontWeight: 800, color: "var(--primary)" }}>
+              自分のグループでもやってみる →
+            </span>
+            <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+              次の食事会、あなたが幹事に
+            </span>
+          </a>
+
+          <a
+            href={`/signup?from=guest_done&group=${groupId}`}
+            style={{
+              width: "100%",
+              textDecoration: "none",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+              padding: "13px 16px",
+              borderRadius: 16,
+              backgroundColor: "rgba(240,90,40,0.08)",
+              border: "1px solid rgba(240,90,40,0.16)",
+            }}
+          >
+            <span style={{ fontSize: 14, fontWeight: 800, color: "var(--primary)" }}>
+              アプリに登録する
+            </span>
+            <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+              次回の食事会をもっと早く
+            </span>
+          </a>
         </div>
       </div>
     );
@@ -676,47 +609,7 @@ export default function GuestSurveyPage({
             {guestName}さん
           </div>
           <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24 }}>
-            幹事に共有されるメモです。お店の並び替えには使いません。
-          </div>
-
-          <div
-            style={{
-              backgroundColor: "var(--surface)",
-              borderRadius: 20,
-              padding: 20,
-              border: "1px solid var(--border-light)",
-              marginBottom: 16,
-            }}
-          >
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>
-              アレルギー
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {ALLERGIES.map((allergy) => {
-                const selected = allergies.includes(allergy.id);
-                return (
-                  <button
-                    key={allergy.id}
-                    onClick={() => toggleAllergy(allergy.id)}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                      padding: "8px 14px",
-                      borderRadius: 20,
-                      fontSize: 14,
-                      cursor: "pointer",
-                      backgroundColor: selected ? "rgba(204,119,85,0.12)" : "var(--bg)",
-                      border: `1.5px solid ${selected ? "var(--primary)" : "var(--border)"}`,
-                      color: selected ? "var(--primary)" : "var(--text-primary)",
-                      fontWeight: selected ? 600 : 400,
-                    }}
-                  >
-                    {allergy.emoji} {allergy.name}
-                  </button>
-                );
-              })}
-            </div>
+            {t("survey.dietaryHint")}
           </div>
 
           <div
@@ -728,35 +621,39 @@ export default function GuestSurveyPage({
               marginBottom: 28,
             }}
           >
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>
-              食事制限
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+                {t("survey.allergyInputLabel")}
+              </span>
+              <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{allergyNote.length}/50</span>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {DIETARY_RESTRICTIONS.map((restriction) => {
-                const selected = dietaryRestrictions.includes(restriction.id);
-                return (
-                  <button
-                    key={restriction.id}
-                    onClick={() => toggleDietary(restriction.id)}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                      padding: "8px 14px",
-                      borderRadius: 20,
-                      fontSize: 14,
-                      cursor: "pointer",
-                      backgroundColor: selected ? "rgba(204,119,85,0.12)" : "var(--bg)",
-                      border: `1.5px solid ${selected ? "var(--primary)" : "var(--border)"}`,
-                      color: selected ? "var(--primary)" : "var(--text-primary)",
-                      fontWeight: selected ? 600 : 400,
-                    }}
-                  >
-                    {restriction.emoji} {restriction.name}
-                  </button>
-                );
-              })}
+            <input
+              value={allergyNote}
+              maxLength={50}
+              onChange={(event) => {
+                markStarted();
+                setAllergyNote(event.target.value);
+              }}
+              placeholder={t("survey.allergyInputPlaceholder")}
+              style={inputStyle}
+            />
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 18, marginBottom: 8 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+                {t("survey.dietaryInputLabel")}
+              </span>
+              <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{dietaryNote.length}/50</span>
             </div>
+            <input
+              value={dietaryNote}
+              maxLength={50}
+              onChange={(event) => {
+                markStarted();
+                setDietaryNote(event.target.value);
+              }}
+              placeholder={t("survey.dietaryInputPlaceholder")}
+              style={inputStyle}
+            />
           </div>
 
           <button className="btn-primary" onClick={() => setStep("survey")} style={{ width: "100%" }}>
@@ -786,112 +683,190 @@ export default function GuestSurveyPage({
 
   return (
     <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
-      <div style={{ padding: "56px 20px 0" }}>
-        <BackButton onClick={() => setStep("restrictions")} />
-      </div>
-
-      <div style={{ padding: "8px 20px 40px" }}>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
-          今日の気分を教えてください
-        </div>
-        <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 4 }}>
-          {guestName}さん・{groupName}
-        </div>
-        <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 16 }}>
-          ジャンルの希望があれば、近い強さの箱へ分けてください。空でも送信できます。
+      <div style={{ maxWidth: 480, margin: "0 auto" }}>
+        <div style={{ padding: "56px 20px 0" }}>
+          <BackButton onClick={() => setStep("restrictions")} />
         </div>
 
-        {(allergies.length > 0 || dietaryRestrictions.length > 0) && (
+        <div style={{ padding: "8px 20px 40px" }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
+            {t("survey.constraintsTitle")}
+          </div>
+          <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 4 }}>
+            {guestName}さん・{groupName}
+          </div>
+          <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 16 }}>
+            {t("survey.constraintsSubtitle").replace("{group}", groupName)}
+          </div>
+
+          {(allergyNote.trim().length > 0 || dietaryNote.trim().length > 0) && (
+            <div
+              style={{
+                backgroundColor: "rgba(240,90,40,0.06)",
+                borderRadius: 12,
+                padding: "10px 14px",
+                marginBottom: 16,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <span style={{ fontSize: 13, color: "var(--primary)", fontWeight: 600 }}>
+                幹事メモ:
+              </span>
+              {allergyNote.trim().length > 0 && (
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                  {allergyNote.trim()}
+                </span>
+              )}
+              {dietaryNote.trim().length > 0 && (
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                  {dietaryNote.trim()}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* 希望エリア */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("survey.areaTitle")}</div>
+            <div style={captionStyle}>{t("survey.areaHint")}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {SURVEY_AREAS.map((area) => (
+                <button
+                  key={`pref-${area}`}
+                  type="button"
+                  className={`chip ${preferredAreas.includes(area) ? "chip-selected" : ""}`}
+                  onClick={() => toggleArea(area)}
+                  style={{ fontSize: 13 }}
+                >
+                  {area}
+                </button>
+              ))}
+              {preferredAreas
+                .filter((area) => !(SURVEY_AREAS as readonly string[]).includes(area))
+                .map((area) => (
+                  <button
+                    key={`custom-${area}`}
+                    type="button"
+                    onClick={() => toggleArea(area)}
+                    className="chip chip-selected"
+                    style={{ fontSize: 13 }}
+                  >
+                    {area} ×
+                  </button>
+                ))}
+              <button
+                type="button"
+                onClick={() => setShowOtherArea((v) => !v)}
+                className={`chip ${showOtherArea ? "chip-selected" : ""}`}
+                style={{ fontSize: 13 }}
+              >
+                {t("survey.areaOther")}
+              </button>
+            </div>
+            {showOtherArea && (
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <input
+                  value={otherAreaInput}
+                  onChange={(event) => setOtherAreaInput(event.target.value)}
+                  placeholder={t("survey.areaOtherPlaceholder")}
+                  style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const area = otherAreaInput.trim();
+                    if (area && !preferredAreas.includes(area)) {
+                      setPreferredAreas((prev) => [...prev, area]);
+                    }
+                    setOtherAreaInput("");
+                  }}
+                  style={{
+                    padding: "0 16px", borderRadius: 100, border: "none",
+                    background: "var(--primary)", color: "white",
+                    fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  }}
+                >
+                  {t("common.add")}
+                </button>
+              </div>
+            )}
+            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 10 }}>
+              {t("survey.areaCoverageNote")}
+            </div>
+          </div>
+
+          {/* 予算 */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("survey.budgetTitle")}</div>
+            <div style={captionStyle}>{t("survey.budgetHint")}</div>
+            <BudgetCapPicker value={budgetMaxYen} onChange={setBudgetMaxYen} t={t} />
+          </div>
+
+          {/* 特別枠 */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("survey.specialTitle")}</div>
+            <div style={captionStyle}>{t("survey.specialHint")}</div>
+
+            <MoodPickGrid
+              hint={t("survey.preferSlotHint")}
+              remaining={
+                preferMoods.length >= MAX_SLOT
+                  ? t("survey.slotFull")
+                  : t("survey.slotRemaining").replace(
+                      "{count}",
+                      String(MAX_SLOT - preferMoods.length)
+                    )
+              }
+              selected={preferMoods}
+              onToggle={togglePrefer}
+              maxReached={preferMoods.length >= MAX_SLOT}
+              t={t}
+            />
+
+            <div style={{ height: 14 }} />
+
+            <MoodAvoidSection
+              selected={avoidMoods}
+              onToggle={toggleAvoid}
+              maxReached={avoidMoods.length >= MAX_SLOT}
+              t={t}
+            />
+          </div>
+
+          {/* 持ち寄り: あなたのおすすめが候補の主役になる */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("survey.suggestTitle")}</div>
+            <div style={captionStyle}>{t("survey.suggestHint")}</div>
+            <SuggestPicker
+              picks={suggestedPicks}
+              onChange={(picks) => { markStarted(); setSuggestedPicks(picks); }}
+              showName={suggestShowName}
+              onShowNameChange={setSuggestShowName}
+              quickPicks={quickPicks}
+              t={t}
+            />
+          </div>
+
           <div
             style={{
-              backgroundColor: "rgba(204,119,85,0.06)",
-              borderRadius: 12,
-              padding: "10px 14px",
-              marginBottom: 16,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              flexWrap: "wrap",
+              fontSize: 13,
+              color: "var(--text-secondary)",
+              textAlign: "center",
+              margin: "16px 0",
             }}
           >
-            <span style={{ fontSize: 13, color: "var(--primary)", fontWeight: 600 }}>
-              幹事メモ:
-            </span>
-            {allergies.map((allergyId) => {
-              const allergy = ALLERGIES.find((item) => item.id === allergyId);
-              return allergy ? (
-                <span key={allergyId} style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                  {allergy.name}
-                </span>
-              ) : null;
-            })}
-            {dietaryRestrictions.map((restrictionId) => {
-              const restriction = DIETARY_RESTRICTIONS.find(
-                (item) => item.id === restrictionId
-              );
-              return restriction ? (
-                <span key={restrictionId} style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                  {restriction.name}
-                </span>
-              ) : null;
-            })}
-          </div>
-        )}
-
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
-              ジャンル一覧
-            </div>
-            <UnrankedPool unranked={unranked} />
+            {t("survey.privacyNote")}
           </div>
 
-          {(
-            ["prioritize", "nice_to_have", "open_to_it"] as GenrePreferenceBucketKey[]
-          ).map((bucketKey) => (
-            <PreferenceBucketZone
-              key={bucketKey}
-              bucketKey={bucketKey}
-              label={bucketConfig[bucketKey].label}
-              subtitle={bucketConfig[bucketKey].subtitle}
-              color={bucketConfig[bucketKey].color}
-              items={preferenceBuckets[bucketKey]}
-            />
-          ))}
+          <button className="btn-primary" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? "送信中..." : t("survey.submit")}
+          </button>
 
-          <DragOverlay dropAnimation={null}>
-            {activeGenre ? (
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  padding: "8px 14px",
-                  borderRadius: 20,
-                  backgroundColor: "var(--primary)",
-                  color: "white",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  boxShadow: "0 8px 24px rgba(204,119,85,0.3)",
-                  cursor: "grabbing",
-                  userSelect: "none",
-                }}
-              >
-                {activeGenre.emoji} {activeGenre.name}
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-
-        <div style={{ fontSize: 14, color: "var(--text-secondary)", textAlign: "center", marginBottom: 24 }}>
-          {rankedCount} / {GENRES.length} ジャンルを分類済み
+          <StepDots current="survey" />
         </div>
-
-        <button className="btn-primary" onClick={handleSubmit} disabled={submitting}>
-          {submitting ? "送信中..." : "回答を送信する"}
-        </button>
-
-        <StepDots current="survey" />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { ja } from "./ja";
 import { en } from "./en";
 import type { TranslationShape } from "./ja";
@@ -42,13 +42,18 @@ const LocaleContext = createContext<LocaleContextValue>({
 });
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("meshimatch_locale");
-      if (saved === "ja" || saved === "en") return saved;
+  // SSRと初回クライアントレンダーを一致させるため必ず "ja" で開始し、
+  // 保存済みロケールはマウント後に反映する (hydration mismatch 対策)
+  const [locale, setLocaleState] = useState<Locale>("ja");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("meshimatch_locale");
+    if (saved === "en" || saved === "ja") {
+      // hydration mismatch を避けるにはマウント後の反映が必要 (再レンダー1回は意図的)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLocaleState(saved);
     }
-    return "ja";
-  });
+  }, []);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);

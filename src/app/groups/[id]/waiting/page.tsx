@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
+import { track, AnalyticsEvent } from "@/lib/analytics";
 
 interface GroupData {
   id: string;
@@ -84,6 +85,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
   function handleShareLink() {
     const url = `${window.location.origin}/invite/${group!.invite_code}`;
     navigator.clipboard.writeText(url);
+    track(AnalyticsEvent.LINK_SHARED, { groupId: id, method: "copy" });
     alert(t("waiting.linkCopied"));
   }
 
@@ -128,7 +130,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "rgba(204,119,85,0.08)",
+              backgroundColor: "rgba(240,90,40,0.08)",
             }}
           >
             <span style={{ fontSize: 32, fontWeight: 800, color: "var(--primary)" }}>
@@ -210,7 +212,35 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Share button */}
+        {/* 自分の回答を編集する (控えめなテキストリンク) */}
+        <Link
+          href={`/groups/${id}/survey`}
+          style={{
+            fontSize: 13,
+            color: "var(--text-secondary)",
+            textDecoration: "underline",
+            textAlign: "center",
+          }}
+        >
+          {t("waiting.editMyResponse")}
+        </Link>
+
+        {/* Share buttons: LINE を最前面に */}
+        <a
+          href={`https://line.me/R/share?text=${encodeURIComponent(
+            `${group.name} ${window.location.origin}/invite/${group.invite_code}`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => track(AnalyticsEvent.LINK_SHARED, { groupId: id, method: "line" })}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            height: 52, borderRadius: 100, background: "#06C755", color: "white",
+            fontWeight: 700, fontSize: 15, textDecoration: "none",
+          }}
+        >
+          {t("waiting.shareLine")}
+        </a>
         <button className="btn-secondary" onClick={handleShareLink}>
           {t("waiting.shareInviteLink")}
         </button>

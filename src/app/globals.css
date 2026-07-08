@@ -1,28 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  /* ── Premium minimal palette ── */
-  --primary: #C26A4A;          /* terracotta – main accent, CTA */
-  --primary-light: #D4836A;    /* lighter terracotta */
-  --secondary: #1A1A2E;        /* deep navy – strong text, contrast areas */
-  --accent: #C26A4A;           /* terracotta alias */
-  --accent-light: #D4836A;
+  /* ── MeshiMatch palette (DESIGN.md 準拠) ── */
+  --primary: #F05A28;          /* Primary Orange – CTA, brand, selected */
+  --primary-light: #FF8A5B;    /* Coral – hover/pressed */
+  --secondary: #4A352A;        /* Espresso – strong text, dark surfaces */
+  --accent: #F05A28;
+  --accent-light: #FF8A5B;
 
-  --bg: #F7F6F3;               /* soft warm white */
-  --bg-secondary: #EFEEE9;     /* subtle off-white */
+  --bg: #FFF5EC;               /* Cream – page canvas */
+  --bg-secondary: #FDEBDC;     /* warm tinted surface */
   --surface: #FFFFFF;
-  --surface-hover: #FAFAF8;
+  --surface-hover: #FFFAF5;
 
-  --text-primary: #1A1A2E;     /* deep navy */
-  --text-secondary: #6E6E7A;   /* neutral grey */
-  --text-tertiary: #A0A0AC;    /* light grey */
+  --text-primary: #4A352A;     /* Espresso */
+  --text-secondary: #8A7568;   /* warm grey */
+  --text-tertiary: #B8A99E;    /* light warm grey */
 
-  --border: #E8E8E4;
-  --border-light: #F0F0EC;
+  --border: #F0E2D6;
+  --border-light: #F7ECE2;
+  --border-strong: #E2CFC0;
 
-  --warning: #E8B944;          /* warm yellow – ratings, highlights */
-  --danger: #B33A3A;           /* rich red – errors, destructive */
-  --success: #3D8B5E;          /* muted green – completed states */
+  --warning: #F3C96B;          /* Honey – ratings, badges, highlights */
+  --danger: #D64545;           /* × votes, errors, destructive */
+  --success: #A8C686;          /* Sage – ○ votes, completed */
+  --success-deep: #7FA35C;     /* Sage 濃色 (小さい文字/アイコン用) */
 }
 
 @theme inline {
@@ -43,7 +45,8 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-success: var(--success);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "Zen Kaku Gothic New";
+  --font-brand: "Zen Maru Gothic";
 }
 
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
@@ -54,17 +57,170 @@ body {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+.btn-primary,
+.btn-secondary,
+.bottom-sheet-title,
+.group-ticket-card {
+  font-family: var(--font-brand), var(--font-sans), -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
 }
 
 ::-webkit-scrollbar { width: 0; height: 0; }
 
 /* ── Utility classes ── */
+/* 認証画面などの濃色背景: Espresso の温かいグラデーション */
 .bg-mesh {
-  background: linear-gradient(160deg, var(--secondary) 0%, #2A2A42 100%);
+  background: linear-gradient(160deg, var(--secondary) 0%, #6B4E3D 100%);
 }
 .bg-mesh-subtle {
   background-color: var(--bg);
+}
+
+.service-canvas {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(255, 245, 236, 0.52), rgba(255, 245, 236, 0.52)),
+    url("/img/service/01-service-bg-pattern-768.webp");
+  background-size: auto, 440px 440px;
+  background-position: 0 0, center top;
+  background-attachment: scroll, scroll;
+}
+
+.service-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.service-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.48), transparent 46%);
+  z-index: 0;
+}
+
+.service-card > *:not(.service-deco) {
+  position: relative;
+  z-index: 1;
+}
+
+.service-create-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(240,90,40,0.18);
+  background:
+    radial-gradient(circle at 82% 20%, rgba(243,201,107,0.26), transparent 32%),
+    linear-gradient(135deg, #fffdf9 0%, #fff3ea 100%);
+}
+
+.service-ticket-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-left-width: 5px !important;
+}
+
+.service-ticket-card::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 0;
+  border-top: 1px dashed rgba(226,207,192,0.9);
+  opacity: 0.55;
+  z-index: 0;
+}
+
+.service-ticket-card > *:not(.service-deco) {
+  position: relative;
+  z-index: 1;
+}
+
+.service-deco {
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 8px 12px rgba(74,53,42,0.08));
+  z-index: 0;
+}
+
+.service-soft-sticker {
+  border: 1px solid rgba(226,207,192,0.72);
+  box-shadow: 0 6px 18px rgba(74,53,42,0.06);
+}
+
+.group-ticket-shell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.group-ticket-action {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+.group-ticket-action-delete {
+  justify-content: flex-start;
+  background: linear-gradient(135deg, #D64545, #F05A28);
+}
+
+.group-ticket-action-archive {
+  justify-content: flex-end;
+  background: linear-gradient(135deg, #A8C686, #7FA35C);
+}
+
+.group-ticket-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--border);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  will-change: transform;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.group-ticket-card::before,
+.group-ticket-card::after {
+  content: "";
+  position: absolute;
+  right: 92px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  z-index: 3;
+}
+
+.group-ticket-card::before {
+  top: -12px;
+}
+
+.group-ticket-card::after {
+  bottom: -12px;
+}
+
+.group-ticket-stub {
+  position: relative;
+  border-left: 1px dashed rgba(226,207,192,0.95);
 }
 
 .glass {
@@ -93,32 +249,32 @@ body {
   background-color: var(--primary); color: white;
   font-weight: 600; font-size: 15px;
   border-radius: 100px; border: none; cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: background-color 0.15s ease, transform 0.15s ease;
   letter-spacing: 0.01em;
 }
-.btn-primary:hover { opacity: 0.9; }
+.btn-primary:hover { background-color: var(--primary-light); }
 .btn-primary:active { transform: scale(0.97); }
-.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; background-color: var(--primary); }
 
 .btn-secondary {
   display: flex; align-items: center; justify-content: center;
   width: 100%; height: 52px;
   background-color: var(--surface); color: var(--text-primary);
   font-weight: 600; font-size: 15px;
-  border-radius: 100px; border: 1.5px solid var(--border); cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  border-radius: 100px; border: 1.5px solid var(--border-strong); cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
   letter-spacing: 0.01em;
 }
-.btn-secondary:hover { opacity: 0.8; background-color: var(--surface-hover); }
+.btn-secondary:hover { background-color: var(--surface-hover); }
 .btn-secondary:active { transform: scale(0.97); }
 .btn-secondary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
 /* ── Card ── */
 .card {
   background: var(--surface);
-  border-radius: 20px;
-  border: 1px solid var(--border-light);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(74,53,42,0.05), 0 8px 20px rgba(74,53,42,0.06);
 }
 
 /* ── Chips ── */
@@ -126,15 +282,55 @@ body {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 8px 16px; border-radius: 100px;
   font-size: 14px; font-weight: 500;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--border-strong);
   background: var(--surface); color: var(--text-primary);
   cursor: pointer; transition: all 0.2s ease;
   white-space: nowrap; user-select: none;
 }
+.chip:hover { border-color: var(--primary-light); }
 .chip-selected {
-  background: var(--secondary);
-  border-color: var(--secondary);
+  background: var(--primary);
+  border-color: var(--primary);
   color: white;
+}
+
+/* ── Badges (信頼レイヤー表示) ── */
+.badge-favorite {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+  background: var(--primary); color: white;
+}
+.badge-endorsement {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+  background: var(--warning); color: var(--secondary);
+}
+.badge-popular {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+  background: var(--bg-secondary); color: var(--text-secondary);
+}
+
+/* ── ○× 投票コントロール ── */
+.vote-btn {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; user-select: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  font-size: 26px; font-weight: 800;
+}
+.vote-btn:active { transform: scale(0.9); }
+.vote-yes {
+  background: var(--success); color: white; border: none;
+  box-shadow: 0 4px 14px rgba(168,198,134,0.45);
+}
+.vote-no {
+  background: var(--surface); color: var(--danger);
+  border: 2px solid var(--danger);
+  box-shadow: 0 4px 14px rgba(214,69,69,0.15);
 }
 
 /* ── Animations ── */
@@ -156,8 +352,60 @@ body {
   60% { transform: scale(1.1); }
   100% { transform: scale(1); opacity: 1; }
 }
+@keyframes card-out-left {
+  to { transform: translateX(-120%) rotate(-8deg); opacity: 0; }
+}
+@keyframes card-out-right {
+  to { transform: translateX(120%) rotate(8deg); opacity: 0; }
+}
+/* 紙吹雪 (クラッカー破裂型): 上向きに弾けてから弧を描いて落ちる */
+@keyframes confetti-burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1.1);
+  }
+  28% {
+    opacity: 1;
+    transform: translate(calc(var(--dx, 0px) * 0.55), var(--up, -300px))
+      rotate(calc(var(--spin, 720deg) * 0.35)) scale(1);
+    animation-timing-function: ease-in;
+  }
+  82% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx, 0px), var(--fall, 420px))
+      rotate(var(--spin, 720deg)) scale(0.9);
+  }
+}
+
+/* おすすめカルーセルの自動マーキー (2倍化したリストを半分だけ流してループ) */
+@keyframes carousel-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.carousel-track {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  animation: carousel-marquee var(--marquee-duration, 40s) linear infinite;
+}
+.carousel-track:hover,
+.carousel-track:active {
+  animation-play-state: paused;
+}
+
+/* タイル選択時のぷるんと弾むポップ */
+@keyframes tile-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.12); }
+  70% { transform: scale(0.97); }
+  100% { transform: scale(1.04); }
+}
 
 .animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+.animate-tile-pop { animation: tile-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
 .animate-spin-slow { animation: spin 1.2s linear infinite; }
 .animate-pulse-ring { animation: pulse-ring 1.8s ease-in-out infinite; }
 .animate-bounce-in { animation: bounce-in 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.animate-card-out-left { animation: card-out-left 0.3s ease forwards; }
+.animate-card-out-right { animation: card-out-right 0.3s ease forwards; }

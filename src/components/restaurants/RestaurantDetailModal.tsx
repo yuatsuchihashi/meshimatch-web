@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import type { Restaurant } from "@/lib/types";
-import { MatchScoreBar } from "@/components/ui/MatchScoreBar";
 import { useLocale } from "@/lib/i18n";
 
 const GENRE_GRADIENTS: Record<string, [string, string]> = {
@@ -45,13 +44,10 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
   if (!restaurant) return null;
 
   const [g1, g2] = GENRE_GRADIENTS[restaurant.genreId] ?? ["#9A8B78", "#B8A898"];
-  const percent = Math.round(restaurant.matchScore * 100);
-  const scoreColor =
-    restaurant.matchScore >= 0.8
-      ? "var(--primary)"
-      : restaurant.matchScore >= 0.6
-      ? "var(--warning)"
-      : "var(--text-tertiary)";
+  const recommendationLabel =
+    restaurant.recommendationLabel ??
+    restaurant.reasonTags?.find((tag) => tag.includes("おすすめ") || tag.includes("お気に入り")) ??
+    null;
 
   function handleCopyAddress() {
     if (restaurant?.address) {
@@ -107,24 +103,30 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
           <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
         </div>
 
-        {/* Gradient photo */}
-        <div
-          style={{
-            height: 180,
-            background: `linear-gradient(135deg, ${g1}, ${g2})`,
-            margin: "12px 16px 0",
-            borderRadius: 16,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div style={{ textAlign: "center" }}>
-            <div style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, fontWeight: 600 }}>
-              {restaurant.genre}
-            </div>
+        {/* 写真の代わりに: 公式写真があれば表示、なければGoogleマップ埋め込み */}
+        {restaurant.photoUrl ? (
+          <div style={{ margin: "12px 16px 0", borderRadius: 16, overflow: "hidden", height: 180 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={restaurant.photoUrl}
+              alt={restaurant.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           </div>
-        </div>
+        ) : (
+          <div style={{ margin: "12px 16px 0", borderRadius: 16, overflow: "hidden", height: 220, position: "relative", background: `linear-gradient(135deg, ${g1}, ${g2})` }}>
+            {/* キーレス埋め込み: /maps/embed?origin=mfe が X-Frame-Options なしで返る最終形 */}
+            <iframe
+              title={`${restaurant.name} の地図`}
+              src={`https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s${encodeURIComponent(
+                `${restaurant.name} ${restaurant.address ?? restaurant.area ?? ""}`
+              )}!3m1!1sja`}
+              style={{ width: "100%", height: "100%", border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        )}
 
         <div style={{ padding: "20px 20px 40px" }}>
           {/* Name */}
@@ -135,33 +137,22 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
             {restaurant.genre} · {restaurant.budget}
           </div>
 
-          {/* Match score */}
-          <div
-            style={{
-              backgroundColor: "var(--surface)",
-              borderRadius: 16,
-              padding: 16,
-              marginBottom: 16,
-              border: "1px solid var(--border-light)",
-            }}
-          >
+          {recommendationLabel && (
             <div
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 8,
+                backgroundColor: "rgba(240,90,40,0.08)",
+                color: "var(--primary)",
+                borderRadius: 16,
+                padding: "12px 14px",
+                marginBottom: 16,
+                fontSize: 14,
+                fontWeight: 800,
+                border: "1px solid rgba(240,90,40,0.12)",
               }}
             >
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-                {t("restaurantDetail.matchScore")}
-              </span>
-              <span style={{ fontSize: 20, fontWeight: 800, color: scoreColor }}>
-                {percent}%
-              </span>
+              {recommendationLabel}
             </div>
-            <MatchScoreBar score={restaurant.matchScore} height={12} />
-          </div>
+          )}
 
           {/* Details */}
           <div
@@ -199,7 +190,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
                       cursor: "pointer",
                       padding: "2px 8px",
                       borderRadius: 8,
-                      backgroundColor: "rgba(204,119,85,0.08)",
+                      backgroundColor: "rgba(240,90,40,0.08)",
                       fontWeight: 600,
                       flexShrink: 0,
                     }}

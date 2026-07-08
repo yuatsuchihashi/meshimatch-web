@@ -66,6 +66,11 @@ export async function POST(request: NextRequest) {
     budgetPriority,
     genrePreferences,
     dietaryRestrictions,
+    allergyNote,
+    dietaryNote,
+    preferMoods,
+    avoidMoods,
+    suggestedRestaurants,
     responseVersion,
   } = body;
 
@@ -99,6 +104,11 @@ export async function POST(request: NextRequest) {
         budget_priority: budgetPriority ?? null,
         genre_preferences: normalizedGenrePreferences,
         dietary_restrictions: dietaryRestrictions ?? [],
+        allergy_note: allergyNote ?? null,
+        dietary_note: dietaryNote ?? null,
+        prefer_moods: preferMoods ?? [],
+        avoid_moods: avoidMoods ?? [],
+        suggested_restaurants: suggestedRestaurants ?? [],
         response_version: responseVersion ?? 2,
       },
       { onConflict: "group_id,member_id" }

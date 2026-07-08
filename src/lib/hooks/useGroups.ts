@@ -9,11 +9,13 @@ interface UseGroupsResult {
   loading: boolean;
   refresh: () => void;
   deleteGroup: (id: string) => void;
+  archiveGroup: (id: string) => void;
   leaveGroup: (id: string) => void;
 }
 
 interface RawGroupMember {
   id: string;
+  profile_id?: string | null;
   display_name?: string;
   role?: "owner" | "member";
   has_survey?: boolean;
@@ -48,7 +50,11 @@ interface RawGroup {
   group_members?: RawGroupMember[];
   survey_responses?: RawSurveyResponse[];
   resolved_areas?: string[];
-  decisions?: { restaurant_name?: string }[];
+  decisions?: {
+    restaurant_name?: string;
+    restaurant_id?: string | null;
+    decided_at?: string | null;
+  }[];
 }
 
 function toMeshiGroup(raw: RawGroup): MeshiGroup {
@@ -70,6 +76,7 @@ function toMeshiGroup(raw: RawGroup): MeshiGroup {
     status: raw.status ?? "active",
     members: (raw.group_members ?? []).map((m) => ({
       id: m.id,
+      profileId: m.profile_id ?? null,
       displayName: m.display_name ?? "メンバー",
       role: m.role ?? "member",
       hasSurvey: m.has_survey ?? false,
@@ -88,6 +95,10 @@ function toMeshiGroup(raw: RawGroup): MeshiGroup {
     ),
     resolvedAreas: raw.resolved_areas ?? [],
     decidedRestaurant: raw.decisions?.[0]?.restaurant_name,
+    decidedRestaurantId: raw.decisions?.[0]?.restaurant_id ?? null,
+    decidedAt: raw.decisions?.[0]?.decided_at
+      ? new Date(raw.decisions[0].decided_at)
+      : null,
   };
 }
 
@@ -159,6 +170,14 @@ export function useGroups(userId: string | null): UseGroupsResult {
     setGroups((prev) => prev.filter((g) => g.id !== id));
   }, []);
 
+  const archiveGroup = useCallback((id: string) => {
+    setGroups((prev) =>
+      prev.map((group) =>
+        group.id === id ? { ...group, status: "archived" } : group
+      )
+    );
+  }, []);
+
   const leaveGroup = useCallback((id: string) => {
     _removedGroupIds.add(id);
     setGroups((prev) => prev.filter((g) => g.id !== id));
@@ -189,5 +208,5 @@ export function useGroups(userId: string | null): UseGroupsResult {
     return () => { cancelled = true; };
   }, [userId, tick]);
 
-  return { groups, loading, refresh, deleteGroup, leaveGroup };
+  return { groups, loading, refresh, deleteGroup, archiveGroup, leaveGroup };
 }

@@ -1,7 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import type { Restaurant } from "@/lib/types";
-import { MatchScoreBar, ScoreBadge } from "@/components/ui/MatchScoreBar";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -9,22 +9,22 @@ interface RestaurantCardProps {
 }
 
 const GENRE_COLORS: Record<string, string> = {
-  G001: "#C26A4A",
+  G001: "var(--primary)",
   G002: "#6E6E7A",
   G003: "#8B6A4A",
-  G004: "#C26A4A",
-  G005: "#B33A3A",
+  G004: "var(--primary)",
+  G005: "var(--danger)",
   G006: "#A04040",
-  G007: "#3D8B5E",
+  G007: "var(--success-deep)",
   G008: "#6E6E7A",
-  G009: "#1A1A2E",
+  G009: "var(--secondary)",
   G010: "#8A6B3A",
   G013: "#8A6B3A",
-  G014: "#C26A4A",
+  G014: "var(--primary)",
   G016: "#6B3A2A",
   G017: "#2D6B8A",
-  G018: "#1A1A2E",
-  G019: "#B33A3A",
+  G018: "var(--secondary)",
+  G019: "var(--danger)",
 };
 
 function StarRating({ rating }: { rating: number }) {
@@ -56,94 +56,212 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
+function initials(name: string) {
+  return name.trim().slice(0, 1) || "人";
+}
+
 export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
   const genreColor = GENRE_COLORS[restaurant.genreId] ?? "var(--text-secondary)";
   const hasRating = restaurant.rating > 0;
+  const recommenderNames = restaurant.recommendedByNames ?? [];
+  const primaryLabel =
+    restaurant.recommendationLabel ??
+    restaurant.reasonTags?.find((tag) => tag.includes("おすすめ") || tag.includes("お気に入り")) ??
+    restaurant.reasonTags?.[0] ??
+    null;
+  const supportingTags = (restaurant.reasonTags ?? []).filter((tag) => tag !== primaryLabel).slice(0, 2);
 
   return (
     <div
-      className="card"
-      style={{ overflow: "hidden", cursor: "pointer" }}
+      className="card restaurant-note-card"
+      style={{
+        overflow: "hidden",
+        cursor: "pointer",
+        position: "relative",
+        padding: 0,
+        borderColor: "rgba(226,207,192,0.95)",
+      }}
       onClick={() => onClick(restaurant)}
     >
-      {/* Subtle genre accent bar */}
+      <Image
+        src="/img/service/07-restaurant-sticker-sheet.webp"
+        alt=""
+        width={86}
+        height={56}
+        className="service-deco"
+        style={{
+          position: "absolute",
+          right: -6,
+          bottom: -20,
+          width: 68,
+          height: "auto",
+          opacity: 0.09,
+        }}
+      />
       <div
         style={{
-          height: 4,
+          position: "absolute",
+          inset: "0 auto 0 0",
+          width: 5,
           backgroundColor: genreColor,
-          opacity: 0.6,
-          borderRadius: "20px 20px 0 0",
+          opacity: 0.72,
         }}
       />
 
-      {/* Content */}
-      <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
-        {/* Header: Name + Score badge */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+      <div style={{ position: "relative", zIndex: 1, padding: "16px 16px 15px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
           <div
             style={{
-              fontSize: 17,
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              lineHeight: 1.3,
-              flex: 1,
+              width: 70,
+              height: 70,
+              borderRadius: 18,
+              background: `linear-gradient(145deg, ${genreColor}, rgba(255,245,236,0.72))`,
+              overflow: "hidden",
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontSize: 22,
+              fontWeight: 900,
+              boxShadow: "0 8px 18px rgba(74,53,42,0.08)",
             }}
           >
-            {restaurant.name}
+            {restaurant.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={restaurant.photoUrl}
+                alt={restaurant.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              "め"
+            )}
           </div>
-          <ScoreBadge score={restaurant.matchScore} />
+
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: 7,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 18,
+                fontWeight: 900,
+                color: "var(--text-primary)",
+                lineHeight: 1.28,
+                wordBreak: "keep-all",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {restaurant.name}
+            </div>
+            {primaryLabel && (
+              <span
+                style={{
+                  alignSelf: "flex-start",
+                  fontSize: 12,
+                  backgroundColor: "rgba(240,90,40,0.09)",
+                  color: "var(--primary)",
+                  borderRadius: 100,
+                  padding: "5px 11px",
+                  fontWeight: 900,
+                }}
+              >
+                {primaryLabel}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Genre & Budget chips */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {recommenderNames.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex" }}>
+              {recommenderNames.slice(0, 3).map((name, index) => (
+                <span
+                  key={`${name}-${index}`}
+                  title={name}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: index % 2 === 0 ? "var(--success-deep)" : "var(--primary)",
+                    color: "white",
+                    fontSize: 11,
+                    fontWeight: 900,
+                    border: "2px solid var(--surface)",
+                    marginLeft: index === 0 ? 0 : -7,
+                  }}
+                >
+                  {initials(name)}
+                </span>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 800 }}>
+              {recommenderNames.slice(0, 2).join("・")}
+              {recommenderNames.length > 2 ? ` 他${recommenderNames.length - 2}人` : ""} の公開お気に入り
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
           <span
             style={{
               fontSize: 12,
               backgroundColor: "var(--bg-secondary)",
               color: "var(--text-secondary)",
               borderRadius: 100,
-              padding: "4px 12px",
-              fontWeight: 500,
+              padding: "5px 11px",
+              fontWeight: 800,
             }}
           >
-            {restaurant.genre}
+            {restaurant.genre || restaurant.area || "候補"}
           </span>
-          <span
-            style={{
-              fontSize: 12,
-              backgroundColor: "var(--bg-secondary)",
-              color: "var(--text-secondary)",
-              borderRadius: 100,
-              padding: "4px 12px",
-              fontWeight: 500,
-            }}
-          >
-            {restaurant.budget}
-          </span>
+          {restaurant.budget && (
+            <span
+              style={{
+                fontSize: 12,
+                backgroundColor: "var(--bg-secondary)",
+                color: "var(--text-secondary)",
+                borderRadius: 100,
+                padding: "5px 11px",
+                fontWeight: 800,
+              }}
+            >
+              {restaurant.budget}
+            </span>
+          )}
           {restaurant.hasPrivateRoom && (
             <span
               style={{
                 fontSize: 12,
                 backgroundColor: "rgba(26,26,46,0.06)",
                 color: "var(--secondary)",
-                borderRadius: 8,
-                padding: "3px 10px",
-                fontWeight: 500,
+                borderRadius: 100,
+                padding: "5px 11px",
+                fontWeight: 800,
               }}
             >
               個室あり
             </span>
           )}
-          {restaurant.reasonTags?.slice(0, 3).map((tag) => (
+          {supportingTags.map((tag) => (
             <span
               key={tag}
               style={{
                 fontSize: 12,
-                backgroundColor: "rgba(194,106,74,0.08)",
-                color: "var(--primary)",
+                backgroundColor: "rgba(168,198,134,0.15)",
+                color: "var(--success-deep)",
                 borderRadius: 100,
-                padding: "4px 12px",
-                fontWeight: 600,
+                padding: "5px 11px",
+                fontWeight: 800,
               }}
             >
               {tag}
@@ -157,17 +275,8 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
           </div>
         )}
 
-        {/* Match score bar */}
-        <div>
-          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 4, fontWeight: 500 }}>
-            一致度
-          </div>
-          <MatchScoreBar score={restaurant.matchScore} height={8} />
-        </div>
-
-        {/* Rating & Access */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {hasRating ? <StarRating rating={restaurant.rating} /> : <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>条件との相性を表示中</span>}
+          {hasRating ? <StarRating rating={restaurant.rating} /> : <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 700 }}>詳細を確認</span>}
           <span
             style={{
               fontSize: 12,

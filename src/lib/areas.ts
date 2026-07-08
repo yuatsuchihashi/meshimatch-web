@@ -1,0 +1,86 @@
+// ============================================================
+// エリア定義 – アンケートの選択肢と HotPepper middle_area の対応
+// ============================================================
+// コードは HotPepper middle_area マスター API の実値に準拠
+// (https://webservice.recruit.co.jp/hotpepper/middle_area/v1/)
+// 例: Y030=渋谷, Y055=新宿, Y050=池袋
+// ============================================================
+
+export const AREA_TO_MIDDLE_CODE: Record<string, string> = {
+  "渋谷": "Y030",
+  "新宿": "Y055",
+  "池袋": "Y050",
+  "東京": "Y010", // 東京・大手町・日本橋・人形町
+  "品川": "Y025", // 品川・目黒・田町・浜松町・五反田
+  "上野": "Y015", // 上野・御徒町・浅草
+  "銀座": "Y005", // 銀座・有楽町・新橋・築地・月島
+  "六本木": "Y045", // 赤坂・六本木・麻布十番・西麻布
+  "恵比寿": "Y040", // 恵比寿・中目黒・代官山・広尾
+  "目黒": "Y025",
+  "秋葉原": "Y020", // 神田・神保町・秋葉原・御茶ノ水
+  "浅草": "Y015",
+  "表参道": "Y035", // 原宿・青山・表参道
+  "下北沢": "Y070", // 下北沢・代々木上原
+  "吉祥寺": "Y100", // 吉祥寺・荻窪・三鷹
+  "立川": "Y110", // 八王子・立川
+  "町田": "Y105",
+  "横浜": "Y135",
+};
+
+// アンケートでチップ表示するエリア (全て AREA_TO_MIDDLE_CODE で検索可能)
+export const SURVEY_AREAS = [
+  "渋谷",
+  "新宿",
+  "池袋",
+  "銀座",
+  "六本木",
+  "恵比寿",
+  "表参道",
+  "下北沢",
+  "吉祥寺",
+  "上野",
+] as const;
+
+// エリア中心 (駅座標)。台帳取り込みとお気に入りインポートの最寄りエリア判定に使う
+export const AREA_CENTERS: Record<string, { lat: number; lng: number }> = {
+  "渋谷": { lat: 35.658, lng: 139.7016 },
+  "恵比寿": { lat: 35.6467, lng: 139.7101 },
+  "表参道": { lat: 35.6652, lng: 139.7126 },
+  "下北沢": { lat: 35.6613, lng: 139.6682 },
+  "新宿": { lat: 35.6896, lng: 139.7006 },
+  "池袋": { lat: 35.7295, lng: 139.7109 },
+  "銀座": { lat: 35.6717, lng: 139.765 },
+  "六本木": { lat: 35.6627, lng: 139.7312 },
+  "吉祥寺": { lat: 35.7033, lng: 139.5797 },
+  "上野": { lat: 35.7138, lng: 139.7774 },
+};
+
+export const AREA_RADIUS_KM = 1.2;
+
+export function haversineKm(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number }
+): number {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((a.lat * Math.PI) / 180) *
+      Math.cos((b.lat * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+export function nearestSurveyArea(lat: number, lng: number): string | null {
+  let best: string | null = null;
+  let bestDist = Infinity;
+  for (const [area, center] of Object.entries(AREA_CENTERS)) {
+    const d = haversineKm({ lat, lng }, center);
+    if (d < bestDist) {
+      bestDist = d;
+      best = area;
+    }
+  }
+  return bestDist <= AREA_RADIUS_KM ? best : null;
+}

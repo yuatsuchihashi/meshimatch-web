@@ -33,7 +33,7 @@ export interface DietaryRestriction {
   emoji: string;
 }
 
-export type PriorityLevel = "must" | "prefer" | "optional";
+export type PriorityLevel = "must" | "prefer" | "optional" | "avoid";
 
 export type SessionAtmosphere = "casual" | "polished" | "lively" | "calm";
 
@@ -58,6 +58,7 @@ export interface BudgetPreference {
 // --- Group ---
 export interface GroupMember {
   id: string;
+  profileId?: string | null;
   displayName: string;
   role: "owner" | "member";
   hasSurvey: boolean;
@@ -77,6 +78,11 @@ export interface SurveyResponse {
   budgetPriority?: PriorityLevel | null;
   genrePreferences?: GenrePreferenceInput[];
   dietaryRestrictions?: DietaryRestrictionInput[];
+  allergyNote?: string | null;
+  dietaryNote?: string | null;
+  preferMoods?: string[];
+  avoidMoods?: string[];
+  suggestedRestaurants?: { id: string; name: string; showName: boolean }[];
   submittedAt: Date;
 }
 
@@ -93,6 +99,8 @@ export interface MeshiGroup {
   surveyResponses: SurveyResponse[];
   resolvedAreas: string[];
   decidedRestaurant?: string;
+  decidedRestaurantId?: string | null;
+  decidedAt?: Date | null;
 }
 
 // --- Restaurant ---
@@ -113,9 +121,16 @@ export interface Restaurant {
   openHours?: string;
   phoneNumber?: string;
   area: string;
+  lat?: number;
+  lng?: number;
+  placeId?: string | null;
+  googleRating?: number | null;
   reasonTags?: string[];
   reasonExplanation?: string;
   genreScore?: number;
+  recommendedByNames?: string[];
+  recommendationLabel?: string | null;
+  recommendedAt?: string | null;
 }
 
 // --- Invitation ---
@@ -133,6 +148,12 @@ export interface Invitation {
 export interface UserProfile {
   id: string;
   displayName: string;
+  bio?: string | null;              // 一言プロフィール (旧「MeshiMatchユーザー」枠)
+  avatarUrl?: string | null;
+  allergyNote?: string | null;      // アレルギー自由記入 (50字)
+  dietaryNote?: string | null;      // 食事制限自由記入 (50字)
+  usualPreferMoods?: string[];      // 普段の気分 (moods.ts の id)
+  usualAvoidMoods?: string[];
   allergies: string[];             // アレルギー → 注意喚起のみ（スコアリング不使用）
   usualBudgetIdealYen?: number | null;
   usualBudgetMaxYen?: number | null;

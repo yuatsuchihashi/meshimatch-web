@@ -13,6 +13,8 @@ import type { GenreScore, MatchResult } from "@/lib/types";
 const MUST_PREFERENCE_WEIGHT = 3;
 const PREFER_PREFERENCE_WEIGHT = 2;
 const OPTIONAL_PREFERENCE_WEIGHT = 1;
+// 「避けたい」は強い負のシグナル (1人でも避けたい人がいれば大きく沈む)
+const AVOID_PREFERENCE_WEIGHT = -4;
 
 // 内部ジャンルID → HotPepper ジャンルコードのマッピング
 const GENRE_ID_TO_HP_CODE: Record<string, string> = {
@@ -76,9 +78,10 @@ function toHpCode(genreId: string): string {
   return GENRE_ID_TO_HP_CODE[genreId] ?? "G015";
 }
 
-function preferenceWeight(priority: "must" | "prefer" | "optional") {
+function preferenceWeight(priority: "must" | "prefer" | "optional" | "avoid") {
   if (priority === "must") return MUST_PREFERENCE_WEIGHT;
   if (priority === "prefer") return PREFER_PREFERENCE_WEIGHT;
+  if (priority === "avoid") return AVOID_PREFERENCE_WEIGHT;
   return OPTIONAL_PREFERENCE_WEIGHT;
 }
 

@@ -51,6 +51,23 @@ export default function LoginPage() {
         {pending ? t("auth.login.submitting") : t("auth.login.submit")}
       </GlassButton>
 
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-white/20" />
+        <span className="text-white/50 text-xs">{t("auth.login.or")}</span>
+        <div className="flex-1 h-px bg-white/20" />
+      </div>
+
+      <a
+        href="/api/auth/line/start"
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          height: 52, borderRadius: 100, background: "#06C755", color: "white",
+          fontWeight: 700, fontSize: 15, textDecoration: "none",
+        }}
+      >
+        {t("auth.login.line")}
+      </a>
+
       <p className="text-white/60 text-sm text-center">
         {t("auth.login.noAccount")}{" "}
         <Link href="/signup" className="text-white underline font-medium">

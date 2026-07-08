@@ -62,8 +62,7 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
   }
 
   function handleGoToSurvey() {
-    // ログイン済みならグループのサーベイへ、未ログインならログインを促す
-    router.push(`/groups/${groupId}/survey`);
+    router.push(`/invite/${inviteCode}/survey`);
   }
 
   return (
@@ -108,7 +107,7 @@ export default function InvitePage({ params }: { params: Promise<{ id: string }>
 
         <div
           style={{
-            backgroundColor: "rgba(204,119,85,0.06)",
+            backgroundColor: "rgba(240,90,40,0.06)",
             borderRadius: 14,
             padding: "14px 16px",
             marginBottom: 28,

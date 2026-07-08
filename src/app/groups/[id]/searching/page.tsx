@@ -80,7 +80,7 @@ export default function SearchingPage({ params }: { params: Promise<{ id: string
             width: 80,
             height: 80,
             borderRadius: "50%",
-            backgroundColor: "rgba(204,119,85,0.12)",
+            backgroundColor: "rgba(240,90,40,0.12)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

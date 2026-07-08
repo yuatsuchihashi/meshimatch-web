@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { searchRestaurants } from "@/lib/hotpepper/client";
+import { fetchCandidatePool, toRestaurant, type PooledRestaurant, type RestaurantRow } from "@/lib/restaurants/pool";
+import { enrichCandidates } from "@/lib/restaurants/enrich";
 import { ALLERGIES, DIETARY_RESTRICTIONS } from "@/lib/mockData";
 import {
   calculateGroupGenreScores,
@@ -11,6 +12,7 @@ import {
 } from "@/lib/matching-engine";
 import { mapProfileRow, mapSurveyResponseRow } from "@/lib/session-data";
 import { recommendCandidateAreas } from "@/lib/recommendation/place";
+import { AREA_CENTERS } from "@/lib/areas";
 import {
   aggregateBudgetSignals,
   scoreRestaurantForSession,
@@ -23,70 +25,25 @@ import type {
   UserProfile,
 } from "@/lib/types";
 
-const AREA_TO_MIDDLE_CODE: Record<string, string> = {
-  "渋谷": "Y055",
-  "新宿": "Y050",
-  "池袋": "Y045",
-  "東京": "Y035",
-  "品川": "Y060",
-  "上野": "Y030",
-  "銀座": "Y040",
-  "六本木": "Y065",
-  "恵比寿": "Y056",
-  "目黒": "Y061",
-  "秋葉原": "Y033",
-  "浅草": "Y025",
-  "横浜": "Y200",
-  "吉祥寺": "Y070",
-  "立川": "Y080",
-  "町田": "Y090",
-};
-
-const ATMOSPHERE_KEYWORDS: Partial<Record<SessionAtmosphere, string>> = {
-  casual: "カジュアル",
-  polished: "おしゃれ",
-  lively: "宴会",
-  calm: "落ち着いた",
-};
-
 type SortMode = "match" | "rating";
 
 type CandidateAreaWithRestaurants = CandidateArea & {
   restaurants: Restaurant[];
 };
 
+// アレルギー・食事制限は安全のため「名前つきで幹事メモ」として共有する。
+// (好みの回答は引き続き非公開。ユーザー決定 2026-07-05)
 type DietaryNote = {
   memberName: string;
   labels: string[];
 };
 
-function makeRestaurant(shop: Record<string, unknown>, areaName: string): Restaurant {
-  const genre = (shop.genre as { name?: string; code?: string } | undefined) ?? {};
-  const budget = (shop.budget as { average?: string } | undefined) ?? {};
-  const photo = (shop.photo as { pc?: { l?: string }; mobile?: { l?: string } } | undefined) ?? {};
-  const urls = (shop.urls as { pc?: string } | undefined) ?? {};
-
-  return {
-    id: shop.id as string,
-    name: (shop.name as string) ?? "",
-    genre: genre.name ?? "",
-    genreId: genre.code ?? "",
-    budget: budget.average ?? "",
-    photoUrl: photo.pc?.l ?? photo.mobile?.l,
-    matchScore: 0,
-    rating: 0,
-    access: (shop.access as string) ?? "",
-    hotpepperUrl: urls.pc,
-    hasPrivateRoom: shop.private_room === "あり",
-    address: (shop.address as string) ?? "",
-    area: areaName,
-  };
-}
-
-async function fetchAreaRestaurants(params: {
+// 候補は HotPepper ではなく自前の台帳 + 信頼レイヤー (restaurants/pool) から出す。
+// 既存のセッションスコアに信頼ブーストを加算し、優先枠 (メンバーのお気に入り)
+// とバッジ ("〇〇のおすすめ！") を返す。
+function rankAreaRestaurants(params: {
   area: CandidateArea;
-  genreCodes: string[];
-  keywords: string[];
+  pooled: PooledRestaurant[];
   sortBy: SortMode;
   groupGenreScores: ReturnType<typeof calculateGroupGenreScores>;
   budgetSignals: ReturnType<typeof aggregateBudgetSignals>;
@@ -96,8 +53,7 @@ async function fetchAreaRestaurants(params: {
 }) {
   const {
     area,
-    genreCodes,
-    keywords,
+    pooled,
     sortBy,
     groupGenreScores,
     budgetSignals,
@@ -105,45 +61,13 @@ async function fetchAreaRestaurants(params: {
     sessionFocus,
     groupSize,
   } = params;
-  const middleAreaCode = AREA_TO_MIDDLE_CODE[area.areaName];
-  const atmosphereKeyword = sessionAtmosphere ? ATMOSPHERE_KEYWORDS[sessionAtmosphere] : undefined;
-  const restaurants = new Map<string, Restaurant>();
 
-  const searchTasks = [
-    ...genreCodes.map((genreCode) =>
-      searchRestaurants({
-        genre: genreCode,
-        middle_area: middleAreaCode,
-        keyword: atmosphereKeyword,
-        count: 8,
-        free_drink: sessionFocus === "drink_centered" ? 1 : undefined,
-      })
-    ),
-    ...keywords.slice(0, 2).map((keyword) =>
-      searchRestaurants({
-        keyword: [keyword, atmosphereKeyword].filter(Boolean).join(" "),
-        middle_area: middleAreaCode,
-        count: 5,
-      })
-    ),
-  ];
-
-  for (const task of searchTasks) {
-    try {
-      const result = await task;
-      for (const shop of result.shops) {
-        const restaurant = makeRestaurant(shop as Record<string, unknown>, area.areaName);
-        if (!restaurants.has(restaurant.id)) {
-          restaurants.set(restaurant.id, restaurant);
-        }
-      }
-    } catch (error) {
-      console.error(`Failed to fetch restaurants for ${area.areaName}:`, error);
-    }
-  }
+  const trustByRestaurantId = new Map(
+    pooled.map((entry) => [entry.restaurant.id, entry])
+  );
 
   const ranked = scoreAndRankRestaurants(
-    Array.from(restaurants.values()),
+    pooled.map((entry) => ({ ...entry.restaurant, area: area.areaName })),
     groupGenreScores,
     sortBy
   ).map((result) => {
@@ -155,26 +79,52 @@ async function fetchAreaRestaurants(params: {
       sessionFocus,
       budgetSignals,
     });
+    const trust = trustByRestaurantId.get(result.restaurant.id);
+
+    const reasonTags = [...sessionScore.reasonTags];
+    if (trust?.isMemberFavorite) reasonTags.unshift("メンバーのお気に入り");
+    else if (trust?.endorsementLabel) reasonTags.unshift(trust.endorsementLabel);
+    else if ((trust?.recommendedByNames ?? []).length > 0)
+      reasonTags.unshift(`${trust?.recommendedByNames?.[0]}さんのお気に入り`);
+    else if ((trust?.publicFavoriteCount ?? 0) > 0)
+      reasonTags.unshift("みんなのお気に入り");
 
     return {
       ...result.restaurant,
-      matchScore: sessionScore.matchScore,
+      matchScore: Math.min(
+        1,
+        sessionScore.matchScore + (trust?.trustBoost ?? 0)
+      ),
       rating: sessionScore.rating,
-      reasonTags: sessionScore.reasonTags,
+      reasonTags,
       reasonExplanation: sessionScore.reasonExplanation,
       genreScore: result.genreScore,
+      isMemberFavorite: trust?.isMemberFavorite ?? false,
+      endorsementLabel: trust?.endorsementLabel ?? null,
+      publicFavoriteCount: trust?.publicFavoriteCount ?? 0,
+      recommendedByNames: trust?.recommendedByNames ?? [],
+      recommendationLabel:
+        trust?.endorsementLabel ??
+        ((trust?.recommendedByNames ?? []).length > 0
+          ? `${trust?.recommendedByNames?.[0]}さんのお気に入り`
+          : null),
+      recommendedAt: trust?.latestSourceAt ?? null,
     };
   });
 
-  return ranked.sort((a, b) =>
-    sortBy === "rating" ? b.rating - a.rating : b.matchScore - a.matchScore
-  );
+  return ranked.sort((a, b) => {
+    // メンバーのお気に入りは優先枠として常に先頭側へ
+    if (a.isMemberFavorite !== b.isMemberFavorite)
+      return a.isMemberFavorite ? -1 : 1;
+    return sortBy === "rating" ? b.rating - a.rating : b.matchScore - a.matchScore;
+  });
 }
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const groupId = searchParams.get("group_id");
   const sortBy = (searchParams.get("sort") as SortMode) ?? "match";
+  const shuffleSeed = Number(searchParams.get("seed")) || undefined;
 
   if (!groupId) {
     return NextResponse.json({ error: "group_id is required" }, { status: 400 });
@@ -210,21 +160,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: surveyError.message }, { status: 500 });
   }
 
-  if (!surveyRows || surveyRows.length === 0) {
-    return NextResponse.json(
-      { error: "まだアンケートが提出されていません" },
-      { status: 400 }
-    );
-  }
-
-  const surveys = (surveyRows as unknown as Record<string, unknown>[]).map((row) =>
+  // アンケート0件でも「全部おまかせ」としてデフォルト提案を出す
+  const surveys = ((surveyRows ?? []) as unknown as Record<string, unknown>[]).map((row) =>
     mapSurveyResponseRow(row)
   );
-  const surveyRowsWithMeta = (surveyRows as unknown as Record<string, unknown>[]).map((row) => ({
+  const surveyRowsWithMeta = ((surveyRows ?? []) as unknown as Record<string, unknown>[]).map((row) => ({
     survey: mapSurveyResponseRow(row),
     profileId: ((row.group_members as { profile_id?: string } | null)?.profile_id) ?? null,
   }));
-  const profileIds = surveyRows
+  const profileIds = (surveyRows ?? [])
     .map((row) => (row.group_members as { profile_id?: string } | null)?.profile_id)
     .filter(Boolean) as string[];
 
@@ -241,7 +185,7 @@ export async function GET(request: NextRequest) {
 
   const groupGenreScores = calculateGroupGenreScores(surveys, profiles);
   const genreRanking = getGenreRanking(groupGenreScores);
-  const { genreCodes, keywords } = getSearchParams(
+  const { genreCodes } = getSearchParams(
     genreRanking,
     3,
     (group.session_focus as SessionFocus | null) ?? null
@@ -256,7 +200,7 @@ export async function GET(request: NextRequest) {
   );
 
   const candidateAreas = recommendCandidateAreas({
-    groupSize: (group.group_size as number | null) ?? surveyRows.length,
+    groupSize: (group.group_size as number | null) ?? (surveyRows?.length || 2),
     scheduledAt: (group.scheduled_at as string | null) ?? null,
     sessionAtmosphere: (group.session_atmosphere as SessionAtmosphere | null) ?? null,
     sessionFocus: (group.session_focus as SessionFocus | null) ?? null,
@@ -273,7 +217,7 @@ export async function GET(request: NextRequest) {
       : resolvedAreas
           .map((areaName) =>
             recommendCandidateAreas({
-              groupSize: (group.group_size as number | null) ?? surveyRows.length,
+              groupSize: (group.group_size as number | null) ?? (surveyRows?.length || 2),
               sessionAtmosphere: (group.session_atmosphere as SessionAtmosphere | null) ?? null,
               sessionFocus: (group.session_focus as SessionFocus | null) ?? null,
               scheduledAt: (group.scheduled_at as string | null) ?? null,
@@ -282,28 +226,104 @@ export async function GET(request: NextRequest) {
           )
           .filter(Boolean);
 
-  const areaGroups: CandidateAreaWithRestaurants[] = await Promise.all(
-    fallbackAreas.map(async (area) => {
-      const restaurants = await fetchAreaRestaurants({
-        area,
-        genreCodes,
-        keywords,
-        sortBy,
-        groupGenreScores,
-        budgetSignals,
-        sessionAtmosphere: (group.session_atmosphere as SessionAtmosphere | null) ?? null,
-        sessionFocus: (group.session_focus as SessionFocus | null) ?? null,
-        groupSize: (group.group_size as number | null) ?? surveyRows.length,
-      });
-
-      return {
-        ...area,
-        restaurants: restaurants.slice(0, 8),
-      };
-    })
+  let supportedAreas = fallbackAreas.filter(
+    (area) => area.areaName in AREA_CENTERS
   );
 
-  const flatResults = areaGroups.flatMap((area) => area.restaurants);
+  // 誰もエリア希望を出していない (全部スキップ) 場合は人気エリアで提案する
+  if (supportedAreas.length === 0) {
+    supportedAreas = recommendCandidateAreas({
+      groupSize: (group.group_size as number | null) ?? (surveyRows?.length || 2),
+      sessionAtmosphere: (group.session_atmosphere as SessionAtmosphere | null) ?? null,
+      sessionFocus: (group.session_focus as SessionFocus | null) ?? null,
+      scheduledAt: (group.scheduled_at as string | null) ?? null,
+      responses: [{ preferredAreas: ["渋谷", "新宿", "恵比寿"] }],
+    }, 3).filter((area) => area.areaName in AREA_CENTERS);
+  }
+
+  const memberProfileIds = profileIds;
+  const pool = await fetchCandidatePool({
+    areaNames: supportedAreas.map((area) => area.areaName),
+    genreCodes,
+    memberProfileIds,
+    shuffleSeed,
+    trustedOnly: true, // 台帳フィラーは廃止。候補は常に人間発
+  });
+
+  const areaGroups: CandidateAreaWithRestaurants[] = supportedAreas.map((area) => {
+    const restaurants = rankAreaRestaurants({
+      area,
+      pooled: pool.get(area.areaName) ?? [],
+      sortBy,
+      groupGenreScores,
+      budgetSignals,
+      sessionAtmosphere: (group.session_atmosphere as SessionAtmosphere | null) ?? null,
+      sessionFocus: (group.session_focus as SessionFocus | null) ?? null,
+      groupSize: (group.group_size as number | null) ?? (surveyRows?.length || 2),
+    });
+
+    return {
+      ...area,
+      restaurants: restaurants.slice(0, 8),
+    };
+  });
+
+  // ── 持ち寄り (メンバーがアンケートで挙げた店) を最優先候補に ──
+  // 名前を出すことを許可した人がいれば「◯◯のおすすめ」、いなければ「メンバーのおすすめ」
+  const suggestionLabel = new Map<string, string>();
+  for (const { survey } of surveyRowsWithMeta) {
+    for (const suggestion of survey.suggestedRestaurants ?? []) {
+      const existing = suggestionLabel.get(suggestion.id);
+      const label = suggestion.showName
+        ? `${survey.memberName}のおすすめ`
+        : "メンバーのおすすめ";
+      // 実名ラベルを優先
+      if (!existing || (existing === "メンバーのおすすめ" && suggestion.showName)) {
+        suggestionLabel.set(suggestion.id, label);
+      }
+    }
+  }
+
+  let suggestedResults: (Restaurant & {
+    reasonTags: string[];
+    isSuggested: boolean;
+  })[] = [];
+  if (suggestionLabel.size > 0) {
+    const { data: suggestedRows } = await supabase
+      .from("restaurants")
+      .select("*")
+      .in("id", [...suggestionLabel.keys()])
+      .eq("closed", false);
+    suggestedResults = ((suggestedRows ?? []) as unknown as RestaurantRow[]).map(
+      (row) => ({
+        ...toRestaurant(row),
+        matchScore: 0.95, // 持ち寄りは常に先頭
+        rating: row.rating ?? 0,
+        reasonTags: [suggestionLabel.get(row.id) ?? "メンバーのおすすめ"],
+        recommendationLabel: suggestionLabel.get(row.id) ?? "メンバーのおすすめ",
+        isSuggested: true,
+      })
+    );
+  }
+
+  const suggestedIds = new Set(suggestedResults.map((r) => r.id));
+  for (const area of areaGroups) {
+    area.restaurants = area.restaurants.filter((r) => !suggestedIds.has(r.id));
+  }
+
+  const flatResults = [
+    ...suggestedResults,
+    ...areaGroups.flatMap((area) => area.restaurants),
+  ];
+
+  // エンリッチメント: Places (閉業・評価・写真、店ごとに一度だけ) + HotPepper写真
+  const closedIds = await enrichCandidates(supabase, flatResults, 12);
+  if (closedIds.size > 0) {
+    for (const area of areaGroups) {
+      area.restaurants = area.restaurants.filter((r) => !closedIds.has(r.id));
+    }
+  }
+  const visibleResults = flatResults.filter((r) => !closedIds.has(r.id));
   const restrictionLabels = new Map(
     [...ALLERGIES, ...DIETARY_RESTRICTIONS].map((item) => [item.id, item.name])
   );
@@ -320,18 +340,26 @@ export async function GET(request: NextRequest) {
           (restriction) => restriction.restrictionId
         ) ?? []),
       ];
-      const labels = [...new Set(restrictionIds)]
-        .map((restrictionId) => restrictionLabels.get(restrictionId) ?? restrictionId)
-        .filter(Boolean);
+      const noteLabels = [
+        (profile?.allergyNote ?? "").trim(),
+        (profile?.dietaryNote ?? "").trim(),
+        ((survey as { allergyNote?: string | null }).allergyNote ?? "").trim(),
+        ((survey as { dietaryNote?: string | null }).dietaryNote ?? "").trim(),
+      ].filter(Boolean);
+      const labels = [
+        ...new Set([
+          ...restrictionIds.map(
+            (restrictionId) => restrictionLabels.get(restrictionId) ?? restrictionId
+          ),
+          ...noteLabels,
+        ]),
+      ].filter(Boolean);
 
       if (labels.length === 0) {
         return null;
       }
 
-      return {
-        memberName: survey.memberName,
-        labels,
-      };
+      return { memberName: survey.memberName, labels };
     })
     .filter((note): note is DietaryNote => note !== null);
 
@@ -342,7 +370,8 @@ export async function GET(request: NextRequest) {
     resolvedAreas: areaGroups.map((area) => area.areaName),
     dietaryNotes,
     candidateAreas: areaGroups,
-    results: flatResults,
-    totalRestaurants: flatResults.length,
+    results: visibleResults,
+    totalRestaurants: visibleResults.length,
+    fewCandidates: visibleResults.length < 5,
   });
 }

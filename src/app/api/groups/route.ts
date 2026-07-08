@@ -4,6 +4,7 @@
 // POST   /api/groups – グループ作成
 // GET    /api/groups?id=xxx – グループ詳細取得
 // GET    /api/groups?profile_id=xxx – 自分のグループ一覧
+// PATCH  /api/groups – グループ状態更新
 // DELETE /api/groups – グループ削除(幹事) or グループ退出(メンバー)
 // ============================================================
 
@@ -92,6 +93,11 @@ export async function GET(request: NextRequest) {
           display_name,
           role,
           has_survey
+        ),
+        decisions (
+          restaurant_name,
+          restaurant_id,
+          decided_at
         )
       `)
       .in("id", groupIds)
@@ -152,6 +158,55 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ group }, { status: 201 });
+}
+
+// ----- PATCH: グループ状態更新 -----
+export async function PATCH(request: NextRequest) {
+  const body = await request.json();
+  const { groupId, profileId, status } = body as {
+    groupId: string;
+    profileId: string;
+    status: "active" | "archived";
+  };
+
+  if (!groupId || !profileId || !status) {
+    return NextResponse.json(
+      { error: "groupId, profileId, and status are required" },
+      { status: 400 }
+    );
+  }
+
+  if (status !== "active" && status !== "archived") {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  }
+
+  const supabase = await createServiceClient();
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("group_members")
+    .select("id")
+    .eq("group_id", groupId)
+    .eq("profile_id", profileId)
+    .single();
+
+  if (membershipError || !membership) {
+    return NextResponse.json(
+      { error: "あなたはこのグループのメンバーではありません" },
+      { status: 403 }
+    );
+  }
+
+  const { error: updateError } = await supabase
+    .from("groups")
+    .update({ status })
+    .eq("id", groupId);
+
+  if (updateError) {
+    console.error("[PATCH group] error:", updateError);
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true, groupId, status });
 }
 
 // ----- DELETE: グループ削除 or 退出 -----

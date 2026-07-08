@@ -9,6 +9,9 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    // 並行セッション用の分離ビルドディレクトリ (next.config.ts の NEXT_DIST_DIR)
+    ".next-preview/**",
+    ".next-build/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

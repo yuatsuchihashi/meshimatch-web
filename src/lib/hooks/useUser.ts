@@ -35,11 +35,17 @@ export function useUser(): UseUserResult {
         .select(`
           id,
           display_name,
+          bio,
+          avatar_url,
+          allergy_note,
+          dietary_note,
           allergies,
           usual_budget_ideal_yen,
           usual_budget_max_yen,
           usual_budget_priority,
           usual_areas,
+          usual_prefer_moods,
+          usual_avoid_moods,
           favorite_genres,
           disliked_items,
           dietary_restrictions

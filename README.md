@@ -32,9 +32,13 @@ npm run build
 ## Stack
 
 - Next.js 16 / React 19 / TypeScript
-- Supabase Auth + Postgres
-- HotPepper Gourmet Search API
+- Supabase Auth + Postgres (or local JSON store via `MESHIMATCH_LOCAL_MODE=1` — no Supabase needed)
+- Own restaurant gazetteer (Overture Maps derived, ~35k Tokyo restaurants across 10 areas)
+  + trust layer (`base_curated` / `endorsement` / `user_favorite`) — HotPepper is no longer the recommendation source
+- Google Maps shared-list import for favorites (`src/lib/gmaps-import/`, isolated & fallback-ready)
+- ○× card voting (`restaurant_votes`) for the group decision step
 - dnd-kit for preference sorting UI
+- Design system: `DESIGN.md` (palette, typography, components, do's & don'ts)
 
 ## Data Model Highlights
 

@@ -1,27 +1,81 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
+
+function HomeIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
+      {active && <circle cx="13" cy="13" r="11" fill="currentColor" opacity="0.12" />}
+      <path
+        d="M5.4 12.2 13 5.8l7.6 6.4"
+        stroke="currentColor"
+        strokeWidth={active ? 2.2 : 1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7.4 12.4v6.3c0 .7.5 1.2 1.2 1.2h8.8c.7 0 1.2-.5 1.2-1.2v-6.3"
+        stroke="currentColor"
+        strokeWidth={active ? 2.2 : 1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.7 15.4h6.6c-.4 1.9-1.7 3-3.3 3s-2.9-1.1-3.3-3Z"
+        fill={active ? "currentColor" : "var(--surface)"}
+        stroke="currentColor"
+        strokeWidth={1.55}
+        strokeLinejoin="round"
+      />
+      <path
+        d="M11.2 13.6c-.3-.5.4-.9.1-1.4M14.8 13.6c-.3-.5.4-.9.1-1.4"
+        stroke="currentColor"
+        strokeWidth={1.35}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ProfileIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
+      {active && <circle cx="13" cy="13" r="11" fill="currentColor" opacity="0.12" />}
+      <circle
+        cx="13"
+        cy="10.6"
+        r="3.3"
+        fill={active ? "currentColor" : "var(--surface)"}
+        stroke="currentColor"
+        strokeWidth={active ? 2 : 1.7}
+      />
+      <path
+        stroke="currentColor"
+        strokeWidth={active ? 2.2 : 1.8}
+        strokeLinecap="round"
+        d="M6.8 21c.7-3.3 3-5 6.2-5s5.5 1.7 6.2 5"
+      />
+      <path
+        d="M18.4 6.6c.8.2 1.4.9 1.4 1.8 0 1-.8 1.8-1.8 1.8h-.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.45}
+        strokeLinecap="round"
+      />
+      <circle cx="18.3" cy="6.2" r="1.6" fill={active ? "currentColor" : "var(--surface)"} stroke="currentColor" strokeWidth={1.35} />
+    </svg>
+  );
+}
 
 export function BottomNav() {
   const pathname = usePathname();
   const { t } = useLocale();
 
   const tabs = [
-    {
-      href: "/home",
-      label: t("nav.home"),
-      iconLine: "/icons/house_line.svg",
-      iconFill: "/icons/house_fill.svg",
-    },
-    {
-      href: "/profile",
-      label: t("nav.profile"),
-      iconLine: "/icons/me_line.svg",
-      iconFill: "/icons/me_fill.svg",
-    },
+    { href: "/home", label: t("nav.home"), Icon: HomeIcon },
+    { href: "/profile", label: t("nav.profile"), Icon: ProfileIcon },
   ];
 
   return (
@@ -38,12 +92,12 @@ export function BottomNav() {
         zIndex: 50,
       }}
     >
-      {tabs.map((tab) => {
-        const active = pathname.startsWith(tab.href);
+      {tabs.map(({ href, label, Icon }) => {
+        const active = pathname.startsWith(href);
         return (
           <Link
-            key={tab.href}
-            href={tab.href}
+            key={href}
+            href={href}
             style={{
               flex: 1,
               display: "flex",
@@ -61,27 +115,8 @@ export function BottomNav() {
               transition: "color 0.2s ease",
             }}
           >
-            <div style={{
-              width: 28,
-              height: 28,
-              borderRadius: 100,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
-              <Image
-                src={active ? tab.iconFill : tab.iconLine}
-                alt={tab.label}
-                width={22}
-                height={22}
-                style={{
-                  filter: active
-                    ? "brightness(0) saturate(100%) invert(42%) sepia(30%) saturate(800%) hue-rotate(340deg) brightness(90%)"
-                    : "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(300%) hue-rotate(200deg) brightness(100%)",
-                }}
-              />
-            </div>
-            {tab.label}
+            <Icon active={active} />
+            {label}
           </Link>
         );
       })}

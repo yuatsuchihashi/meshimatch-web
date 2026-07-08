@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/lib/hooks/useUser";
@@ -8,24 +9,32 @@ import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 import { RestaurantDetailModal } from "@/components/restaurants/RestaurantDetailModal";
 import { MemberAvatarStack, MemberAvatar } from "@/components/groups/MemberAvatar";
 import { useLocale } from "@/lib/i18n";
+import { track, AnalyticsEvent } from "@/lib/analytics";
+import { Confetti } from "@/components/ui/Confetti";
+import { TicketSheet } from "@/components/results/TicketSheet";
 import type { Restaurant } from "@/lib/types";
 import type { CandidateArea } from "@/lib/recommendation/types";
 
-type SortMode = "match" | "rating";
 type CandidateAreaResult = CandidateArea & { restaurants: Restaurant[] };
-type DietaryNote = { memberName: string; labels: string[] };
+type DietaryNote = { memberName?: string; labels: string[] };
 
 export default function ResultsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { t } = useLocale();
   const { userId } = useUser();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
-  const [sortMode, setSortMode] = useState<SortMode>("match");
+  const [selectedArea, setSelectedArea] = useState<CandidateAreaResult | null>(null);
+  const [areaLines, setAreaLines] = useState<{ name: string; color: string | null }[] | null>(null);
+  const [searchSeed, setSearchSeed] = useState<number | null>(null);
+  const [fewCandidates, setFewCandidates] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showGroupMenu, setShowGroupMenu] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState<"delete" | "leave" | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [decidedRestaurant, setDecidedRestaurant] = useState<string | null>(null);
+  const [decidedArea, setDecidedArea] = useState<string | null>(null);
+  const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
+  const [showTicket, setShowTicket] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [candidateAreas, setCandidateAreas] = useState<CandidateAreaResult[]>([]);
   const [groupName, setGroupName] = useState("グループ");
@@ -44,6 +53,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         .from("groups")
         .select(`
           name,
+          scheduled_at,
           group_members (id, profile_id, display_name, role, has_survey),
           decisions (restaurant_name)
         `)
@@ -73,10 +83,13 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         if (group.decisions?.[0]?.restaurant_name) {
           setDecidedRestaurant(group.decisions[0].restaurant_name);
         }
+        if ((group as { scheduled_at?: string | null }).scheduled_at) {
+          setScheduledAt(new Date((group as { scheduled_at: string }).scheduled_at));
+        }
       }
 
       try {
-        const res = await fetch(`/api/groups/results?group_id=${id}&sort=${sortMode}`);
+        const res = await fetch(`/api/groups/results?group_id=${id}${searchSeed ? `&seed=${searchSeed}` : ""}`);
         const data = await res.json();
 
         if (data.candidateAreas) {
@@ -88,6 +101,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         if (data.dietaryNotes) {
           setDietaryNotes(data.dietaryNotes);
         }
+        setFewCandidates(Boolean(data.fewCandidates));
       } catch (err) {
         console.error("Failed to fetch results:", err);
       }
@@ -96,11 +110,74 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     }
 
     void fetchResults();
-  }, [id, sortMode, userId]);
+  }, [id, userId, searchSeed]);
+
+  // エリアシートを開いたら Transit API で「何線が通ってるか」を引く
+  useEffect(() => {
+    if (!selectedArea) {
+      return;
+    }
+    let cancelled = false;
+    async function fetchLines() {
+      try {
+        const station = selectedArea!.stationName.replace(/駅$/, "");
+        const res = await fetch(
+          `https://api.transit.ls8h.com/api/v1/locations/suggest?q=${encodeURIComponent(station)}`
+        );
+        const json = await res.json();
+        const stationIds = ((json.stations ?? []) as { id: string; name: string }[])
+          .filter((entry) => entry.name === station)
+          .map((entry) => entry.id);
+
+        // 各フィードの駅詳細から正式な路線名 + ラインカラーを集める
+        const details = await Promise.all(
+          stationIds.slice(0, 8).map(async (id) => {
+            try {
+              const detailRes = await fetch(
+                `https://api.transit.ls8h.com/api/v1/stations/${encodeURIComponent(id)}`
+              );
+              const detail = await detailRes.json();
+              return (detail.routes ?? []) as { name: string; color?: string }[];
+            } catch {
+              return [];
+            }
+          })
+        );
+
+        const seen = new Map<string, { name: string; color: string | null }>();
+        for (const route of details.flat()) {
+          // 「山手線（外回り）」「埼京線（大宮方面）」→「山手線」「埼京線」に正規化
+          const name = (route.name ?? "").split("（")[0].split("(")[0].trim();
+          if (!name || seen.has(name)) continue;
+          seen.set(name, {
+            name,
+            color: route.color ? `#${route.color.replace(/^#/, "")}` : null,
+          });
+        }
+        if (!cancelled) setAreaLines([...seen.values()]);
+      } catch {
+        if (!cancelled) setAreaLines([]);
+      }
+    }
+    void fetchLines();
+    return () => { cancelled = true; };
+  }, [selectedArea]);
+
+  // result_viewed: 提案画面の閲覧（ファネル）
+  useEffect(() => {
+    track(AnalyticsEvent.RESULT_VIEWED, { groupId: id });
+  }, [id]);
 
   async function handleDecide(restaurant: Restaurant) {
+    // 楽観更新: 紙吹雪とトーストは即時、保存は裏で走らせる
+    setDecidedRestaurant(restaurant.name);
+    setDecidedArea(restaurant.area ?? null);
+    track(AnalyticsEvent.RESTAURANT_DECIDED, { groupId: id, restaurantId: restaurant.id });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+
     const supabase = createClient();
-    await supabase.from("decisions").upsert(
+    void supabase.from("decisions").upsert(
       {
         group_id: id,
         restaurant_name: restaurant.name,
@@ -110,9 +187,6 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       },
       { onConflict: "group_id" }
     );
-    setDecidedRestaurant(restaurant.name);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
   }
 
   async function handleGroupAction(action: "delete" | "leave") {
@@ -153,13 +227,20 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
     );
   }
 
-  const totalRestaurants = candidateAreas.reduce(
-    (count, area) => count + area.restaurants.length,
-    0
-  );
+  // 店はエリア別に分けず、全エリアをまとめてフラット一覧で見せる
+  const flatRestaurants = (() => {
+    const seen = new Set<string>();
+    return candidateAreas
+      .flatMap((area) => area.restaurants)
+      .filter((restaurant) => {
+        if (seen.has(restaurant.id)) return false;
+        seen.add(restaurant.id);
+        return true;
+      });
+  })();
 
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
+    <div className="service-canvas" style={{ minHeight: "100dvh" }}>
       {/* Header */}
       <div style={{ padding: "60px 20px 16px" }}>
         <Link
@@ -186,21 +267,34 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
               {groupName}
             </div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {/* 候補エリア: タップで概要シート */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600 }}>
+                候補エリア:
+              </span>
               {areas.map((area) => (
-                <span
+                <button
                   key={area}
+                  onClick={() => {
+                    const info = candidateAreas.find((c) => c.areaName === area);
+                    if (info) {
+                      setAreaLines(null);
+                      setSelectedArea(info);
+                    }
+                  }}
                   style={{
                     fontSize: 12,
-                    backgroundColor: "rgba(194,106,74,0.08)",
+                    backgroundColor: "rgba(240,90,40,0.08)",
                     color: "var(--primary)",
                     borderRadius: 100,
                     padding: "4px 12px",
-                    fontWeight: 500,
+                    fontWeight: 600,
+                    border: "none",
+                    cursor: "pointer",
                   }}
                 >
-                  {area}
-                </span>
+                  {area} ›
+                </button>
               ))}
             </div>
           </div>
@@ -284,191 +378,291 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         </div>
       </div>
 
+      {/* ○×投票 CTA */}
+      {!decidedRestaurant && !loading && candidateAreas.length > 0 && (
+        <div style={{ padding: "0 20px 16px" }}>
+          <Link href={`/groups/${id}/vote`} className="btn-primary" style={{ textDecoration: "none" }}>
+            {t("vote.startVoting")}
+          </Link>
+        </div>
+      )}
+
+      {/* 自分の回答を編集する (控えめなテキストリンク・未決定時のみ) */}
+      {!decidedRestaurant && (
+        <div style={{ padding: "0 20px 16px", textAlign: "center" }}>
+          <Link
+            href={`/groups/${id}/survey`}
+            style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "underline" }}
+          >
+            {t("results.editMyResponse")}
+          </Link>
+        </div>
+      )}
+
       {/* 決定済みバナー */}
       {decidedRestaurant && (
         <div
+          className="service-card"
           style={{
+            position: "relative",
             margin: "0 20px 16px",
-            backgroundColor: "rgba(61,139,94,0.06)",
-            border: "1.5px solid rgba(61,139,94,0.2)",
+            backgroundColor: "rgba(168,198,134,0.14)",
+            border: "1.5px solid rgba(168,198,134,0.55)",
             borderRadius: 20,
-            padding: "14px 16px",
+            padding: "14px 126px 14px 16px",
             display: "flex",
             alignItems: "center",
             gap: 10,
+            minHeight: 118,
           }}
         >
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--success)", marginBottom: 2 }}>
+          <Image
+            src="/img/service/04-result-ticket-check.webp"
+            alt=""
+            width={134}
+            height={102}
+            className="service-deco"
+            style={{
+              position: "absolute",
+              right: -4,
+              bottom: -2,
+              width: 124,
+              height: "auto",
+              opacity: 0.96,
+            }}
+          />
+          <div style={{ flex: 1, position: "relative", zIndex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--success-deep)", marginBottom: 2 }}>
               {t("results.decided")}
             </div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
               {decidedRestaurant}
             </div>
+            {/* 決定後の導線: 地図と予約検索 */}
+            <div style={{ display: "flex", gap: 14, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                onClick={() => setShowTicket(true)}
+                style={{
+                  fontSize: 12, fontWeight: 700, color: "white", backgroundColor: "var(--primary)",
+                  border: "none", borderRadius: 100, padding: "6px 14px", cursor: "pointer",
+                }}
+              >
+                チケットを見る
+              </button>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(decidedRestaurant)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 12, fontWeight: 700, color: "var(--primary)", textDecoration: "none" }}
+              >
+                Googleマップ →
+              </a>
+
+            </div>
           </div>
         </div>
       )}
 
-      {/* Sort tabs */}
-      <div style={{ padding: "0 20px 16px" }}>
-        <div style={{ display: "inline-flex", backgroundColor: "var(--bg-secondary)", borderRadius: 12, padding: 4, gap: 4 }}>
-          {([["match", t("results.matchScore")], ["rating", t("results.rating")]] as [SortMode, string][]).map(([mode, label]) => (
-            <button
-              key={mode}
-              onClick={() => setSortMode(mode)}
-              style={{
-                padding: "8px 20px",
-                borderRadius: 100,
-                border: "none",
-                backgroundColor: sortMode === mode ? "var(--surface)" : "transparent",
-                color: sortMode === mode ? "var(--text-primary)" : "var(--text-tertiary)",
-                fontSize: 13,
-                fontWeight: sortMode === mode ? 600 : 500,
-                cursor: "pointer",
-                boxShadow: sortMode === mode ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-              }}
-            >
-              {label}
-            </button>
-          ))}
+      {/* グロースCTA: 決定を見た参加者 → 次の幹事へ（要件セクション6） */}
+      {decidedRestaurant && (
+        <Link
+          href="/groups/create?from=decided"
+          className="service-create-card"
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            margin: "0 20px 16px",
+            padding: "16px 94px 16px 16px",
+            borderRadius: 16,
+            border: "1px dashed var(--border)",
+            textDecoration: "none",
+            minHeight: 86,
+          }}
+        >
+          <Image
+            src="/img/service/02-create-group-plate.webp"
+            alt=""
+            width={96}
+            height={77}
+            className="service-deco"
+            style={{
+              position: "absolute",
+              right: 4,
+              bottom: -10,
+              width: 88,
+              height: "auto",
+              opacity: 0.9,
+            }}
+          />
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>
+              自分のグループでもやってみる
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2 }}>
+              次の食事会、あなたが幹事に
+            </div>
+          </div>
+          <span style={{ position: "relative", zIndex: 1, fontSize: 18, fontWeight: 800, color: "var(--primary)" }}>→</span>
+        </Link>
+      )}
+
+      {/* 候補が少ないよ (持ち寄りを促す) */}
+      {fewCandidates && !decidedRestaurant && (
+        <div
+          style={{
+            margin: "0 20px 14px",
+            backgroundColor: "rgba(243,201,107,0.22)",
+            border: "1px solid rgba(243,201,107,0.6)",
+            borderRadius: 16,
+            padding: "12px 16px",
+          }}
+        >
+          <div style={{ fontSize: 13, color: "var(--secondary)", lineHeight: 1.6 }}>
+            {t("results.fewCandidates")}
+          </div>
+          <Link
+            href={`/groups/${id}/suggest`}
+            style={{ display: "inline-block", marginTop: 6, fontSize: 13, fontWeight: 700, color: "var(--primary)", textDecoration: "none" }}
+          >
+            {t("results.addSuggestion")}
+          </Link>
         </div>
-        <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 8 }}>
-          {t("results.resultCount", { count: totalRestaurants })}
+      )}
+
+      {/* 件数 + 再検索 */}
+      <div style={{ padding: "0 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>
+          {t("results.resultCount", { count: flatRestaurants.length })}
         </div>
+        <button
+          onClick={() => { setLoading(true); setSearchSeed(Math.floor(Math.random() * 1e9) + 1); }}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            fontSize: 13, fontWeight: 700, color: "var(--primary)",
+            background: "none", border: "1.5px solid var(--border-strong)",
+            borderRadius: 100, padding: "6px 14px", cursor: "pointer",
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 11a8 8 0 1 0-2.34 5.66" />
+            <path d="M20 5v6h-6" />
+          </svg>
+          もう一度探す
+        </button>
       </div>
 
       <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 18 }}>
+        {/* 幹事メモ: 付箋メモ風。ひと目で「誰が何NG」が読める1行形式 */}
         {myRole === "owner" && dietaryNotes.length > 0 && (
           <section
-            className="card"
             style={{
-              padding: 18,
-              backgroundColor: "rgba(194,106,74,0.06)",
-              border: "1px solid rgba(194,106,74,0.14)",
+              padding: "14px 16px",
+              backgroundColor: "#FBF0CE",
+              border: "1px solid #EFD990",
+              borderRadius: 4,
+              boxShadow: "0 2px 8px rgba(74,53,42,0.08)",
+              transform: "rotate(-0.4deg)",
             }}
           >
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
-              幹事メモ
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--secondary)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+              📌 幹事メモ: お店選びのとき気をつけて
             </div>
-            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-              食事制限とアレルギーの共有です。候補の並び替えには使っていません。
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {dietaryNotes.map((note) => (
-                <div key={`${note.memberName}-${note.labels.join("-")}`}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
-                    {note.memberName}
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {note.labels.map((label) => (
-                      <span
-                        key={`${note.memberName}-${label}`}
-                        style={{
-                          fontSize: 12,
-                          backgroundColor: "rgba(194,106,74,0.08)",
-                          color: "var(--primary)",
-                          borderRadius: 100,
-                          padding: "4px 10px",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {dietaryNotes.map((note, index) => (
+                <div
+                  key={`note-${index}-${note.labels.join("-")}`}
+                  style={{ fontSize: 13, color: "var(--secondary)", lineHeight: 1.6 }}
+                >
+                  ・<strong>{note.memberName || `参加者${index + 1}`}</strong>: {note.labels.join("、")} NG
                 </div>
               ))}
             </div>
           </section>
         )}
 
-        {candidateAreas.length === 0 ? (
+        {flatRestaurants.length === 0 ? (
           <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-secondary)", fontSize: 15 }}>
             {t("results.noResultsApi")}
           </div>
         ) : (
-          candidateAreas.map((area, areaIndex) => (
-            <section key={area.areaName} className="animate-fade-in" style={{ animationDelay: `${areaIndex * 0.06}s`, animationFillMode: "both" }}>
-              <div
-                className="card"
-                style={{
-                  padding: 18,
-                  marginBottom: 12,
-                  background:
-                    areaIndex === 0
-                      ? "linear-gradient(160deg, rgba(194,106,74,0.12), rgba(194,106,74,0.03))"
-                      : "var(--surface)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-tertiary)", marginBottom: 4 }}>
-                      候補エリア {areaIndex + 1}
-                    </div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>
-                      {area.areaName}
-                    </div>
-                    <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2 }}>
-                      {area.stationName}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      alignSelf: "flex-start",
-                      padding: "8px 12px",
-                      borderRadius: 999,
-                      backgroundColor: "rgba(26,26,46,0.06)",
-                      color: "var(--secondary)",
-                      fontSize: 13,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {Math.round(area.scores.combined * 100)}%
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-                  {area.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      style={{
-                        fontSize: 12,
-                        backgroundColor: "rgba(194,106,74,0.08)",
-                        color: "var(--primary)",
-                        borderRadius: 100,
-                        padding: "4px 10px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-secondary)" }}>
-                  {area.explanation}
-                </div>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {area.restaurants.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "18px 16px", color: "var(--text-secondary)", fontSize: 14 }}>
-                    {t("results.noResultsArea")}
-                  </div>
-                ) : (
-                  area.restaurants.map((restaurant) => (
-                    <RestaurantCard
-                      key={`${area.areaName}-${restaurant.id}`}
-                      restaurant={restaurant}
-                      onClick={setSelectedRestaurant}
-                    />
-                  ))
-                )}
-              </div>
-            </section>
-          ))
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {flatRestaurants.map((restaurant) => (
+              <RestaurantCard
+                key={restaurant.id}
+                restaurant={restaurant}
+                onClick={setSelectedRestaurant}
+              />
+            ))}
+          </div>
         )}
       </div>
+
+      {/* エリア概要ボトムシート */}
+      {selectedArea && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 220, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}
+        >
+          <div
+            style={{ position: "absolute", inset: 0, backgroundColor: "rgba(74,53,42,0.45)" }}
+            onClick={() => setSelectedArea(null)}
+          />
+          <div
+            className="animate-fade-in"
+            style={{
+              position: "relative",
+              backgroundColor: "var(--bg)",
+              borderRadius: "24px 24px 0 0",
+              padding: "20px 20px 40px",
+              maxHeight: "70dvh",
+              overflowY: "auto",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+              <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)" }}>
+              {selectedArea.areaName}
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2, marginBottom: 12 }}>
+              {selectedArea.stationName}
+            </div>
+            {/* 通っている路線 (Transit API)。一般論の説明文は出さない */}
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 8 }}>
+              通っている路線
+            </div>
+            {areaLines === null ? (
+              <div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>読み込み中…</div>
+            ) : areaLines.length === 0 ? (
+              <div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>路線情報を取得できなかった</div>
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {areaLines.map((line) => (
+                  <span
+                    key={line.name}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      fontSize: 13, backgroundColor: "var(--bg-secondary)", color: "var(--text-primary)",
+                      borderRadius: 100, padding: "6px 12px", fontWeight: 600,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 10, height: 10, borderRadius: "50%", flexShrink: 0,
+                        backgroundColor: line.color ?? "var(--border-strong)",
+                      }}
+                    />
+                    {line.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Detail modal */}
       <RestaurantDetailModal
@@ -477,7 +671,22 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         onDecide={handleDecide}
       />
 
+      {/* チケット */}
+      {showTicket && decidedRestaurant && (
+        <TicketSheet
+          data={{
+            groupName,
+            restaurantName: decidedRestaurant,
+            area: decidedArea ?? flatRestaurants.find((r) => r.name === decidedRestaurant)?.area ?? null,
+            scheduledAt,
+            memberNames: members.map((m) => m.displayName),
+          }}
+          onClose={() => setShowTicket(false)}
+        />
+      )}
+
       {/* 決定トースト */}
+      {showToast && <Confetti />}
       {showToast && (
         <div
           style={{
