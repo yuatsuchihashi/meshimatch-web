@@ -23,9 +23,7 @@ import { Confetti } from "@/components/ui/Confetti";
 import { track, AnalyticsEvent } from "@/lib/analytics";
 import type { ShortlistItem } from "@/app/api/groups/shortlist/route";
 
-interface Candidate extends ShortlistItem {
-  matchScore?: number;
-}
+type Candidate = ShortlistItem;
 
 interface TallyEntry {
   restaurantId: string;
