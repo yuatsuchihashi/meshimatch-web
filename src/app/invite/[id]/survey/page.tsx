@@ -4,16 +4,16 @@ import { use, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/lib/hooks/useUser";
 import { useLocale } from "@/lib/i18n";
-import { SURVEY_AREAS } from "@/lib/areas";
-import { BudgetCapPicker } from "@/components/survey/GenreTiles";
+import { INITIAL_STATION_ZONE_MAP } from "@/lib/areas";
 import { MoodPickGrid, MoodAvoidSection } from "@/components/survey/MoodPills";
 import { SuggestPicker, type SuggestPick } from "@/components/survey/SuggestPicker";
-import { buildGenrePreferencesFromMoods } from "@/lib/moods";
+import { buildPlannedSurveyPayload } from "@/lib/survey-payload";
 import { track, AnalyticsEvent } from "@/lib/analytics";
 import { markParticipated } from "@/lib/anon-id";
 
 const STORAGE_KEY = "meshimatch-guest-prefs";
 const MAX_SLOT = 2;
+const STATION_OPTIONS = INITIAL_STATION_ZONE_MAP.map((entry) => entry.station);
 
 type Step = "name" | "restrictions" | "survey" | "done";
 
@@ -93,15 +93,14 @@ export default function GuestSurveyPage({
   const [allergyNote, setAllergyNote] = useState<string>(() => readGuestPrefs().allergyNote);
   const [dietaryNote, setDietaryNote] = useState<string>(() => readGuestPrefs().dietaryNote);
   const [submitting, setSubmitting] = useState(false);
-  const [showOtherArea, setShowOtherArea] = useState(false);
-  const [otherAreaInput, setOtherAreaInput] = useState("");
-  const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
-  const [budgetMaxYen, setBudgetMaxYen] = useState<number | null>(null);
+  const [departureStation, setDepartureStation] = useState("");
   const [preferMoods, setPreferMoods] = useState<string[]>([]);
   const [avoidMoods, setAvoidMoods] = useState<string[]>([]);
   const [suggestedPicks, setSuggestedPicks] = useState<SuggestPick[]>([]);
   const [suggestShowName, setSuggestShowName] = useState(false);
   const [quickPicks, setQuickPicks] = useState<{ id: string; name: string; area?: string | null }[]>([]);
+  const restrictionsReady = allergyNote.trim().length > 0 && dietaryNote.trim().length > 0;
+  const hasTodayMood = preferMoods.length + avoidMoods.length > 0;
 
   useEffect(() => {
     async function fetchGroup() {
@@ -166,8 +165,9 @@ export default function GuestSurveyPage({
       if (cancelled || !existing) {
         return;
       }
-      setPreferredAreas((existing.preferred_areas as string[]) ?? []);
-      setBudgetMaxYen((existing.budget_max_yen as number | null) ?? null);
+      if (existing.departure_station) {
+        setDepartureStation(existing.departure_station as string);
+      }
       setPreferMoods((existing.prefer_moods as string[]) ?? []);
       setAvoidMoods((existing.avoid_moods as string[]) ?? []);
       if (existing.allergy_note) setAllergyNote(existing.allergy_note as string);
@@ -235,15 +235,6 @@ export default function GuestSurveyPage({
     } catch {
       // noop
     }
-  }
-
-  function toggleArea(area: string) {
-    markStarted();
-    setPreferredAreas((current) =>
-      current.includes(area)
-        ? current.filter((item) => item !== area)
-        : [...current, area]
-    );
   }
 
   function togglePrefer(moodId: string) {
@@ -330,6 +321,20 @@ export default function GuestSurveyPage({
         // noop
       }
 
+      const payload = buildPlannedSurveyPayload({
+        departureStation,
+        preferMoods,
+        avoidMoods,
+        preferenceMoods: {
+          prefer: preferMoods,
+          avoid: avoidMoods,
+          changed: true,
+        },
+        allergyNote,
+        dietaryNote,
+        dietaryRestrictions: [],
+      });
+
       const response = await fetch("/api/groups/survey", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -337,26 +342,23 @@ export default function GuestSurveyPage({
           groupId,
           memberId,
           responseVersion: 2,
-          departureArea: null,
-          departureStation: null, // 出発駅は v2 (Transit API 統合時) に復活予定
-          preferredAreas,
-          budgetIdealYen: null,
-          budgetMaxYen,
-          budgetPriority: budgetMaxYen ? "prefer" : null,
-          preferMoods,
-          avoidMoods,
-          genrePreferences: buildGenrePreferencesFromMoods(
-            preferMoods,
-            avoidMoods
-          ),
-          allergyNote: allergyNote.trim() || null,
-          dietaryNote: dietaryNote.trim() || null,
+          departureArea: payload.departureArea,
+          departureStation: payload.departureStation,
+          preferredAreas: payload.preferredAreas,
+          budgetIdealYen: payload.budgetIdealYen,
+          budgetMaxYen: payload.budgetMaxYen,
+          budgetPriority: payload.budgetPriority,
+          preferMoods: payload.preferMoods,
+          avoidMoods: payload.avoidMoods,
+          genrePreferences: payload.genrePreferences,
+          allergyNote: payload.allergyNote,
+          dietaryNote: payload.dietaryNote,
           suggestedRestaurants: suggestedPicks.map((pick) => ({
             id: pick.id,
             name: pick.name,
             showName: suggestShowName,
           })),
-          dietaryRestrictions: [],
+          dietaryRestrictions: payload.dietaryRestrictions,
         }),
       });
 
@@ -654,26 +656,33 @@ export default function GuestSurveyPage({
               placeholder={t("survey.dietaryInputPlaceholder")}
               style={inputStyle}
             />
+            <button
+              type="button"
+              onClick={() => {
+                markStarted();
+                setAllergyNote("なし");
+                setDietaryNote("なし");
+              }}
+              className="chip"
+              style={{ fontSize: 13, marginTop: 14 }}
+            >
+              {t("survey.noRestrictions")}
+            </button>
           </div>
 
-          <button className="btn-primary" onClick={() => setStep("survey")} style={{ width: "100%" }}>
+          <button
+            className="btn-primary"
+            onClick={() => setStep("survey")}
+            disabled={!restrictionsReady}
+            style={{ width: "100%" }}
+          >
             次へ
           </button>
-          <button
-            onClick={() => setStep("survey")}
-            style={{
-              width: "100%",
-              marginTop: 10,
-              padding: "12px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--text-tertiary)",
-              fontSize: 14,
-            }}
-          >
-            スキップ
-          </button>
+          {!restrictionsReady && (
+            <div style={{ fontSize: 12, color: "var(--text-tertiary)", textAlign: "center", marginTop: 10 }}>
+              {t("survey.restrictionsRequired")}
+            </div>
+          )}
 
           <StepDots current="restrictions" />
         </div>
@@ -728,84 +737,7 @@ export default function GuestSurveyPage({
             </div>
           )}
 
-          {/* 希望エリア */}
-          <div style={cardStyle}>
-            <div style={titleStyle}>{t("survey.areaTitle")}</div>
-            <div style={captionStyle}>{t("survey.areaHint")}</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {SURVEY_AREAS.map((area) => (
-                <button
-                  key={`pref-${area}`}
-                  type="button"
-                  className={`chip ${preferredAreas.includes(area) ? "chip-selected" : ""}`}
-                  onClick={() => toggleArea(area)}
-                  style={{ fontSize: 13 }}
-                >
-                  {area}
-                </button>
-              ))}
-              {preferredAreas
-                .filter((area) => !(SURVEY_AREAS as readonly string[]).includes(area))
-                .map((area) => (
-                  <button
-                    key={`custom-${area}`}
-                    type="button"
-                    onClick={() => toggleArea(area)}
-                    className="chip chip-selected"
-                    style={{ fontSize: 13 }}
-                  >
-                    {area} ×
-                  </button>
-                ))}
-              <button
-                type="button"
-                onClick={() => setShowOtherArea((v) => !v)}
-                className={`chip ${showOtherArea ? "chip-selected" : ""}`}
-                style={{ fontSize: 13 }}
-              >
-                {t("survey.areaOther")}
-              </button>
-            </div>
-            {showOtherArea && (
-              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <input
-                  value={otherAreaInput}
-                  onChange={(event) => setOtherAreaInput(event.target.value)}
-                  placeholder={t("survey.areaOtherPlaceholder")}
-                  style={{ ...inputStyle, flex: 1, minWidth: 0 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const area = otherAreaInput.trim();
-                    if (area && !preferredAreas.includes(area)) {
-                      setPreferredAreas((prev) => [...prev, area]);
-                    }
-                    setOtherAreaInput("");
-                  }}
-                  style={{
-                    padding: "0 16px", borderRadius: 100, border: "none",
-                    background: "var(--primary)", color: "white",
-                    fontSize: 13, fontWeight: 700, cursor: "pointer",
-                  }}
-                >
-                  {t("common.add")}
-                </button>
-              </div>
-            )}
-            <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 10 }}>
-              {t("survey.areaCoverageNote")}
-            </div>
-          </div>
-
-          {/* 予算 */}
-          <div style={cardStyle}>
-            <div style={titleStyle}>{t("survey.budgetTitle")}</div>
-            <div style={captionStyle}>{t("survey.budgetHint")}</div>
-            <BudgetCapPicker value={budgetMaxYen} onChange={setBudgetMaxYen} t={t} />
-          </div>
-
-          {/* 特別枠 */}
+          {/* 今日の気分 */}
           <div style={cardStyle}>
             <div style={titleStyle}>{t("survey.specialTitle")}</div>
             <div style={captionStyle}>{t("survey.specialHint")}</div>
@@ -834,6 +766,48 @@ export default function GuestSurveyPage({
               maxReached={avoidMoods.length >= MAX_SLOT}
               t={t}
             />
+            {!hasTodayMood && (
+              <div style={{ fontSize: 12, color: "var(--primary)", fontWeight: 700, marginTop: 10 }}>
+                {t("survey.moodRequired")}
+              </div>
+            )}
+          </div>
+
+          {/* 出発地 */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("survey.departureTitle")}</div>
+            <div style={captionStyle}>{t("survey.departureGuestHint")}</div>
+            <input
+              value={departureStation}
+              list="guest-departure-stations"
+              onChange={(event) => {
+                markStarted();
+                setDepartureStation(event.target.value);
+              }}
+              placeholder={t("survey.departureStationPlaceholder")}
+              style={inputStyle}
+            />
+            <datalist id="guest-departure-stations">
+              {STATION_OPTIONS.map((station) => (
+                <option key={station} value={station} />
+              ))}
+            </datalist>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+              {STATION_OPTIONS.slice(0, 8).map((station) => (
+                <button
+                  key={station}
+                  type="button"
+                  onClick={() => {
+                    markStarted();
+                    setDepartureStation(station);
+                  }}
+                  className={`chip ${departureStation.trim() === station ? "chip-selected" : ""}`}
+                  style={{ fontSize: 13 }}
+                >
+                  {station}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 持ち寄り: あなたのおすすめが候補の主役になる */}
@@ -861,7 +835,7 @@ export default function GuestSurveyPage({
             {t("survey.privacyNote")}
           </div>
 
-          <button className="btn-primary" onClick={handleSubmit} disabled={submitting}>
+          <button className="btn-primary" onClick={handleSubmit} disabled={submitting || !hasTodayMood}>
             {submitting ? "送信中..." : t("survey.submit")}
           </button>
 

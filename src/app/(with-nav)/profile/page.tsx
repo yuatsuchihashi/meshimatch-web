@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { SURVEY_AREAS } from "@/lib/areas";
+import { INITIAL_STATION_ZONE_MAP, SURVEY_AREAS } from "@/lib/areas";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
 import { BudgetCapPicker } from "@/components/survey/GenreTiles";
 import { MoodPickGrid, MoodAvoidSection } from "@/components/survey/MoodPills";
@@ -22,6 +22,7 @@ interface Connection {
 }
 
 const MAX_MOODS = 2;
+const STATION_OPTIONS = INITIAL_STATION_ZONE_MAP.map((entry) => entry.station);
 
 export default function ProfilePage() {
   const { t, locale, setLocale } = useLocale();
@@ -44,6 +45,7 @@ export default function ProfilePage() {
   const [avoidMoods, setAvoidMoods] = useState<string[]>([]);
   const [budgetMax, setBudgetMax] = useState<number | null>(null);
   const [usualAreasBuf, setUsualAreasBuf] = useState<string[]>([]);
+  const [departureStationInput, setDepartureStationInput] = useState("");
 
   const displayName = user?.displayName ?? "ユーザー";
   const bio = user?.bio?.trim() ?? "";
@@ -52,6 +54,7 @@ export default function ProfilePage() {
   const usualPreferMoods = user?.usualPreferMoods ?? [];
   const usualAvoidMoods = user?.usualAvoidMoods ?? [];
   const usualAreas = user?.usualAreas ?? [];
+  const usualDepartureStation = user?.usualDepartureStation?.trim() ?? "";
 
   useEffect(() => {
     if (!userId) return;
@@ -146,6 +149,7 @@ export default function ProfilePage() {
     setAvoidMoods(usualAvoidMoods);
     setBudgetMax(user?.usualBudgetMaxYen ?? null);
     setUsualAreasBuf(usualAreas);
+    setDepartureStationInput(usualDepartureStation);
     setEditSection("defaults");
   }
 
@@ -448,6 +452,18 @@ export default function ProfilePage() {
                   <ChipRow>
                     <span className="chip" style={{ fontSize: 13 }}>
                       〜{user.usualBudgetMaxYen.toLocaleString()}円
+                    </span>
+                  </ChipRow>
+                ) : (
+                  <NotSet t={t} />
+                )}
+              </DefaultRow>
+
+              <DefaultRow label={t("profile.departureStationLabel")}>
+                {usualDepartureStation ? (
+                  <ChipRow>
+                    <span className="chip" style={{ fontSize: 13 }}>
+                      {usualDepartureStation}
                     </span>
                   </ChipRow>
                 ) : (
@@ -772,6 +788,35 @@ export default function ProfilePage() {
           </div>
 
           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
+            {t("profile.departureStationLabel")}
+          </div>
+          <input
+            value={departureStationInput}
+            list="profile-departure-stations"
+            onChange={(event) => setDepartureStationInput(event.target.value)}
+            style={{ ...inputStyle, marginBottom: 10 }}
+            placeholder={t("profile.departureStationPlaceholder")}
+          />
+          <datalist id="profile-departure-stations">
+            {STATION_OPTIONS.map((station) => (
+              <option key={station} value={station} />
+            ))}
+          </datalist>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+            {STATION_OPTIONS.slice(0, 8).map((station) => (
+              <button
+                key={station}
+                type="button"
+                onClick={() => setDepartureStationInput(station)}
+                className={`chip ${departureStationInput.trim() === station ? "chip-selected" : ""}`}
+                style={{ fontSize: 13 }}
+              >
+                {station}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10 }}>
             {t("profile.usualAreasLabel")}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
@@ -795,6 +840,7 @@ export default function ProfilePage() {
                 favorite_genres: buildGenrePreferencesFromMoods(likedMoods, avoidMoods),
                 usual_budget_max_yen: budgetMax,
                 usual_areas: usualAreasBuf,
+                usual_departure_station: departureStationInput.trim() || null,
               });
               setEditSection(null);
             }}

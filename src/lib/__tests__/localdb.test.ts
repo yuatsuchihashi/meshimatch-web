@@ -338,6 +338,18 @@ describe("localdb engine", () => {
     expect(empty.departure_station).toBeNull();
   });
 
+  it("roundtrips profile default departure station", () => {
+    const profile = insert("profiles", {
+      display_name: "ゆあ",
+      usual_departure_station: "渋谷駅",
+    });
+
+    expect(profile.usual_departure_station).toBe("渋谷駅");
+
+    const empty = insert("profiles", { display_name: "たろう" });
+    expect(empty.usual_departure_station).toBeNull();
+  });
+
   it("defaults restaurant source pr to false", () => {
     const profile = insert("profiles", { display_name: "ゆあ" });
     const restaurant = insert("restaurants", { name: "テスト食堂" });

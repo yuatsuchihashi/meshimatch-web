@@ -86,6 +86,7 @@ function applyDefaults(table: string, values: Row): Row {
       row.bio ??= null;
       row.allergy_note ??= null;
       row.dietary_note ??= null;
+      row.usual_departure_station ??= null;
       row.usual_prefer_moods ??= [];
       row.usual_avoid_moods ??= [];
       row.allergies ??= [];
@@ -262,6 +263,13 @@ function backfillDb(db: Db): boolean {
   for (const row of db.groups) {
     if (row.mode == null) {
       row.mode = "planned";
+      changed = true;
+    }
+  }
+
+  for (const row of db.profiles) {
+    if (!("usual_departure_station" in row)) {
+      row.usual_departure_station = null;
       changed = true;
     }
   }
