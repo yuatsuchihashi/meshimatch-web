@@ -10,6 +10,8 @@ import { INITIAL_STATION_ZONE_MAP, SURVEY_AREAS } from "@/lib/areas";
 import { BudgetCapPicker } from "@/components/survey/GenreTiles";
 import { MoodPickGrid, MoodAvoidSection } from "@/components/survey/MoodPills";
 import { SuggestPicker, type SuggestPick } from "@/components/survey/SuggestPicker";
+import { buildSuggestedRestaurantPayload } from "@/lib/suggestions";
+import { isVerified, type VerificationClient } from "@/lib/verification";
 import {
   buildPlannedSurveyPayload,
   getPlannedSurveyProfileDefaults,
@@ -209,6 +211,8 @@ export default function SurveyPage({
   const [profileDefaultsOpen, setProfileDefaultsOpen] = useState(false);
   const [suggestedPicks, setSuggestedPicks] = useState<SuggestPick[]>([]);
   const [suggestShowName, setSuggestShowName] = useState(false);
+  const [suggestPr, setSuggestPr] = useState(false);
+  const [verifiedUser, setVerifiedUser] = useState(false);
   const [allergyNote, setAllergyNote] = useState("");
   const [dietaryNote, setDietaryNote] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -231,6 +235,24 @@ export default function SurveyPage({
     setPreferencePreferMoods(user.usualPreferMoods ?? []);
     setPreferenceAvoidMoods(user.usualAvoidMoods ?? []);
   }, [profileDefaults, profileDefaultsApplied, user]);
+
+  useEffect(() => {
+    if (!userId) {
+      setVerifiedUser(false);
+      setSuggestPr(false);
+      return;
+    }
+    let cancelled = false;
+    async function loadVerification() {
+      const supabase = createClient();
+      const verified = await isVerified(supabase as unknown as VerificationClient, userId);
+      if (!cancelled) setVerifiedUser(verified);
+    }
+    void loadVerification();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   useEffect(() => {
     async function fetchGroup() {
@@ -293,6 +315,7 @@ export default function SurveyPage({
           savedSuggestions.map((s) => ({ id: s.id, name: s.name, area: s.area, showName: !!s.showName }))
         );
         setSuggestShowName(savedSuggestions.some((s) => s.showName));
+        setSuggestPr(savedSuggestions.some((s) => s.pr === true));
       }
       // アンケート行のメモがあればプロフィール値より優先
       if (existing.allergy_note) setAllergyNote(existing.allergy_note as string);
@@ -479,14 +502,28 @@ export default function SurveyPage({
           dietary_restrictions: payload.dietaryRestrictions,
           allergy_note: payload.allergyNote,
           dietary_note: payload.dietaryNote,
-          suggested_restaurants: suggestedPicks.map((p) => ({
-            id: p.id,
-            name: p.name,
+          suggested_restaurants: buildSuggestedRestaurantPayload({
+            picks: suggestedPicks,
             showName: suggestShowName,
-          })),
+            isVerified: verifiedUser,
+            pr: suggestPr,
+          }),
         },
         { onConflict: "group_id,member_id" }
       );
+
+      if (verifiedUser && suggestedPicks.length > 0) {
+        await supabase.from("restaurant_sources").upsert(
+          suggestedPicks.map((pick) => ({
+            restaurant_id: pick.id,
+            source_type: "user_favorite",
+            visibility: "public",
+            added_by: userId,
+            pr: suggestPr,
+          })),
+          { onConflict: "restaurant_id,source_type,added_by" }
+        );
+      }
 
       await supabase
         .from("group_members")
@@ -861,6 +898,9 @@ export default function SurveyPage({
               onChange={setSuggestedPicks}
               showName={suggestShowName}
               onShowNameChange={setSuggestShowName}
+              pr={suggestPr}
+              onPrChange={setSuggestPr}
+              canMarkPr={verifiedUser}
               quickPicks={quickPicks}
               t={t}
             />

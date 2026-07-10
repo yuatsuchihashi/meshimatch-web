@@ -89,7 +89,7 @@ export interface SurveyResponse {
   dietaryNote?: string | null;
   preferMoods?: string[];
   avoidMoods?: string[];
-  suggestedRestaurants?: { id: string; name: string; showName: boolean }[];
+  suggestedRestaurants?: { id: string; name: string; showName: boolean; pr?: boolean }[];
   submittedAt: Date;
 }
 
@@ -140,6 +140,7 @@ export interface Restaurant {
   reasonExplanation?: string;
   genreScore?: number;
   recommendedByNames?: string[];
+  officialRecommendedByNames?: string[];
   recommendationLabel?: string | null;
   recommendedAt?: string | null;
 }

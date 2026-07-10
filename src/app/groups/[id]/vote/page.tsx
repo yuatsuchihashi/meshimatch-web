@@ -22,6 +22,7 @@ import { GENRE_EMOJI } from "@/lib/genre-emoji";
 import { Confetti } from "@/components/ui/Confetti";
 import { track, AnalyticsEvent } from "@/lib/analytics";
 import type { ShortlistItem } from "@/app/api/groups/shortlist/route";
+import { VerificationBadge } from "@/components/profile/VerificationBadge";
 
 type Candidate = ShortlistItem;
 
@@ -611,12 +612,30 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
           </div>
 
           {/* badges */}
-          <div style={{ position: "absolute", top: 140, left: 12, display: "flex", gap: 6 }}>
+          <div style={{ position: "absolute", top: 140, left: 12, right: 12, display: "flex", gap: 6, flexWrap: "wrap" }}>
             {current.isMemberFavorite && (
               <span className="badge-favorite">★ {t("vote.favoriteBadge")}</span>
             )}
             {current.endorsementLabel && (
-              <span className="badge-endorsement">{current.endorsementLabel}</span>
+              <span className="badge-endorsement" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                {current.endorsementLabel}
+                {(current.officialRecommendedByNames?.length ?? 0) > 0 && <VerificationBadge compact />}
+              </span>
+            )}
+            {current.pr && (
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 900,
+                  padding: "4px 10px",
+                  borderRadius: 100,
+                  background: "rgba(240,90,40,0.13)",
+                  color: "var(--primary)",
+                  boxShadow: "0 1px 4px rgba(74,53,42,0.12)",
+                }}
+              >
+                {t("official.prChip")}
+              </span>
             )}
           </div>
 
@@ -631,7 +650,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
             </div>
             {(current.reasonTags ?? []).length > 0 && (
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
-                {(current.reasonTags ?? []).slice(0, 3).map((tag) => (
+                {(current.reasonTags ?? []).filter((tag) => tag !== "PR").slice(0, 3).map((tag) => (
                   <span key={tag} style={{
                     fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 100,
                     background: "var(--bg-secondary)", color: "var(--text-secondary)",

@@ -9,6 +9,8 @@ import { nanoid } from "@/lib/utils/nanoid";
 import { track, AnalyticsEvent } from "@/lib/analytics";
 import { hasParticipated } from "@/lib/anon-id";
 import type { SessionFocus } from "@/lib/types";
+import { VerificationBadge } from "@/components/profile/VerificationBadge";
+import { getVerifiedProfileIds, type VerificationClient } from "@/lib/verification";
 
 type Step = "name" | "members" | "details" | "complete";
 
@@ -19,6 +21,7 @@ type Connection = {
   id: string;
   displayName: string;
   mutualGroups: number;
+  verified?: boolean;
 };
 
 type PendingMember = {
@@ -119,11 +122,16 @@ export default function CreateGroupPage() {
         .eq("profile_id", userId);
 
       if (!myMemberships || myMemberships.length === 0) {
+        const verifiedIds = await getVerifiedProfileIds(
+          supabase as unknown as VerificationClient,
+          Array.from(connectionMap.keys())
+        );
         setConnections(
           Array.from(connectionMap.entries()).map(([id, connection]) => ({
             id,
             displayName: connection.displayName,
             mutualGroups: connection.mutualGroups,
+            verified: verifiedIds.has(id),
           }))
         );
         return;
@@ -159,11 +167,16 @@ export default function CreateGroupPage() {
         }
       }
 
+      const verifiedIds = await getVerifiedProfileIds(
+        supabase as unknown as VerificationClient,
+        Array.from(connectionMap.keys())
+      );
       setConnections(
         Array.from(connectionMap.entries()).map(([id, connection]) => ({
           id,
           displayName: connection.displayName,
           mutualGroups: connection.mutualGroups,
+          verified: verifiedIds.has(id),
         }))
       );
     }
@@ -549,8 +562,11 @@ export default function CreateGroupPage() {
                       }}
                     >
                       <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <span style={{ fontSize: 15, fontWeight: 800 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 15, fontWeight: 800 }}>
                           {connection.displayName}
+                          {connection.verified && (
+                            <VerificationBadge title={t("official.badgeTitle")} compact />
+                          )}
                         </span>
                         <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
                           {connection.mutualGroups > 0

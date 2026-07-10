@@ -19,6 +19,7 @@ export interface SuggestPick {
   name: string;
   showName: boolean;
   area?: string;
+  pr?: boolean;
 }
 
 interface SearchResult {
@@ -47,6 +48,9 @@ export function SuggestPicker({
   onChange,
   showName,
   onShowNameChange,
+  pr,
+  onPrChange,
+  canMarkPr = false,
   quickPicks,
   t,
 }: {
@@ -54,6 +58,9 @@ export function SuggestPicker({
   onChange: (picks: SuggestPick[]) => void;
   showName: boolean;
   onShowNameChange: (value: boolean) => void;
+  pr?: boolean;
+  onPrChange?: (value: boolean) => void;
+  canMarkPr?: boolean;
   quickPicks?: { id: string; name: string; area?: string | null }[];
   t: Translate;
 }) {
@@ -343,46 +350,73 @@ export function SuggestPicker({
 
       {/* 名前を出すトグル (1件以上選択時のみ) */}
       {picks.length > 0 && (
-        <button
-          type="button"
-          onClick={() => onShowNameChange(!showName)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            width: "100%",
-            marginTop: 12,
-            padding: "10px 4px",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            textAlign: "left",
-          }}
-        >
-          <span
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 12 }}>
+          <ToggleRow checked={showName} onClick={() => onShowNameChange(!showName)}>
+            {t("survey.suggestShowName")}
+          </ToggleRow>
+          {canMarkPr && (
+            <>
+              <ToggleRow checked={pr === true} onClick={() => onPrChange?.(!(pr === true))}>
+                {t("official.prToggle")}
+              </ToggleRow>
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.45, paddingLeft: 32 }}>
+                {t("official.prHint")}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ToggleRow({
+  checked,
+  onClick,
+  children,
+}: {
+  checked: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        width: "100%",
+        padding: "10px 4px",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      <span
             style={{
               flexShrink: 0,
               width: 22,
               height: 22,
               borderRadius: 6,
-              border: showName ? "none" : "1.5px solid var(--border-strong)",
-              backgroundColor: showName ? "var(--primary)" : "transparent",
+              border: checked ? "none" : "1.5px solid var(--border-strong)",
+              backgroundColor: checked ? "var(--primary)" : "transparent",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            {showName && (
+            {checked && (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}
           </span>
           <span style={{ fontSize: 14, color: "var(--text-primary)", fontWeight: 600 }}>
-            {t("survey.suggestShowName")}
+            {children}
           </span>
-        </button>
-      )}
-    </div>
+    </button>
   );
 }

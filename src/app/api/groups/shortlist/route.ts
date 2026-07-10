@@ -22,6 +22,8 @@ export interface ShortlistItem {
   isMemberFavorite?: boolean;
   endorsementLabel?: string | null;
   publicFavoriteCount?: number;
+  officialRecommendedByNames?: string[];
+  pr?: boolean;
 }
 
 export async function GET(request: NextRequest) {

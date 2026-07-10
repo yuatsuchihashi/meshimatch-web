@@ -16,14 +16,16 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { resolveListId, fetchSharedList } from "@/lib/gmaps-import/parse";
 import { matchPlaces } from "@/lib/gmaps-import/match";
 import type { RestaurantRow } from "@/lib/restaurants/pool";
+import { isVerified, type VerificationClient } from "@/lib/verification";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { url, confirm, keys, visibility } = body as {
+  const { url, confirm, keys, visibility, pr } = body as {
     url?: string;
     confirm?: boolean;
     keys?: string[];
     visibility?: "public" | "private";
+    pr?: boolean;
   };
 
   if (!url) {
@@ -95,6 +97,8 @@ export async function POST(request: NextRequest) {
     selectedKeys.has(r.place.cid ?? r.place.name)
   );
   const vis = visibility === "public" ? "public" : "private";
+  const verified = await isVerified(supabase as unknown as VerificationClient, user.id);
+  const disclosedPr = verified && pr === true;
   let imported = 0;
 
   for (const r of chosen) {
@@ -125,6 +129,7 @@ export async function POST(request: NextRequest) {
         visibility: vis,
         added_by: user.id,
         note: `Google マップ「${parsed.title}」からインポート`,
+        pr: disclosedPr,
       },
       { onConflict: "restaurant_id,source_type,added_by" }
     );
