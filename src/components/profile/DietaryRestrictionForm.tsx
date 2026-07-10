@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { DIETARY_RESTRICTIONS, type DietaryRestrictionId } from "@/lib/hotpepper/constants";
+import { DIETARY_RESTRICTIONS, type DietaryRestrictionId } from "@/lib/restaurant-taxonomy";
 import { addDietaryRestriction, removeDietaryRestriction } from "@/actions/preferences";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";

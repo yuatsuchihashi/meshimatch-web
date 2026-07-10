@@ -1,16 +1,14 @@
 // ============================================================
-// 候補エンリッチメント – Google Places (call-once) + HotPepper 写真
+// 候補エンリッチメント – Google Places (call-once)
 // ============================================================
 // 表示候補の上位について:
 //   1. place_id 未取得の店 → Places を一度だけ呼び、
 //      place_id / 閉業status / 評価 / 写真 を台帳に永続化
 //      (閉業なら closed=true → 以後プールから消える)
-//   2. それでも写真がない店 → HotPepper 照合で写真だけ補完
 // 返り値は「今回のレスポンスから除外すべき閉業店の id 集合」。
 // ============================================================
 
 import { lookupPlace, placesEnabled } from "@/lib/google-places";
-import { findHotpepperPhoto } from "@/lib/hotpepper/photo";
 import type { Restaurant } from "@/lib/types";
 
 type SupabaseLike = {
@@ -56,22 +54,6 @@ export async function enrichCandidates(
               closed: hit.closed,
               ...(hit.photoUrl ? { photo_url: hit.photoUrl } : {}),
             })
-            .eq("id", restaurant.id);
-        }
-      }
-
-      // 2. HotPepper 写真フォールバック
-      if (!restaurant.photoUrl) {
-        const photo = await findHotpepperPhoto({
-          name: restaurant.name,
-          lat: restaurant.lat!,
-          lng: restaurant.lng!,
-        });
-        if (photo) {
-          restaurant.photoUrl = photo.photoUrl;
-          await supabase
-            .from("restaurants")
-            .update({ photo_url: photo.photoUrl })
             .eq("id", restaurant.id);
         }
       }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { GENRES, type GenreCode } from "@/lib/hotpepper/constants";
+import { GENRES, type GenreCode } from "@/lib/restaurant-taxonomy";
 import { upsertGenrePreferences } from "@/actions/preferences";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { cn } from "@/lib/utils";

@@ -9,6 +9,7 @@ import type {
   UserProfile,
 } from "@/lib/types";
 import type { GenreScore, MatchResult } from "@/lib/types";
+import { GENRE_NAMES } from "@/lib/restaurant-taxonomy";
 
 const MUST_PREFERENCE_WEIGHT = 3;
 const PREFER_PREFERENCE_WEIGHT = 2;
@@ -16,8 +17,8 @@ const OPTIONAL_PREFERENCE_WEIGHT = 1;
 // 「避けたい」は強い負のシグナル (1人でも避けたい人がいれば大きく沈む)
 const AVOID_PREFERENCE_WEIGHT = -4;
 
-// 内部ジャンルID → HotPepper ジャンルコードのマッピング
-const GENRE_ID_TO_HP_CODE: Record<string, string> = {
+// 内部ジャンルID → 共通ジャンルコードのマッピング
+const GENRE_ID_TO_CODE: Record<string, string> = {
   izakaya: "G001",
   dining_bar: "G002",
   creative: "G003",
@@ -44,38 +45,17 @@ const GENRE_ID_TO_HP_CODE: Record<string, string> = {
   steak: "G005",
 };
 
-// HotPepper ジャンルコード → 名前
-const HP_GENRE_NAMES: Record<string, string> = {
-  G001: "居酒屋",
-  G002: "ダイニングバー・バル",
-  G003: "創作料理",
-  G004: "和食",
-  G005: "洋食",
-  G006: "イタリアン・フレンチ",
-  G007: "中華",
-  G008: "焼肉・ホルモン",
-  G009: "アジア・エスニック料理",
-  G010: "各国料理",
-  G011: "カラオケ・パーティ",
-  G012: "バー・カクテル",
-  G013: "ラーメン",
-  G014: "カフェ・スイーツ",
-  G015: "その他グルメ",
-  G016: "お好み焼き・もんじゃ",
-  G017: "韓国料理",
-};
-
 const DEFAULT_GENRE_CODES_BY_FOCUS: Record<NonNullable<SessionFocus>, string[]> = {
   balanced: ["G001", "G004", "G005"],
   drink_centered: ["G001", "G002", "G012"],
   food_centered: ["G004", "G005", "G006"],
 };
 
-// ジャンルIDをHotPepperコードに変換
-function toHpCode(genreId: string): string {
+// ジャンルIDを共通ジャンルコードに変換
+function toGenreCode(genreId: string): string {
   // すでにG001形式の場合はそのまま
   if (/^G\d{3}$/.test(genreId)) return genreId;
-  return GENRE_ID_TO_HP_CODE[genreId] ?? "G015";
+  return GENRE_ID_TO_CODE[genreId] ?? "G015";
 }
 
 function preferenceWeight(priority: "must" | "prefer" | "optional" | "avoid") {
@@ -90,7 +70,7 @@ function hasStructuredPositiveSignals(survey: SurveyResponse) {
 }
 
 function applyGenreDelta(rawScores: Record<string, number>, genreId: string, delta: number) {
-  const code = toHpCode(genreId);
+  const code = toGenreCode(genreId);
   rawScores[code] = (rawScores[code] ?? 0) + delta;
 }
 
@@ -131,7 +111,7 @@ export function calculateGroupGenreScores(
     const normalized = (score / maxAbs + 1) / 2; // 0.0 ~ 1.0
     result[code] = {
       genreId: code,
-      genreName: HP_GENRE_NAMES[code] ?? code,
+      genreName: GENRE_NAMES[code] ?? code,
       score: score / maxAbs,
       normalizedScore: normalized,
     };
@@ -150,7 +130,7 @@ export function getGenreRanking(
 }
 
 /**
- * 上位ジャンルからHotPepper検索パラメータを生成する
+ * 上位ジャンルから候補プール用のジャンルシグナルを生成する
  */
 export function getSearchParams(
   genreRanking: GenreScore[],

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { computeTrust, type SourceRow } from "@/lib/restaurants/pool";
+import {
+  EMPTY_CANDIDATE_POOL,
+  composePool,
+  computeTrust,
+  type RestaurantRow,
+  type SourceRow,
+} from "@/lib/restaurants/pool";
 
 function source(partial: Partial<SourceRow>): SourceRow {
   return {
@@ -9,71 +15,116 @@ function source(partial: Partial<SourceRow>): SourceRow {
     visibility: "private",
     added_by: null,
     display_label: null,
+    pr: false,
     ...partial,
   };
 }
 
-describe("computeTrust", () => {
-  it("boosts member favorites the most", () => {
-    const trust = computeTrust({
-      sources: [source({ source_type: "user_favorite", added_by: "me" })],
-      memberProfileIds: ["me"],
-    });
-    expect(trust.isMemberFavorite).toBe(true);
-    expect(trust.trustBoost).toBeCloseTo(0.35);
-  });
+function row(id: string, area = "渋谷"): RestaurantRow {
+  return {
+    id,
+    name: id,
+    name_en: null,
+    lat: 0,
+    lng: 0,
+    nearest_area: area,
+    genre_id: "G004",
+    price_band: "¥3,000〜¥4,000",
+    address: null,
+    url: null,
+    photo_url: null,
+    closed: false,
+  };
+}
 
-  it("counts public favorites from non-members, capped at 0.15", () => {
-    const sources = ["a", "b", "c", "d", "e"].map((uid) =>
-      source({ visibility: "public", added_by: uid, id: uid })
-    );
-    const trust = computeTrust({ sources, memberProfileIds: ["me"] });
-    expect(trust.isMemberFavorite).toBe(false);
-    expect(trust.publicFavoriteCount).toBe(5);
-    expect(trust.trustBoost).toBeCloseTo(0.15); // 0.05*5 → cap 0.15
-  });
-
-  it("exposes endorsement label only when public", () => {
-    const pub = computeTrust({
+describe("trust-ring pool", () => {
+  it("keeps only ring 0/1/2 contributors and orders inner rings first", () => {
+    const pool = composePool({
+      restaurants: [row("r0"), row("r1"), row("r2"), row("ignored")],
       sources: [
+        source({ id: "m", restaurant_id: "r0", added_by: "member" }),
         source({
-          source_type: "endorsement",
+          id: "friend",
+          restaurant_id: "r1",
+          added_by: "friend",
           visibility: "public",
-          display_label: "グルメ太郎のおすすめ！",
         }),
-      ],
-      memberProfileIds: [],
-    });
-    expect(pub.endorsementLabel).toBe("グルメ太郎のおすすめ！");
-    expect(pub.trustBoost).toBeCloseTo(0.15);
-
-    const priv = computeTrust({
-      sources: [
         source({
+          id: "official",
+          restaurant_id: "r2",
           source_type: "endorsement",
-          visibility: "private",
-          display_label: "x",
+          added_by: "official",
+          visibility: "public",
+          display_label: "公式の推し",
+        }),
+        source({
+          id: "not-followed",
+          restaurant_id: "ignored",
+          added_by: "stranger",
+          visibility: "public",
         }),
       ],
-      memberProfileIds: [],
+      memberProfileIds: ["member"],
+      followedProfileIds: ["friend", "official"],
+      verifiedOfficialProfileIds: ["official"],
+      profileNamesById: new Map([
+        ["member", "Kai"],
+        ["friend", "友人"],
+        ["official", "公式"],
+      ]),
     });
-    expect(priv.endorsementLabel).toBeNull();
+
+    expect(pool.map((entry) => [entry.restaurant.id, entry.ring])).toEqual([
+      ["r0", 0],
+      ["r1", 1],
+      ["r2", 2],
+    ]);
+    expect(pool[2].endorsementLabel).toBe("公式の推し");
   });
 
-  it("stacks curated + endorsement + member favorite", () => {
+  it("treats survey 行きたい店 entries as ring 0", () => {
+    const pool = composePool({
+      restaurants: [row("survey-pick")],
+      sources: [],
+      memberProfileIds: [],
+      surveySuggestions: [
+        {
+          restaurantId: "survey-pick",
+          label: "Kaiのおすすめ",
+          recommenderName: "Kai",
+        },
+      ],
+    });
+
+    expect(pool).toHaveLength(1);
+    expect(pool[0].ring).toBe(0);
+    expect(pool[0].contributorLabels).toContain("Kaiのおすすめ");
+  });
+
+  it("adds strength when multiple people recommend the same place", () => {
     const trust = computeTrust({
       sources: [
-        source({ source_type: "base_curated", id: "1" }),
-        source({
-          source_type: "endorsement",
-          visibility: "public",
-          display_label: "L",
-          id: "2",
-        }),
-        source({ source_type: "user_favorite", added_by: "me", id: "3" }),
+        source({ id: "1", added_by: "member", restaurant_id: "r" }),
+        source({ id: "2", added_by: "friend", restaurant_id: "r", visibility: "public" }),
       ],
-      memberProfileIds: ["me"],
+      memberProfileIds: ["member"],
+      followedProfileIds: ["friend"],
+      profileNamesById: new Map([
+        ["member", "Kai"],
+        ["friend", "友人"],
+      ]),
     });
-    expect(trust.trustBoost).toBeCloseTo(0.35 + 0.15 + 0.1);
+
+    expect(trust.ring).toBe(0);
+    expect(trust.recommendationStrength).toBeGreaterThan(1);
+    expect(trust.sourceCount).toBe(2);
+  });
+
+  it("exposes an explicit empty-pool marker", () => {
+    expect(EMPTY_CANDIDATE_POOL).toEqual({
+      status: "empty",
+      reason: "no_trust_ring_candidates",
+      prompt: "このグループのおすすめがまだ足りません。行きたい店を追加してください。",
+    });
   });
 });

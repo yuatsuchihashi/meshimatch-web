@@ -1,17 +1,11 @@
 // ============================================================
-// 候補プール – 台帳 + 信頼レイヤーから候補レストランを引く
+// 候補プール – 信頼リングから候補レストランを引く
 // ============================================================
-// 方針 (HotPepper 依存からの脱却):
-//   デフォルトの母集団 = 信頼レイヤーが付いた店 (base_curated / endorsement /
-//   public な user_favorite)。グループメンバー本人のお気に入りは最優先。
-//   信頼付きの店がエリアに少ない間は台帳 (gazetteer) で補完する。
-//
-// 階層ブースト:
-//   member_favorite   +0.35  グループメンバー本人のお気に入り (優先枠)
-//   endorsement       +0.15  許可済み発信者の推薦 ("〇〇のおすすめ！" バッジ)
-//   public_favorites  +0.05×人数 (上限 +0.15)  他ユーザーの公開お気に入り
-//   base_curated      +0.10  初期キュレーション
-//   gazetteer のみ     +0.00  補完枠
+// R2 契約:
+//   Ring 0 = グループメンバー本人の公開/非公開お気に入り・推薦 + survey 行きたい店
+//   Ring 1 = メンバーがフォローしている通常ユーザーの公開お気に入り
+//   Ring 2 = メンバーがフォローしている認証公式アカウントの公開リスト
+//   Ring 3 = なし。空なら空状態を返す。台帳・外部検索フィラーは使わない。
 // ============================================================
 
 import { createServiceClient } from "@/lib/supabase/server";
@@ -48,17 +42,47 @@ export interface SourceRow {
   pr?: boolean | null;
 }
 
+export type TrustRing = 0 | 1 | 2;
+
+export interface SurveySuggestionInput {
+  restaurantId: string;
+  label: string;
+  recommenderName?: string | null;
+  createdAt?: string | null;
+}
+
+export interface PoolContributor {
+  source: SourceRow | null;
+  ring: TrustRing;
+  label: string;
+  recommenderName: string | null;
+  profileId: string | null;
+  pr: boolean;
+  createdAt: string | null;
+}
+
 export interface PooledRestaurant {
   restaurant: Restaurant;
+  ring: TrustRing;
+  recommendationStrength: number;
+  sourceCount: number;
   trustBoost: number;
   isMemberFavorite: boolean;
   endorsementLabel: string | null;
   publicFavoriteCount: number;
-  isCurated: boolean;
+  isCurated: false;
   recommendedByNames: string[];
+  officialRecommendedByNames: string[];
+  contributorLabels: string[];
   latestSourceAt: string | null;
   pr: boolean;
 }
+
+export const EMPTY_CANDIDATE_POOL = {
+  status: "empty",
+  reason: "no_trust_ring_candidates",
+  prompt: "このグループのおすすめがまだ足りません。行きたい店を追加してください。",
+} as const;
 
 export function toRestaurant(row: RestaurantRow): Restaurant {
   return {
@@ -71,7 +95,6 @@ export function toRestaurant(row: RestaurantRow): Restaurant {
     matchScore: 0,
     rating: 0,
     access: row.address ?? "",
-    hotpepperUrl: row.url ?? undefined,
     hasPrivateRoom: false,
     address: row.address ?? "",
     area: row.nearest_area ?? "",
@@ -85,114 +108,273 @@ export function toRestaurant(row: RestaurantRow): Restaurant {
   };
 }
 
+function uniq<T>(values: T[]): T[] {
+  return [...new Set(values)];
+}
+
+function maxRingStrength(ring: TrustRing) {
+  if (ring === 0) return 1;
+  if (ring === 1) return 0.72;
+  return 0.52;
+}
+
+function labelForSource(source: SourceRow, profileNamesById: Map<string, string>) {
+  if (source.display_label) return source.display_label;
+  const name = source.added_by ? profileNamesById.get(source.added_by) : null;
+  if (source.source_type === "endorsement") {
+    return name ? `${name}のおすすめ` : "公式のおすすめ";
+  }
+  return name ? `${name}さんのお気に入り` : "公開お気に入り";
+}
+
+export function composePool(params: {
+  restaurants: RestaurantRow[];
+  sources: SourceRow[];
+  memberProfileIds: string[];
+  profileNamesById?: Map<string, string>;
+  followedProfileIds?: string[];
+  verifiedOfficialProfileIds?: string[];
+  surveySuggestions?: SurveySuggestionInput[];
+}): PooledRestaurant[] {
+  const {
+    restaurants,
+    sources,
+    memberProfileIds,
+    profileNamesById = new Map(),
+    followedProfileIds = [],
+    verifiedOfficialProfileIds = [],
+    surveySuggestions = [],
+  } = params;
+  const memberIds = new Set(memberProfileIds);
+  const followedIds = new Set(followedProfileIds);
+  const officialIds = new Set(verifiedOfficialProfileIds);
+  const contributorsByRestaurant = new Map<string, PoolContributor[]>();
+  const addContributor = (restaurantId: string, contributor: PoolContributor) => {
+    contributorsByRestaurant.set(restaurantId, [
+      ...(contributorsByRestaurant.get(restaurantId) ?? []),
+      contributor,
+    ]);
+  };
+
+  for (const suggestion of surveySuggestions) {
+    addContributor(suggestion.restaurantId, {
+      source: null,
+      ring: 0,
+      label: suggestion.label,
+      recommenderName: suggestion.recommenderName ?? null,
+      profileId: null,
+      pr: false,
+      createdAt: suggestion.createdAt ?? null,
+    });
+  }
+
+  for (const source of sources) {
+    if (!source.added_by) continue;
+    const isMember = memberIds.has(source.added_by);
+    const isFollowed = followedIds.has(source.added_by);
+    const isOfficial = officialIds.has(source.added_by);
+    let ring: TrustRing | null = null;
+
+    if (isMember) {
+      ring = 0;
+    } else if (
+      isFollowed &&
+      isOfficial &&
+      source.visibility === "public" &&
+      (source.source_type === "user_favorite" || source.source_type === "endorsement")
+    ) {
+      ring = 2;
+    } else if (
+      isFollowed &&
+      !isOfficial &&
+      source.visibility === "public" &&
+      source.source_type === "user_favorite"
+    ) {
+      ring = 1;
+    }
+
+    if (ring === null) continue;
+
+    const name = profileNamesById.get(source.added_by) ?? null;
+    addContributor(source.restaurant_id, {
+      source,
+      ring,
+      label: labelForSource(source, profileNamesById),
+      recommenderName: name,
+      profileId: source.added_by,
+      pr: source.pr === true,
+      createdAt: source.created_at ?? null,
+    });
+  }
+
+  return restaurants
+    .map((row) => {
+      const contributors = contributorsByRestaurant.get(row.id) ?? [];
+      if (contributors.length === 0) return null;
+
+      const ring = Math.min(...contributors.map((c) => c.ring)) as TrustRing;
+      const sourceCount = contributors.length;
+      const recommendationStrength = Math.min(
+        1.35,
+        maxRingStrength(ring) + Math.min((sourceCount - 1) * 0.12, 0.35)
+      );
+      const ring0 = contributors.filter((c) => c.ring === 0);
+      const ring1 = contributors.filter((c) => c.ring === 1);
+      const ring2 = contributors.filter((c) => c.ring === 2);
+      const recommendedByNames = uniq(
+        [...ring0, ...ring1]
+          .map((c) => c.recommenderName)
+          .filter((name): name is string => Boolean(name))
+      );
+      const officialRecommendedByNames = uniq(
+        ring2
+          .map((c) => c.recommenderName)
+          .filter((name): name is string => Boolean(name))
+      );
+      const latestSourceAt =
+        contributors
+          .map((c) => c.createdAt)
+          .filter((createdAt): createdAt is string => Boolean(createdAt))
+          .sort()
+          .at(-1) ?? null;
+      const endorsementLabel =
+        contributors.find((c) => c.source?.source_type === "endorsement")?.label ?? null;
+
+      return {
+        restaurant: toRestaurant(row),
+        ring,
+        recommendationStrength,
+        sourceCount,
+        // Kept as an internal compatibility alias for callers/tests that still say trustBoost.
+        trustBoost: recommendationStrength,
+        isMemberFavorite: ring0.length > 0,
+        endorsementLabel,
+        publicFavoriteCount: ring1.length,
+        isCurated: false as const,
+        recommendedByNames,
+        officialRecommendedByNames,
+        contributorLabels: uniq(contributors.map((c) => c.label)),
+        latestSourceAt,
+        pr: contributors.some((c) => c.pr),
+      };
+    })
+    .filter((entry): entry is PooledRestaurant => entry !== null)
+    .sort((a, b) => {
+      if (a.ring !== b.ring) return a.ring - b.ring;
+      return b.recommendationStrength - a.recommendationStrength;
+    });
+}
+
 export function computeTrust(params: {
   sources: SourceRow[];
   memberProfileIds: string[];
   profileNamesById?: Map<string, string>;
+  followedProfileIds?: string[];
+  verifiedOfficialProfileIds?: string[];
+  surveySuggestions?: SurveySuggestionInput[];
 }): Pick<
   PooledRestaurant,
+  | "ring"
+  | "recommendationStrength"
+  | "sourceCount"
   | "trustBoost"
   | "isMemberFavorite"
   | "endorsementLabel"
   | "publicFavoriteCount"
   | "isCurated"
   | "recommendedByNames"
+  | "officialRecommendedByNames"
+  | "contributorLabels"
   | "latestSourceAt"
   | "pr"
 > {
-  const { sources, memberProfileIds, profileNamesById = new Map() } = params;
-  const memberIds = new Set(memberProfileIds);
-
-  const isMemberFavorite = sources.some(
-    (s) =>
-      s.source_type === "user_favorite" &&
-      s.added_by !== null &&
-      memberIds.has(s.added_by)
+  const restaurantIds = uniq([
+    ...params.sources.map((source) => source.restaurant_id),
+    ...(params.surveySuggestions ?? []).map((suggestion) => suggestion.restaurantId),
+  ]);
+  const rows = restaurantIds.map((id) => ({
+    id,
+    name: id,
+    name_en: null,
+    lat: 0,
+    lng: 0,
+    nearest_area: null,
+    genre_id: null,
+    price_band: null,
+    address: null,
+    url: null,
+    photo_url: null,
+    closed: false,
+  }));
+  return (
+    composePool({ restaurants: rows, ...params })[0] ?? {
+      ring: 2,
+      recommendationStrength: 0,
+      sourceCount: 0,
+      trustBoost: 0,
+      isMemberFavorite: false,
+      endorsementLabel: null,
+      publicFavoriteCount: 0,
+      isCurated: false,
+      recommendedByNames: [],
+      officialRecommendedByNames: [],
+      contributorLabels: [],
+      latestSourceAt: null,
+      pr: false,
+    }
   );
-  const endorsement = sources.find(
-    (s) => s.source_type === "endorsement" && s.visibility === "public"
-  );
-  const publicFavoriteCount = sources.filter(
-    (s) =>
-      s.source_type === "user_favorite" &&
-      s.visibility === "public" &&
-      (s.added_by === null || !memberIds.has(s.added_by))
-  ).length;
-  const recommendedByNames = [
-    ...new Set(
-      sources
-        .filter(
-          (s) =>
-            s.source_type === "user_favorite" &&
-            s.visibility === "public" &&
-            s.added_by !== null
-        )
-        .map((s) => profileNamesById.get(s.added_by ?? "") ?? null)
-        .filter((name): name is string => Boolean(name))
-    ),
-  ];
-  const latestSourceAt =
-    sources
-      .map((source) => source.created_at ?? null)
-      .filter((createdAt): createdAt is string => Boolean(createdAt))
-      .sort()
-      .at(-1) ?? null;
-  const isCurated = sources.some((s) => s.source_type === "base_curated");
-  const pr = sources.some((s) => s.pr === true);
-
-  const trustBoost =
-    (isMemberFavorite ? 0.35 : 0) +
-    (endorsement ? 0.15 : 0) +
-    Math.min(publicFavoriteCount * 0.05, 0.15) +
-    (isCurated ? 0.1 : 0);
-
-  return {
-    trustBoost,
-    isMemberFavorite,
-    endorsementLabel: endorsement?.display_label ?? null,
-    publicFavoriteCount,
-    isCurated,
-    recommendedByNames,
-    latestSourceAt,
-    pr,
-  };
-}
-
-// シード付きの決定的ハッシュ (再検索シャッフル用)
-function seededScore(id: string, seed: number): number {
-  let hash = seed;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) | 0;
-  }
-  return hash;
 }
 
 export async function fetchCandidatePool(params: {
-  areaNames: string[];
   genreCodes: string[];
   memberProfileIds: string[];
+  surveySuggestions?: SurveySuggestionInput[];
+  areaNames?: string[];
   maxPerArea?: number;
   shuffleSeed?: number;
-  trustedOnly?: boolean; // 台帳フィラーを使わない (持ち寄り方式)
+  trustedOnly?: boolean;
 }): Promise<Map<string, PooledRestaurant[]>> {
-  const { areaNames, genreCodes, memberProfileIds, maxPerArea = 40, shuffleSeed, trustedOnly } = params;
+  const {
+    memberProfileIds,
+    surveySuggestions = [],
+    areaNames = [],
+    maxPerArea = 40,
+  } = params;
   const supabase = await createServiceClient();
 
-  const { data: restaurantRows } = await supabase
-    .from("restaurants")
-    .select("*")
-    .in("nearest_area", areaNames)
-    .eq("closed", false);
+  let followedProfileIds: string[] = [];
+  if (memberProfileIds.length > 0) {
+    const { data: follows } = await supabase
+      .from("follows")
+      .select("following_id")
+      .in("follower_id", memberProfileIds);
+    followedProfileIds = uniq(
+      ((follows ?? []) as { following_id?: string | null }[])
+        .map((follow) => follow.following_id)
+        .filter((id): id is string => Boolean(id))
+    );
+  }
 
-  const restaurants = (restaurantRows ?? []) as unknown as RestaurantRow[];
-  const ids = restaurants.map((r) => r.id);
+  let verifiedOfficialProfileIds: string[] = [];
+  if (followedProfileIds.length > 0) {
+    const { data: grants } = await supabase
+      .from("official_verification_grants")
+      .select("profile_id")
+      .in("profile_id", followedProfileIds);
+    verifiedOfficialProfileIds = uniq(
+      ((grants ?? []) as { profile_id?: string | null }[])
+        .map((grant) => grant.profile_id)
+        .filter((id): id is string => Boolean(id))
+    );
+  }
 
   let sources: SourceRow[] = [];
-  if (ids.length > 0) {
+  const contributorIds = uniq([...memberProfileIds, ...followedProfileIds]);
+  if (contributorIds.length > 0) {
     const { data: sourceRows } = await supabase
       .from("restaurant_sources")
       .select("*")
-      .in("restaurant_id", ids);
+      .in("added_by", contributorIds);
     sources = (sourceRows ?? []) as unknown as SourceRow[];
   }
 
@@ -214,58 +396,40 @@ export async function fetchCandidatePool(params: {
     }
   }
 
-  const sourcesByRestaurant = new Map<string, SourceRow[]>();
-  for (const source of sources) {
-    // private なお気に入りは本人がグループにいる時だけ効かせる
-    if (
-      source.source_type === "user_favorite" &&
-      source.visibility === "private" &&
-      (source.added_by === null || !memberProfileIds.includes(source.added_by))
-    ) {
-      continue;
-    }
-    const list = sourcesByRestaurant.get(source.restaurant_id) ?? [];
-    list.push(source);
-    sourcesByRestaurant.set(source.restaurant_id, list);
-  }
+  const restaurantIds = uniq([
+    ...sources.map((source) => source.restaurant_id),
+    ...surveySuggestions.map((suggestion) => suggestion.restaurantId),
+  ]);
+  if (restaurantIds.length === 0) return new Map();
 
-  const genreSet = new Set(genreCodes);
+  const { data: restaurantRows } = await supabase
+    .from("restaurants")
+    .select("*")
+    .in("id", restaurantIds)
+    .eq("closed", false);
+  const areaSet = new Set(areaNames);
+  const restaurants = ((restaurantRows ?? []) as unknown as RestaurantRow[]).filter(
+    (row) =>
+      areaSet.size === 0 || row.nearest_area === null || areaSet.has(row.nearest_area)
+  );
+  const pooled = composePool({
+    restaurants,
+    sources,
+    memberProfileIds,
+    profileNamesById,
+    followedProfileIds,
+    verifiedOfficialProfileIds,
+    surveySuggestions,
+  });
   const byArea = new Map<string, PooledRestaurant[]>();
 
-  for (const areaName of areaNames) {
-    const areaRestaurants = restaurants.filter((r) => r.nearest_area === areaName);
+  for (const entry of pooled) {
+    const areaName = entry.restaurant.area || "その他";
+    byArea.set(areaName, [...(byArea.get(areaName) ?? []), entry]);
+  }
 
-    const pooled = areaRestaurants.map((row) => {
-      const trust = computeTrust({
-        sources: sourcesByRestaurant.get(row.id) ?? [],
-        memberProfileIds,
-        profileNamesById,
-      });
-      return { restaurant: toRestaurant(row), ...trust };
-    });
-
-    // 選抜: 信頼付き (ジャンル不問) を先に、残りをジャンル一致の台帳で補完
-    const trusted = pooled
-      .filter((p) => p.trustBoost > 0)
-      .sort((a, b) => b.trustBoost - a.trustBoost);
-    const gazetteerMatch = pooled.filter(
-      (p) =>
-        p.trustBoost === 0 &&
-        (genreSet.size === 0 || genreSet.has(p.restaurant.genreId))
-    );
-    // 台帳補完の並び: シードがあれば再検索ごとに違う顔ぶれ、なければ決定的
-    if (shuffleSeed) {
-      gazetteerMatch.sort(
-        (a, b) => seededScore(a.restaurant.id, shuffleSeed) - seededScore(b.restaurant.id, shuffleSeed)
-      );
-    } else {
-      gazetteerMatch.sort((a, b) => a.restaurant.id.localeCompare(b.restaurant.id));
-    }
-
-    byArea.set(
-      areaName,
-      (trustedOnly ? trusted : [...trusted, ...gazetteerMatch]).slice(0, maxPerArea)
-    );
+  for (const [areaName, entries] of byArea) {
+    byArea.set(areaName, entries.slice(0, maxPerArea));
   }
 
   return byArea;
