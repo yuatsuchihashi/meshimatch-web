@@ -1,4 +1,4 @@
-import type { GenreCode, DietaryRestrictionId, MoodId } from "@/lib/hotpepper/constants";
+import type { GenreCode, DietaryRestrictionId, MoodId } from "@/lib/restaurant-taxonomy";
 
 export type GenrePreference = {
   genre_code: GenreCode;

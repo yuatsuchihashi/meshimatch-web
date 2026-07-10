@@ -6,7 +6,7 @@ export async function saveFavoriteRestaurant(_restaurant: unknown) {
   return { success: true };
 }
 
-export async function removeFavoriteRestaurant(_hotpepperId: string) {
-  void _hotpepperId;
+export async function removeFavoriteRestaurant(_restaurantId: string) {
+  void _restaurantId;
   return { success: true };
 }

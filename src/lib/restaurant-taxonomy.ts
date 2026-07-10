@@ -20,6 +20,10 @@ export const GENRES = [
 
 export type GenreCode = (typeof GENRES)[number]["code"];
 
+export const GENRE_NAMES: Record<string, string> = Object.fromEntries(
+  GENRES.map((genre) => [genre.code, genre.name])
+);
+
 export const DIETARY_RESTRICTIONS = [
   { id: "vegetarian", label: "ベジタリアン", keyword: "ベジタリアン 菜食" },
   { id: "vegan", label: "ヴィーガン", keyword: "ビーガン ヴィーガン" },
@@ -29,7 +33,7 @@ export const DIETARY_RESTRICTIONS = [
   { id: "allergy_dairy", label: "乳アレルギー", keyword: "乳アレルギー対応" },
   { id: "allergy_shellfish", label: "甲殻類アレルギー", keyword: "甲殻類アレルギー対応" },
   { id: "allergy_nuts", label: "ナッツアレルギー", keyword: "ナッツアレルギー対応" },
-  { id: "allergy_wheat", label: "小麦アレルギー", keyword: "小麦アレルギー対応 グルテンフリー" },
+  { id: "allergy_wheat", label: "小麦アレルギー", keyword: "小麦不使用 グルテンフリー" },
   { id: "allergy_soba", label: "そばアレルギー", keyword: "そばアレルギー対応" },
 ] as const;
 
@@ -37,15 +41,12 @@ export type DietaryRestrictionId =
   (typeof DIETARY_RESTRICTIONS)[number]["id"];
 
 export const MOODS = [
-  { id: "lively", label: "ワイワイ", icon: "🎉", hpKeyword: "宴会" },
-  { id: "calm", label: "落ち着いた", icon: "🕯️", hpKeyword: "落ち着いた" },
-  { id: "business", label: "商談・接待", icon: "💼", hpKeyword: "接待 個室" },
-  { id: "girls", label: "女子会", icon: "👩‍👩‍👧", hpKeyword: "女子会" },
-  { id: "date", label: "デート", icon: "💕", hpKeyword: "デート" },
-  { id: "casual", label: "カジュアル", icon: "😊", hpKeyword: "カジュアル" },
+  { id: "lively", label: "ワイワイ", icon: "🎉", keyword: "宴会" },
+  { id: "calm", label: "落ち着いた", icon: "🕯️", keyword: "落ち着いた" },
+  { id: "business", label: "商談・接待", icon: "💼", keyword: "接待 個室" },
+  { id: "girls", label: "女子会", icon: "👩‍👩‍👧", keyword: "女子会" },
+  { id: "date", label: "デート", icon: "💕", keyword: "デート" },
+  { id: "casual", label: "カジュアル", icon: "😊", keyword: "カジュアル" },
 ] as const;
 
 export type MoodId = (typeof MOODS)[number]["id"];
-
-export const HOTPEPPER_BASE_URL =
-  "https://webservice.recruit.co.jp/hotpepper";
