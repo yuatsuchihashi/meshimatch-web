@@ -66,7 +66,7 @@ const UNIQUE_CONSTRAINTS: Record<string, string[][]> = {
   restaurant_sources: [["id"], ["restaurant_id", "source_type", "added_by"]],
   restaurant_votes: [["id"], ["group_id", "member_id", "restaurant_id"]],
   official_verification_grants: [["id"], ["profile_id"]],
-  zones: [["id"]],
+  zones: [["id", "generation"]],
   station_zone_map: [["id"], ["station", "generation"]],
 };
 
@@ -216,7 +216,7 @@ function seedZones(db: Db): boolean {
   const stamp = nowIso();
 
   for (const zone of INITIAL_ZONES) {
-    if ((db.zones ?? []).some((row) => row.id === zone.id)) continue;
+    if ((db.zones ?? []).some((row) => row.id === zone.id && row.generation === zone.generation)) continue;
     db.zones.push({
       id: zone.id,
       name: zone.name,
