@@ -103,6 +103,7 @@ function rankAreaRestaurants(params: {
       endorsementLabel: trust?.endorsementLabel ?? null,
       publicFavoriteCount: trust?.publicFavoriteCount ?? 0,
       recommendedByNames: trust?.recommendedByNames ?? [],
+      pr: trust?.pr ?? false,
       recommendationLabel:
         trust?.endorsementLabel ??
         ((trust?.recommendedByNames ?? []).length > 0

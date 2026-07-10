@@ -8,6 +8,7 @@ import {
   localSignUp,
   resetLocalDb,
 } from "@/lib/localdb/engine";
+import { resolveZoneForStation } from "@/lib/areas";
 import type { DbQuery } from "@/lib/localdb/builder";
 
 const testDbPath = path.join(os.tmpdir(), `meshimatch-test-${process.pid}`, "db.json");
@@ -33,6 +34,13 @@ function insert(table: string, values: Record<string, unknown>) {
   return result.data as Record<string, unknown>;
 }
 
+function writeLegacyDb(values: Record<string, unknown>) {
+  fs.mkdirSync(path.dirname(testDbPath), { recursive: true });
+  fs.writeFileSync(testDbPath, JSON.stringify(values), "utf-8");
+  const future = new Date(Date.now() + 1000);
+  fs.utimesSync(testDbPath, future, future);
+}
+
 beforeEach(() => {
   fs.rmSync(path.dirname(testDbPath), { recursive: true, force: true });
   resetLocalDb();
@@ -42,6 +50,7 @@ describe("localdb engine", () => {
   it("inserts with defaults and selects by eq", () => {
     const group = insert("groups", { name: "飲み会", invite_code: "ABC12345" });
     expect(group.id).toBeTruthy();
+    expect(group.mode).toBe("planned");
     expect(group.status).toBe("active");
     expect(group.session_focus).toBe("balanced");
 
@@ -282,5 +291,88 @@ describe("localdb engine", () => {
       })
     );
     expect((profile.data as Record<string, unknown>).display_name).toBe("ゆあ");
+  });
+
+  it("backfills legacy groups to planned mode on load", () => {
+    writeLegacyDb({
+      groups: [{ id: "legacy-group", name: "Legacy", invite_code: "LEGACY01" }],
+    });
+
+    const result = executeLocalQuery(
+      q({
+        table: "groups",
+        filters: [{ op: "eq", column: "id", value: "legacy-group" }],
+        single: "single",
+      })
+    );
+
+    expect(result.error).toBeNull();
+    expect((result.data as Record<string, unknown>).mode).toBe("planned");
+  });
+
+  it("roundtrips raw nullable departure_station values", () => {
+    const group = insert("groups", { name: "G", invite_code: "CODE0007" });
+    const member = insert("group_members", {
+      group_id: group.id,
+      display_name: "たろう",
+    });
+
+    const response = insert("survey_responses", {
+      group_id: group.id,
+      member_id: member.id,
+      departure_station: "渋谷駅",
+    });
+
+    expect(response.departure_station).toBe("渋谷駅");
+
+    const group2 = insert("groups", { name: "G2", invite_code: "CODE0008" });
+    const member2 = insert("group_members", {
+      group_id: group2.id,
+      display_name: "じろう",
+    });
+    const empty = insert("survey_responses", {
+      group_id: group2.id,
+      member_id: member2.id,
+    });
+
+    expect(empty.departure_station).toBeNull();
+  });
+
+  it("defaults restaurant source pr to false", () => {
+    const profile = insert("profiles", { display_name: "ゆあ" });
+    const restaurant = insert("restaurants", { name: "テスト食堂" });
+
+    const source = insert("restaurant_sources", {
+      restaurant_id: restaurant.id,
+      source_type: "user_favorite",
+      added_by: profile.id,
+    });
+
+    expect(source.pr).toBe(false);
+  });
+
+  it("seeds zone mappings and resolves station names to zones", () => {
+    const mapping = executeLocalQuery(
+      q({
+        table: "station_zone_map",
+        filters: [{ op: "eq", column: "station", value: "渋谷駅" }],
+        single: "single",
+      })
+    );
+
+    expect(mapping.error).toBeNull();
+    expect((mapping.data as Record<string, unknown>).zone_id).toBe("shibuya");
+
+    const zone = executeLocalQuery(
+      q({
+        table: "zones",
+        filters: [{ op: "eq", column: "id", value: "shibuya" }],
+        single: "single",
+      })
+    );
+
+    expect(zone.error).toBeNull();
+    expect((zone.data as Record<string, unknown>).name).toBe("渋谷");
+    expect(resolveZoneForStation("渋谷")?.id).toBe("shibuya");
   });
 });

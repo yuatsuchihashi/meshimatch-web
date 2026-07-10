@@ -57,6 +57,64 @@ export const AREA_CENTERS: Record<string, { lat: number; lng: number }> = {
 
 export const AREA_RADIUS_KM = 1.2;
 
+export const ZONE_GENERATION = 1;
+
+export interface ZoneDefinition {
+  id: string;
+  name: string;
+  generation: number;
+  station: string;
+}
+
+export const INITIAL_ZONES: ZoneDefinition[] = [
+  { id: "shibuya", name: "渋谷", station: "渋谷駅", generation: ZONE_GENERATION },
+  { id: "shinjuku", name: "新宿", station: "新宿駅", generation: ZONE_GENERATION },
+  { id: "ikebukuro", name: "池袋", station: "池袋駅", generation: ZONE_GENERATION },
+  { id: "tokyo", name: "東京", station: "東京駅", generation: ZONE_GENERATION },
+  { id: "shinagawa", name: "品川", station: "品川駅", generation: ZONE_GENERATION },
+  { id: "ueno", name: "上野", station: "上野駅", generation: ZONE_GENERATION },
+  { id: "ginza", name: "銀座", station: "銀座駅", generation: ZONE_GENERATION },
+  { id: "roppongi", name: "六本木", station: "六本木駅", generation: ZONE_GENERATION },
+  { id: "ebisu", name: "恵比寿", station: "恵比寿駅", generation: ZONE_GENERATION },
+  { id: "meguro", name: "目黒", station: "目黒駅", generation: ZONE_GENERATION },
+  { id: "akihabara", name: "秋葉原", station: "秋葉原駅", generation: ZONE_GENERATION },
+  { id: "asakusa", name: "浅草", station: "浅草駅", generation: ZONE_GENERATION },
+  { id: "omotesando", name: "表参道", station: "表参道駅", generation: ZONE_GENERATION },
+  { id: "shimokitazawa", name: "下北沢", station: "下北沢駅", generation: ZONE_GENERATION },
+  { id: "kichijoji", name: "吉祥寺", station: "吉祥寺駅", generation: ZONE_GENERATION },
+  { id: "tachikawa", name: "立川", station: "立川駅", generation: ZONE_GENERATION },
+  { id: "machida", name: "町田", station: "町田駅", generation: ZONE_GENERATION },
+  { id: "yokohama", name: "横浜", station: "横浜駅", generation: ZONE_GENERATION },
+];
+
+export const INITIAL_STATION_ZONE_MAP = INITIAL_ZONES.map((zone) => ({
+  station: zone.station,
+  zoneId: zone.id,
+  generation: zone.generation,
+}));
+
+export function normalizeStationName(value: string | null | undefined) {
+  const normalized = (value ?? "").replace(/\s+/g, "").trim();
+  if (!normalized) return "";
+  return normalized.endsWith("駅") ? normalized : `${normalized}駅`;
+}
+
+export function resolveZoneForStation(
+  station: string | null | undefined,
+  generation = ZONE_GENERATION
+) {
+  const normalized = normalizeStationName(station);
+  const mapping = INITIAL_STATION_ZONE_MAP.find(
+    (entry) => entry.generation === generation && entry.station === normalized
+  );
+  if (!mapping) return null;
+  return (
+    INITIAL_ZONES.find(
+      (zone) => zone.generation === generation && zone.id === mapping.zoneId
+    ) ?? null
+  );
+}
+
 export function haversineKm(
   a: { lat: number; lng: number },
   b: { lat: number; lng: number }
