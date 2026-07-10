@@ -203,6 +203,9 @@ export function scoreRestaurantForSession(params: {
     rating: Number((3 + finalScore * 2).toFixed(1)),
     reasons,
     reasonTags: restaurantReasonTags(reasons),
-    reasonExplanation: buildRestaurantExplanation(reasons),
+    reasonExplanation: buildRestaurantExplanation(reasons, {
+      genreName: restaurant.genre || null,
+      area: restaurant.area || null,
+    }),
   };
 }

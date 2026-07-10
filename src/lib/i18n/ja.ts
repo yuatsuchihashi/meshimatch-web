@@ -342,7 +342,7 @@ export const ja = {
     loading: "結果を取得中...",
     editMyResponse: "自分の回答を編集する",
     resultCount: "{count}件の結果",
-    noResultsApi: "条件に合うお店が見つからなかった…アンケートで希望エリアを足してみて",
+    noResultsApi: "まだ候補になるおすすめが集まっていないみたい。行きたい店を足すと、ここに並ぶよ",
     noResultsArea: "このエリアのお店が見つかりませんでした",
     decidedToast: "決定しました！",
     deleteGroup: "グループを削除しますか？",

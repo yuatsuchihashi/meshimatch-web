@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   RANKING_PRESETS,
+  ZONE_ADJACENCY,
   accessPenaltyForRestaurant,
   getRankingPreset,
   rankCandidatePool,
 } from "@/lib/recommendation/ranking";
+import { INITIAL_ZONES } from "@/lib/areas";
 import { composePool, type RestaurantRow, type SourceRow } from "@/lib/restaurants/pool";
 import type { Restaurant, SurveyResponse } from "@/lib/types";
 
@@ -130,5 +132,24 @@ describe("rankCandidatePool", () => {
 
     expect(rankCandidatePool({ ...common, mode: "instant" })).toHaveLength(0);
     expect(rankCandidatePool({ ...common, mode: "planned" })).toHaveLength(1);
+  });
+});
+
+
+describe("ZONE_ADJACENCY table", () => {
+  it("is total and symmetric over the zone master", () => {
+    const zoneIds = new Set(INITIAL_ZONES.map((zone) => zone.id));
+    for (const [zone, neighbors] of Object.entries(ZONE_ADJACENCY)) {
+      expect(zoneIds.has(zone)).toBe(true);
+      for (const neighbor of neighbors) {
+        expect(zoneIds.has(neighbor)).toBe(true);
+        // 対称性: A→B が隣接なら B→A も隣接
+        expect(ZONE_ADJACENCY[neighbor]).toContain(zone);
+      }
+    }
+    // 全ゾーンが表に載っている (漏れたゾーンは常に距離2になる)
+    for (const zone of zoneIds) {
+      expect(Object.keys(ZONE_ADJACENCY)).toContain(zone);
+    }
   });
 });

@@ -66,11 +66,27 @@ export function buildAreaExplanation(reasons: AreaReasonCode[]) {
   return `このエリアは${joinPhrases(phrases)}、今回の集合候補として扱いやすいです。`;
 }
 
-export function buildRestaurantExplanation(reasons: RestaurantReasonCode[]) {
+export function buildRestaurantExplanation(
+  reasons: RestaurantReasonCode[],
+  context?: { genreName?: string | null; area?: string | null }
+) {
   const phrases = reasons
     .slice(0, 3)
     .map((reason) => RESTAURANT_REASON_PHRASES[reason]);
   if (phrases.length === 0) {
+    // 理由コードが無い低シグナル候補でも、全カード同一文にならないよう
+    // ジャンル・エリアで文を固有化する (spec §3-3)
+    const genre = context?.genreName ?? null;
+    const area = context?.area ?? null;
+    if (genre && area) {
+      return `${area}の${genre}。強い一致はまだ少ないけれど、基本情報で選びやすい候補です。`;
+    }
+    if (genre) {
+      return `${genre}のお店。強い一致はまだ少ないけれど、基本情報で選びやすい候補です。`;
+    }
+    if (area) {
+      return `${area}の一軒。強い一致はまだ少ないけれど、基本情報で選びやすい候補です。`;
+    }
     return "このお店は今回の条件全体に対して無難に合わせやすい候補です。";
   }
   return `このお店は${joinPhrases(phrases)}、候補として相性が良いです。`;

@@ -2,7 +2,7 @@
 
 MeshiMatch is a group decision support app for deciding where to meet and which restaurant to choose together.
 
-This repo is the current web app built with Next.js, Supabase, and HotPepper API. The current version supports:
+This repo is the current web app built with Next.js and Supabase. Candidates come only from the trust rings (members' favorites, connections' public favorites, verified official lists) — no external restaurant search. The current version supports:
 
 - group creation and invite flow
 - guest and member survey flows
@@ -52,7 +52,7 @@ npm run build
 
 1. Collect session inputs and any participant responses.
 2. Generate and score candidate meeting areas.
-3. Fetch restaurants mainly through HotPepper API.
+3. Build the candidate pool from trusted recommendations (no external search API).
 4. Rank restaurants with logic-based scoring.
 5. Show reason tags and one-line explanations without LLM-generated copy.
 

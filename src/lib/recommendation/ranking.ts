@@ -40,7 +40,7 @@ const PR_SCORE_PENALTY = 0.18;
 // and direct-neighbor hub relationships. Same zone = 0, adjacent = 1, otherwise = 2.
 export const ZONE_ADJACENCY: Record<string, string[]> = {
   shibuya: ["ebisu", "omotesando", "shimokitazawa", "shinjuku", "roppongi", "meguro"],
-  shinjuku: ["shibuya", "ikebukuro", "shimokitazawa", "omotesando"],
+  shinjuku: ["shibuya", "ikebukuro", "shimokitazawa", "omotesando", "kichijoji"],
   ikebukuro: ["shinjuku", "ueno"],
   tokyo: ["ginza", "akihabara", "ueno", "shinagawa"],
   shinagawa: ["tokyo", "ginza", "meguro", "yokohama"],

@@ -344,7 +344,7 @@ export const en: TranslationShape = {
     loading: "Loading results...",
     editMyResponse: "Edit my answers",
     resultCount: "{count} results",
-    noResultsApi: "No matches yet — try adding preferred areas in the survey",
+    noResultsApi: "No trusted picks yet — suggest a place and it shows up here",
     noResultsArea: "No restaurants found in this area",
     decidedToast: "Decided!",
     deleteGroup: "Delete Group?",
