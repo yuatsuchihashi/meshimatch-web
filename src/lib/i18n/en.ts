@@ -257,6 +257,8 @@ export const en: TranslationShape = {
     departureMemberHint: "Confirm where you are heading from today so access can be scored.",
     departureGuestHint: "Optional. Add it if you want access to be considered.",
     departureConfirm: "From your usual {station}?",
+    departureConfirmed: "Confirmed from {station}",
+    departureConfirmedChip: "From {station} ✓",
     departureYes: "Yes",
     departureChange: "Change",
     areaTitle: "Preferred areas",

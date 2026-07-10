@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPlannedSurveyPayload,
+  derivePreferenceMoodsFromGenrePreferences,
   getPlannedSurveyProfileDefaults,
 } from "@/lib/survey-payload";
 import type { UserProfile } from "@/lib/types";
@@ -74,5 +75,35 @@ describe("survey payload helpers", () => {
       { genreId: "G019", priority: "avoid" },
       { genreId: "G014", priority: "avoid" },
     ]);
+  });
+
+  it("preserves an existing per-event genre diff when editing and resubmitting collapsed", () => {
+    const defaults = getPlannedSurveyProfileDefaults(profile);
+    const existingGenrePreferences = [
+      { genreId: "G017", priority: "prefer" as const },
+      { genreId: "G005", priority: "avoid" as const },
+      { genreId: "G019", priority: "avoid" as const },
+      { genreId: "G014", priority: "avoid" as const },
+    ];
+    const payload = buildPlannedSurveyPayload({
+      profileDefaults: defaults,
+      existingGenrePreferences,
+      preferMoods: ["meat"],
+      avoidMoods: [],
+      preferredAreas: ["新宿"],
+    });
+
+    expect(payload.genrePreferences).toEqual(existingGenrePreferences);
+  });
+
+  it("derives editor moods from saved genre preferences when possible", () => {
+    expect(
+      derivePreferenceMoodsFromGenrePreferences([
+        { genreId: "G004", priority: "prefer" },
+        { genreId: "G006", priority: "prefer" },
+        { genreId: "G007", priority: "prefer" },
+        { genreId: "G014", priority: "avoid" },
+      ])
+    ).toEqual({ prefer: ["asian"], avoid: ["noodles"] });
   });
 });

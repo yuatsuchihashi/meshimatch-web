@@ -1,4 +1,4 @@
-import { buildGenrePreferencesFromMoods } from "@/lib/moods";
+import { MOODS, buildGenrePreferencesFromMoods } from "@/lib/moods";
 import type { GenrePreferenceInput, PriorityLevel, UserProfile } from "@/lib/types";
 
 export interface PlannedSurveyProfileDefaults {
@@ -20,12 +20,37 @@ export interface PlannedSurveyPayloadInput {
     avoid: string[];
     changed: boolean;
   };
+  existingGenrePreferences?: GenrePreferenceInput[] | null;
   preferMoods: string[];
   avoidMoods: string[];
   preferredAreas?: string[];
   allergyNote?: string | null;
   dietaryNote?: string | null;
   dietaryRestrictions?: UserProfile["dietaryRestrictions"];
+}
+
+export function derivePreferenceMoodsFromGenrePreferences(
+  genrePreferences: GenrePreferenceInput[] | null | undefined
+) {
+  const preferGenres = new Set(
+    (genrePreferences ?? [])
+      .filter((preference) => preference.priority === "prefer")
+      .map((preference) => preference.genreId)
+  );
+  const avoidGenres = new Set(
+    (genrePreferences ?? [])
+      .filter((preference) => preference.priority === "avoid")
+      .map((preference) => preference.genreId)
+  );
+
+  return {
+    prefer: MOODS.filter((mood) =>
+      mood.genres.every((genreId) => preferGenres.has(genreId))
+    ).map((mood) => mood.id),
+    avoid: MOODS.filter((mood) =>
+      mood.genres.every((genreId) => avoidGenres.has(genreId))
+    ).map((mood) => mood.id),
+  };
 }
 
 export function normalizeOptionalText(value: string | null | undefined) {
@@ -53,7 +78,7 @@ export function buildPlannedSurveyPayload(input: PlannedSurveyPayloadInput) {
   const genrePreferences =
     preferenceMoods?.changed === true
       ? buildGenrePreferencesFromMoods(preferenceMoods.prefer, preferenceMoods.avoid)
-      : profileDefaults?.genrePreferences ?? [];
+      : input.existingGenrePreferences ?? profileDefaults?.genrePreferences ?? [];
   const budgetMaxYen =
     input.budgetMaxYen !== undefined
       ? input.budgetMaxYen
