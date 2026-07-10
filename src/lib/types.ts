@@ -39,6 +39,13 @@ export type SessionAtmosphere = "casual" | "polished" | "lively" | "calm";
 
 export type SessionFocus = "drink_centered" | "food_centered" | "balanced";
 
+export type GroupMode = "instant" | "planned";
+
+export type RestaurantMetadataSource =
+  | "member_input"
+  | "official_input"
+  | "gmaps_import";
+
 export interface GenrePreferenceInput {
   genreId: string;
   priority: PriorityLevel;
@@ -71,7 +78,7 @@ export interface SurveyResponse {
   responseVersion?: number;
   preferredAreas?: string[];
   departureArea?: string | null;
-  departureStation: string;
+  departureStation?: string | null;
   preferredArea: string | null;
   budgetIdealYen?: number | null;
   budgetMaxYen?: number | null;
@@ -90,6 +97,7 @@ export interface MeshiGroup {
   id: string;
   name: string;
   inviteCode: string;
+  mode?: GroupMode;
   scheduledAt?: Date | null;
   groupSize?: number | null;
   sessionAtmosphere?: SessionAtmosphere | null;
@@ -125,6 +133,10 @@ export interface Restaurant {
   lng?: number;
   placeId?: string | null;
   googleRating?: number | null;
+  openingHours?: Record<string, unknown> | null;
+  openingHoursSource?: RestaurantMetadataSource | null;
+  openingHoursUpdatedAt?: string | null;
+  pr?: boolean;
   reasonTags?: string[];
   reasonExplanation?: string;
   genreScore?: number;
@@ -164,6 +176,26 @@ export interface UserProfile {
   dietaryPresets?: string[];
   dietaryStrictness?: DietaryStrictness;
   dietaryRestrictions?: DietaryRestrictionInput[];
+}
+
+export interface OfficialVerificationGrant {
+  id: string;
+  profileId: string;
+  grantedAt: string;
+  grantedBy?: string | null;
+  note?: string | null;
+}
+
+export interface Zone {
+  id: string;
+  name: string;
+  generation: number;
+}
+
+export interface StationZoneMap {
+  station: string;
+  zoneId: string;
+  generation: number;
 }
 
 // --- Survey / Genre Preference Buckets ---

@@ -9,6 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { INITIAL_STATION_ZONE_MAP, INITIAL_ZONES } from "@/lib/areas";
 import type { DbQuery, DbResult, DbFilter, DbError } from "./builder";
 
 type Row = Record<string, unknown>;
@@ -28,6 +29,9 @@ const TABLES = [
   "restaurants",
   "restaurant_sources",
   "restaurant_votes",
+  "official_verification_grants",
+  "zones",
+  "station_zone_map",
 ] as const;
 
 // 外部キー: table -> { column -> 参照先テーブル }
@@ -42,6 +46,8 @@ const FOREIGN_KEYS: Record<string, Record<string, string>> = {
   search_history: { profile_id: "profiles" },
   restaurant_sources: { restaurant_id: "restaurants", added_by: "profiles" },
   restaurant_votes: { group_id: "groups", member_id: "group_members" },
+  official_verification_grants: { profile_id: "profiles", granted_by: "profiles" },
+  station_zone_map: { zone_id: "zones" },
 };
 
 // ユニーク制約 (upsert の onConflict と重複エラー判定に使用)
@@ -59,6 +65,9 @@ const UNIQUE_CONSTRAINTS: Record<string, string[][]> = {
   restaurants: [["id"], ["external_id"]],
   restaurant_sources: [["id"], ["restaurant_id", "source_type", "added_by"]],
   restaurant_votes: [["id"], ["group_id", "member_id", "restaurant_id"]],
+  official_verification_grants: [["id"], ["profile_id"]],
+  zones: [["id", "generation"]],
+  station_zone_map: [["id"], ["station", "generation"]],
 };
 
 function nowIso(): string {
@@ -89,6 +98,7 @@ function applyDefaults(table: string, values: Row): Row {
       row.updated_at ??= stamp;
       break;
     case "groups":
+      row.mode ??= "planned";
       row.status ??= "active";
       row.session_focus ??= "balanced";
       row.scheduled_at ??= null;
@@ -108,6 +118,7 @@ function applyDefaults(table: string, values: Row): Row {
       row.response_version ??= 2;
       row.allergy_note ??= null;
       row.dietary_note ??= null;
+      row.departure_station ??= null;
       row.prefer_moods ??= [];
       row.avoid_moods ??= [];
       row.suggested_restaurants ??= []; // [{id,name,showName}] 持ち寄り店
@@ -137,6 +148,9 @@ function applyDefaults(table: string, values: Row): Row {
       row.closed ??= false;
       row.place_id ??= null;    // Google Places ID (一度取得したら再callしない)
       row.rating ??= null;      // Google の評価 (キャッシュ)
+      row.opening_hours ??= null;
+      row.opening_hours_source ??= null;
+      row.opening_hours_updated_at ??= null;
       row.external_id ??= null; // overture:<id> / fsq:<id> / manual:<slug>
       row.created_at ??= stamp;
       row.updated_at ??= stamp;
@@ -148,6 +162,25 @@ function applyDefaults(table: string, values: Row): Row {
       row.added_by ??= null;
       row.display_label ??= null; // "〇〇のおすすめ！" (本人許可時のみ)
       row.note ??= null;
+      row.pr ??= false;
+      row.created_at ??= stamp;
+      break;
+    case "official_verification_grants":
+      row.profile_id ??= null;
+      row.granted_at ??= stamp;
+      row.granted_by ??= null;
+      row.note ??= null;
+      row.created_at ??= stamp;
+      break;
+    case "zones":
+      row.name ??= "";
+      row.generation ??= 1;
+      row.created_at ??= stamp;
+      break;
+    case "station_zone_map":
+      row.station ??= "";
+      row.zone_id ??= null;
+      row.generation ??= 1;
       row.created_at ??= stamp;
       break;
     case "restaurant_votes":
@@ -174,7 +207,93 @@ function dbPath(): string {
 function emptyDb(): Db {
   const db: Db = {};
   for (const table of TABLES) db[table] = [];
+  seedZones(db);
   return db;
+}
+
+function seedZones(db: Db): boolean {
+  let changed = false;
+  const stamp = nowIso();
+
+  for (const zone of INITIAL_ZONES) {
+    if ((db.zones ?? []).some((row) => row.id === zone.id && row.generation === zone.generation)) continue;
+    db.zones.push({
+      id: zone.id,
+      name: zone.name,
+      generation: zone.generation,
+      created_at: stamp,
+    });
+    changed = true;
+  }
+
+  for (const mapping of INITIAL_STATION_ZONE_MAP) {
+    if (
+      (db.station_zone_map ?? []).some(
+        (row) =>
+          row.station === mapping.station &&
+          row.generation === mapping.generation
+      )
+    ) {
+      continue;
+    }
+    db.station_zone_map.push({
+      id: crypto.randomUUID(),
+      station: mapping.station,
+      zone_id: mapping.zoneId,
+      generation: mapping.generation,
+      created_at: stamp,
+    });
+    changed = true;
+  }
+
+  return changed;
+}
+
+function backfillDb(db: Db): boolean {
+  let changed = false;
+
+  for (const table of TABLES) {
+    if (!db[table]) {
+      db[table] = [];
+      changed = true;
+    }
+  }
+
+  for (const row of db.groups) {
+    if (row.mode == null) {
+      row.mode = "planned";
+      changed = true;
+    }
+  }
+
+  for (const row of db.survey_responses) {
+    if (!("departure_station" in row)) {
+      row.departure_station = null;
+      changed = true;
+    }
+  }
+
+  for (const row of db.restaurants) {
+    for (const column of [
+      "opening_hours",
+      "opening_hours_source",
+      "opening_hours_updated_at",
+    ]) {
+      if (!(column in row)) {
+        row[column] = null;
+        changed = true;
+      }
+    }
+  }
+
+  for (const row of db.restaurant_sources) {
+    if (row.pr == null) {
+      row.pr = false;
+      changed = true;
+    }
+  }
+
+  return seedZones(db) || changed;
 }
 
 // ── インメモリキャッシュ ──
@@ -193,9 +312,12 @@ function loadDb(): Db {
     }
     const raw = fs.readFileSync(file, "utf-8");
     const parsed = JSON.parse(raw) as Db;
-    // 新テーブルが後から増えた場合に備える
-    for (const table of TABLES) parsed[table] ??= [];
-    dbCache = { db: parsed, mtimeMs };
+    const changed = backfillDb(parsed);
+    if (changed) {
+      saveDb(parsed);
+    } else {
+      dbCache = { db: parsed, mtimeMs };
+    }
     return parsed;
   } catch {
     return emptyDb();

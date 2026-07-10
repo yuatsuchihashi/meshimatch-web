@@ -36,7 +36,7 @@ export function mapSurveyResponseRow(
     responseVersion: (row.response_version as number) ?? 2,
     preferredAreas,
     departureArea: (row.departure_area as string) ?? null,
-    departureStation: (row.departure_station as string) ?? "",
+    departureStation: (row.departure_station as string | null) ?? null,
     preferredArea: preferredAreas[0] ?? null,
     budgetIdealYen: (row.budget_ideal_yen as number) ?? null,
     budgetMaxYen: (row.budget_max_yen as number) ?? null,

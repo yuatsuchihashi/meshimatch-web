@@ -147,6 +147,7 @@ export async function GET(request: NextRequest) {
           isCurated: false,
           recommendedByNames: names,
           latestSourceAt,
+          pr: relatedSources.some((source) => source.pr === true),
         };
       });
     }
@@ -176,6 +177,7 @@ export async function GET(request: NextRequest) {
       endorsementLabel: entry.endorsementLabel,
       publicFavoriteCount: entry.publicFavoriteCount,
       isCurated: entry.isCurated,
+      pr: entry.pr,
       recommendedByNames: entry.restaurant.recommendedByNames ?? entry.recommendedByNames,
       recommendationLabel:
         entry.restaurant.recommendationLabel ??

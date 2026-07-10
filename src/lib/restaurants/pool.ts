@@ -15,7 +15,7 @@
 // ============================================================
 
 import { createServiceClient } from "@/lib/supabase/server";
-import type { Restaurant } from "@/lib/types";
+import type { Restaurant, RestaurantMetadataSource } from "@/lib/types";
 
 export interface RestaurantRow {
   id: string;
@@ -32,6 +32,9 @@ export interface RestaurantRow {
   closed: boolean;
   place_id?: string | null;
   rating?: number | null;
+  opening_hours?: Record<string, unknown> | null;
+  opening_hours_source?: RestaurantMetadataSource | null;
+  opening_hours_updated_at?: string | null;
 }
 
 export interface SourceRow {
@@ -42,6 +45,7 @@ export interface SourceRow {
   added_by: string | null;
   display_label: string | null;
   created_at?: string | null;
+  pr?: boolean | null;
 }
 
 export interface PooledRestaurant {
@@ -53,6 +57,7 @@ export interface PooledRestaurant {
   isCurated: boolean;
   recommendedByNames: string[];
   latestSourceAt: string | null;
+  pr: boolean;
 }
 
 export function toRestaurant(row: RestaurantRow): Restaurant {
@@ -74,6 +79,9 @@ export function toRestaurant(row: RestaurantRow): Restaurant {
     lng: row.lng,
     placeId: row.place_id ?? null,
     googleRating: row.rating ?? null,
+    openingHours: row.opening_hours ?? null,
+    openingHoursSource: row.opening_hours_source ?? null,
+    openingHoursUpdatedAt: row.opening_hours_updated_at ?? null,
   };
 }
 
@@ -90,6 +98,7 @@ export function computeTrust(params: {
   | "isCurated"
   | "recommendedByNames"
   | "latestSourceAt"
+  | "pr"
 > {
   const { sources, memberProfileIds, profileNamesById = new Map() } = params;
   const memberIds = new Set(memberProfileIds);
@@ -129,6 +138,7 @@ export function computeTrust(params: {
       .sort()
       .at(-1) ?? null;
   const isCurated = sources.some((s) => s.source_type === "base_curated");
+  const pr = sources.some((s) => s.pr === true);
 
   const trustBoost =
     (isMemberFavorite ? 0.35 : 0) +
@@ -144,6 +154,7 @@ export function computeTrust(params: {
     isCurated,
     recommendedByNames,
     latestSourceAt,
+    pr,
   };
 }
 
