@@ -170,6 +170,15 @@ export const ja = {
     errorDesc: "追加できませんでした。もう一度試してください。",
     notFound: "ユーザーが見つかりませんでした",
   },
+  official: {
+    badge: "公式",
+    badgeTitle: "認証済み公式アカウント",
+    prChip: "PR",
+    prToggle: "PR・提供案件",
+    prHint: "提供・広告・招待など利害関係があるおすすめは必ずONにしてください。",
+    publicRecommendationsTitle: "公開おすすめリスト",
+    publicRecommendationsEmpty: "公開中のおすすめはまだありません",
+  },
   createGroup: {
     step1Title: "グループを作ろう",
     step1Desc: "メンバーの好みを合わせて、みんながハッピーなお店を見つけましょう",

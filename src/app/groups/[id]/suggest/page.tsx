@@ -15,6 +15,8 @@ import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { useLocale } from "@/lib/i18n";
 import { SuggestPicker, type SuggestPick } from "@/components/survey/SuggestPicker";
+import { buildSuggestedRestaurantPayload } from "@/lib/suggestions";
+import { isVerified, type VerificationClient } from "@/lib/verification";
 
 export default function SuggestPage({
   params,
@@ -30,6 +32,8 @@ export default function SuggestPage({
   const [needSurvey, setNeedSurvey] = useState(false);
   const [picks, setPicks] = useState<SuggestPick[]>([]);
   const [showName, setShowName] = useState(false);
+  const [suggestPr, setSuggestPr] = useState(false);
+  const [verifiedUser, setVerifiedUser] = useState(false);
   const [quickPicks, setQuickPicks] = useState<{ id: string; name: string; area?: string | null }[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -85,6 +89,24 @@ export default function SuggestPage({
     };
   }, [groupId, userId, userLoading]);
 
+  useEffect(() => {
+    if (!userId) {
+      setVerifiedUser(false);
+      setSuggestPr(false);
+      return;
+    }
+    let cancelled = false;
+    async function loadVerification() {
+      const supabase = createClient();
+      const verified = await isVerified(supabase as unknown as VerificationClient, userId);
+      if (!cancelled) setVerifiedUser(verified);
+    }
+    void loadVerification();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
   // 既存の提案をプリフィル
   useEffect(() => {
     if (!memberId) {
@@ -108,6 +130,7 @@ export default function SuggestPage({
           savedList.map((s) => ({ id: s.id, name: s.name, area: s.area, showName: !!s.showName }))
         );
         setShowName(savedList.some((s) => s.showName));
+        setSuggestPr(savedList.some((s) => s.pr === true));
       }
     }
     void loadExisting();
@@ -166,16 +189,30 @@ export default function SuggestPage({
         ...(existing ?? {}),
         group_id: groupId,
         member_id: memberId,
-        suggested_restaurants: picks.map((p) => ({
-          id: p.id,
-          name: p.name,
+        suggested_restaurants: buildSuggestedRestaurantPayload({
+          picks,
           showName,
-        })),
+          isVerified: verifiedUser,
+          pr: suggestPr,
+        }),
       };
 
       await supabase
         .from("survey_responses")
         .upsert(payload, { onConflict: "group_id,member_id" });
+
+      if (userId && verifiedUser && picks.length > 0) {
+        await supabase.from("restaurant_sources").upsert(
+          picks.map((pick) => ({
+            restaurant_id: pick.id,
+            source_type: "user_favorite",
+            visibility: "public",
+            added_by: userId,
+            pr: suggestPr,
+          })),
+          { onConflict: "restaurant_id,source_type,added_by" }
+        );
+      }
 
       await supabase
         .from("group_members")
@@ -288,6 +325,9 @@ export default function SuggestPage({
               onChange={setPicks}
               showName={showName}
               onShowNameChange={setShowName}
+              pr={suggestPr}
+              onPrChange={setSuggestPr}
+              canMarkPr={verifiedUser}
               quickPicks={quickPicks}
               t={t}
             />

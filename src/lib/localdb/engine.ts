@@ -209,6 +209,7 @@ function emptyDb(): Db {
   const db: Db = {};
   for (const table of TABLES) db[table] = [];
   seedZones(db);
+  seedR5OfficialDemo(db);
   return db;
 }
 
@@ -248,6 +249,93 @@ function seedZones(db: Db): boolean {
   }
 
   return changed;
+}
+
+function seedR5OfficialDemo(db: Db): boolean {
+  const profileId = "00000000-0000-4000-8000-00000000a501";
+  if ((db.profiles ?? []).some((row) => row.id === profileId)) return false;
+
+  const stamp = nowIso();
+  db.profiles.push(
+    applyDefaults("profiles", {
+      id: profileId,
+      display_name: "東京ごはん案内",
+      bio: "駅近の使いやすいお店を公開リストで紹介しています",
+    })
+  );
+  db.official_verification_grants.push(
+    applyDefaults("official_verification_grants", {
+      id: "00000000-0000-4000-8000-00000000a502",
+      profile_id: profileId,
+      note: "R5 local demo official account",
+    })
+  );
+
+  const restaurants = [
+    {
+      id: "00000000-0000-4000-8000-00000000b501",
+      name: "渋谷 だし食堂",
+      nearest_area: "渋谷",
+      genre_id: "G004",
+      price_band: "¥3,000〜¥4,000",
+      address: "東京都渋谷区",
+    },
+    {
+      id: "00000000-0000-4000-8000-00000000b502",
+      name: "恵比寿 小皿ビストロ",
+      nearest_area: "恵比寿",
+      genre_id: "G013",
+      price_band: "¥4,000〜¥6,000",
+      address: "東京都渋谷区恵比寿",
+    },
+    {
+      id: "00000000-0000-4000-8000-00000000b503",
+      name: "新宿 スパイス酒場",
+      nearest_area: "新宿",
+      genre_id: "G006",
+      price_band: "¥3,000〜¥5,000",
+      address: "東京都新宿区",
+    },
+  ];
+
+  for (const restaurant of restaurants) {
+    db.restaurants.push(applyDefaults("restaurants", restaurant));
+  }
+
+  db.restaurant_sources.push(
+    applyDefaults("restaurant_sources", {
+      id: "00000000-0000-4000-8000-00000000c501",
+      restaurant_id: restaurants[0].id,
+      source_type: "user_favorite",
+      visibility: "public",
+      added_by: profileId,
+      note: "初対面のごはんでも外しにくい、静かめの和食。",
+      pr: false,
+      created_at: stamp,
+    }),
+    applyDefaults("restaurant_sources", {
+      id: "00000000-0000-4000-8000-00000000c502",
+      restaurant_id: restaurants[1].id,
+      source_type: "endorsement",
+      visibility: "public",
+      added_by: profileId,
+      note: "少人数で話しやすい小皿系。",
+      pr: true,
+      created_at: stamp,
+    }),
+    applyDefaults("restaurant_sources", {
+      id: "00000000-0000-4000-8000-00000000c503",
+      restaurant_id: restaurants[2].id,
+      source_type: "user_favorite",
+      visibility: "public",
+      added_by: profileId,
+      note: "辛いもの好きがいる日に。",
+      pr: false,
+      created_at: stamp,
+    })
+  );
+
+  return true;
 }
 
 function backfillDb(db: Db): boolean {

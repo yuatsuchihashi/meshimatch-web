@@ -14,11 +14,18 @@ import { createClient } from "@/lib/supabase/client";
 import { signOut } from "@/actions/auth";
 import { useLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
+import { VerificationBadge } from "@/components/profile/VerificationBadge";
+import {
+  getVerifiedProfileIds,
+  isVerified,
+  type VerificationClient,
+} from "@/lib/verification";
 
 interface Connection {
   id: string;
   displayName: string;
   mutualGroups: number;
+  verified?: boolean;
 }
 
 const MAX_MOODS = 2;
@@ -28,6 +35,7 @@ export default function ProfilePage() {
   const { t, locale, setLocale } = useLocale();
   const { user, userId, loading, refresh } = useUser();
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [verifiedUser, setVerifiedUser] = useState(false);
 
   const [editSection, setEditSection] =
     useState<null | "profile" | "notes" | "defaults">(null);
@@ -60,12 +68,28 @@ export default function ProfilePage() {
     if (!userId) return;
     async function fetchConnections() {
       const supabase = createClient();
+      const connectionMap = new Map<string, { displayName: string; groupCount: number }>();
       const { data: myMemberships } = await supabase
         .from("group_members")
         .select("group_id")
         .eq("profile_id", userId);
 
-      if (!myMemberships || myMemberships.length === 0) return;
+      if (!myMemberships || myMemberships.length === 0) {
+        const ids = Array.from(connectionMap.keys());
+        const verifiedIds = await getVerifiedProfileIds(
+          supabase as unknown as VerificationClient,
+          ids
+        );
+        setConnections(
+          Array.from(connectionMap.entries()).map(([id, val]) => ({
+            id,
+            displayName: val.displayName,
+            mutualGroups: val.groupCount,
+            verified: verifiedIds.has(id),
+          }))
+        );
+        return;
+      }
       const groupIds = myMemberships.map((m) => m.group_id);
 
       const { data: allMembers } = await supabase
@@ -76,7 +100,6 @@ export default function ProfilePage() {
         .neq("profile_id", userId);
 
       if (!allMembers) return;
-      const connectionMap = new Map<string, { displayName: string; groupCount: number }>();
       for (const m of allMembers) {
         const key = m.profile_id!;
         const existing = connectionMap.get(key);
@@ -89,10 +112,41 @@ export default function ProfilePage() {
           id: pid,
           displayName: val.displayName,
           mutualGroups: val.groupCount,
+          verified: false,
+        }))
+      );
+      const ids = Array.from(connectionMap.keys());
+      const verifiedIds = await getVerifiedProfileIds(
+        supabase as unknown as VerificationClient,
+        ids
+      );
+      setConnections(
+        Array.from(connectionMap.entries()).map(([pid, val]) => ({
+          id: pid,
+          displayName: val.displayName,
+          mutualGroups: val.groupCount,
+          verified: verifiedIds.has(pid),
         }))
       );
     }
     fetchConnections();
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) {
+      setVerifiedUser(false);
+      return;
+    }
+    let cancelled = false;
+    async function loadVerification() {
+      const supabase = createClient();
+      const verified = await isVerified(supabase as unknown as VerificationClient, userId);
+      if (!cancelled) setVerifiedUser(verified);
+    }
+    void loadVerification();
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   function openConnections() {
@@ -265,8 +319,15 @@ export default function ProfilePage() {
             />
           </label>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 24, fontWeight: 800, color: "white", lineHeight: 1.2 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 24, fontWeight: 800, color: "white", lineHeight: 1.2 }}>
               {displayName}
+              {verifiedUser && (
+                <VerificationBadge
+                  label={t("official.badge")}
+                  title={t("official.badgeTitle")}
+                  compact
+                />
+              )}
             </div>
             <div
               style={{
@@ -623,7 +684,12 @@ export default function ProfilePage() {
                   >
                     <MemberAvatar name={conn.displayName} size={44} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>{conn.displayName}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+                        {conn.displayName}
+                        {conn.verified && (
+                          <VerificationBadge title={t("official.badgeTitle")} compact />
+                        )}
+                      </div>
                       <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{t("profile.mutualGroups", { count: conn.mutualGroups })}</div>
                     </div>
                   </div>

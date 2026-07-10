@@ -49,6 +49,7 @@ export interface SurveySuggestionInput {
   label: string;
   recommenderName?: string | null;
   createdAt?: string | null;
+  pr?: boolean;
 }
 
 export interface PoolContributor {
@@ -163,7 +164,7 @@ export function composePool(params: {
       label: suggestion.label,
       recommenderName: suggestion.recommenderName ?? null,
       profileId: null,
-      pr: false,
+      pr: suggestion.pr === true,
       createdAt: suggestion.createdAt ?? null,
     });
   }

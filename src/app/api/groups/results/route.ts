@@ -56,6 +56,7 @@ function collectSurveySuggestions(
           label,
           recommenderName: suggestion.showName ? survey.memberName : null,
           createdAt: survey.submittedAt.toISOString(),
+          pr: suggestion.pr === true,
         });
       }
     }

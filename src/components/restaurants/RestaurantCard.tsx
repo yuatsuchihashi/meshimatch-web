@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import type { Restaurant } from "@/lib/types";
+import { VerificationBadge } from "@/components/profile/VerificationBadge";
+import { useLocale } from "@/lib/i18n";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -61,15 +63,21 @@ function initials(name: string) {
 }
 
 export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
+  const { t } = useLocale();
   const genreColor = GENRE_COLORS[restaurant.genreId] ?? "var(--text-secondary)";
   const hasRating = restaurant.rating > 0;
   const recommenderNames = restaurant.recommendedByNames ?? [];
+  const officialNames = restaurant.officialRecommendedByNames ?? [];
   const primaryLabel =
     restaurant.recommendationLabel ??
-    restaurant.reasonTags?.find((tag) => tag.includes("おすすめ") || tag.includes("お気に入り")) ??
-    restaurant.reasonTags?.[0] ??
+    restaurant.reasonTags?.find((tag) => tag !== "PR" && (tag.includes("おすすめ") || tag.includes("お気に入り"))) ??
+    restaurant.reasonTags?.find((tag) => tag !== "PR") ??
     null;
-  const supportingTags = (restaurant.reasonTags ?? []).filter((tag) => tag !== primaryLabel).slice(0, 2);
+  const supportingTags = (restaurant.reasonTags ?? [])
+    .filter((tag) => tag !== "PR" && tag !== primaryLabel)
+    .slice(0, 2);
+  const hasOfficialBadge =
+    officialNames.length > 0 || Boolean(primaryLabel?.includes("公式"));
 
   return (
     <div
@@ -160,21 +168,40 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
             >
               {restaurant.name}
             </div>
-            {primaryLabel && (
-              <span
-                style={{
-                  alignSelf: "flex-start",
-                  fontSize: 12,
-                  backgroundColor: "rgba(240,90,40,0.09)",
-                  color: "var(--primary)",
-                  borderRadius: 100,
-                  padding: "5px 11px",
-                  fontWeight: 900,
-                }}
-              >
-                {primaryLabel}
-              </span>
-            )}
+            <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+              {primaryLabel && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    fontSize: 12,
+                    backgroundColor: "rgba(240,90,40,0.09)",
+                    color: "var(--primary)",
+                    borderRadius: 100,
+                    padding: "5px 11px",
+                    fontWeight: 900,
+                  }}
+                >
+                  {primaryLabel}
+                  {hasOfficialBadge && <VerificationBadge compact />}
+                </span>
+              )}
+              {restaurant.pr && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    backgroundColor: "rgba(240,90,40,0.13)",
+                    color: "var(--primary)",
+                    borderRadius: 100,
+                    padding: "5px 9px",
+                    fontWeight: 900,
+                  }}
+                >
+                  {t("official.prChip")}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

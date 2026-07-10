@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useLocale } from "@/lib/i18n";
 import { genreEmoji } from "@/lib/genre-emoji";
 import type { Restaurant } from "@/lib/types";
+import { VerificationBadge } from "@/components/profile/VerificationBadge";
 
 export interface RecommendedRestaurant extends Restaurant {
   isMemberFavorite?: boolean;
@@ -77,6 +78,7 @@ export function RecommendCarousel({
         >
         {[...items, ...items].map((item, index) => {
           const names = item.recommendedByNames ?? [];
+          const officialNames = item.officialRecommendedByNames ?? [];
           const label =
             item.recommendationLabel ??
             (names[0]
@@ -146,9 +148,30 @@ export function RecommendCarousel({
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
                     }}
                   >
                     {label}
+                    {officialNames.length > 0 && <VerificationBadge compact />}
+                  </span>
+                )}
+                {item.pr && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      right: 6,
+                      bottom: 6,
+                      fontSize: 10,
+                      fontWeight: 900,
+                      padding: "4px 7px",
+                      borderRadius: 100,
+                      backgroundColor: "rgba(255,255,255,0.94)",
+                      color: "var(--primary)",
+                    }}
+                  >
+                    {t("official.prChip")}
                   </span>
                 )}
               </div>

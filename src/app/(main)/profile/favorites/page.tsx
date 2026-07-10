@@ -14,10 +14,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/lib/hooks/useUser";
 import { useLocale } from "@/lib/i18n";
+import { isVerified, type VerificationClient } from "@/lib/verification";
 
 interface FavoriteRow {
   id: string;
   visibility: "public" | "private";
+  pr?: boolean;
   restaurants: {
     id: string;
     name: string;
@@ -57,12 +59,15 @@ export default function FavoriteRestaurantsPage() {
   const [preview, setPreview] = useState<{ title: string; items: ImportItem[] } | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [visibility, setVisibility] = useState<"public" | "private">("private");
+  const [importPr, setImportPr] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   // 検索して追加フロー state
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const [addPr, setAddPr] = useState(false);
+  const [verifiedUser, setVerifiedUser] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!userId) return;
@@ -70,7 +75,7 @@ export default function FavoriteRestaurantsPage() {
     const { data } = await supabase
       .from("restaurant_sources")
       .select(`
-        id, visibility,
+        id, visibility, pr,
         restaurants (id, name, nearest_area, address)
       `)
       .eq("added_by", userId)
@@ -82,6 +87,25 @@ export default function FavoriteRestaurantsPage() {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    if (!userId) {
+      setVerifiedUser(false);
+      setAddPr(false);
+      setImportPr(false);
+      return;
+    }
+    let cancelled = false;
+    async function loadVerification() {
+      const supabase = createClient();
+      const verified = await isVerified(supabase as unknown as VerificationClient, userId);
+      if (!cancelled) setVerifiedUser(verified);
+    }
+    void loadVerification();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   // 店名検索をデバウンス (~250ms)。2文字未満は検索しない。
   useEffect(() => {
@@ -117,6 +141,7 @@ export default function FavoriteRestaurantsPage() {
         source_type: "user_favorite",
         visibility: "private",
         added_by: userId,
+        pr: verifiedUser && addPr,
       },
       { onConflict: "restaurant_id,source_type,added_by" }
     );
@@ -185,6 +210,7 @@ export default function FavoriteRestaurantsPage() {
           confirm: true,
           keys: [...selectedKeys],
           visibility,
+          pr: verifiedUser && importPr,
         }),
       });
       const json = await res.json();
@@ -206,6 +232,16 @@ export default function FavoriteRestaurantsPage() {
     await supabase
       .from("restaurant_sources")
       .update({ visibility: fav.visibility === "public" ? "private" : "public" })
+      .eq("id", fav.id);
+    void refresh();
+  }
+
+  async function togglePr(fav: FavoriteRow) {
+    if (!verifiedUser) return;
+    const supabase = createClient();
+    await supabase
+      .from("restaurant_sources")
+      .update({ pr: fav.pr === true ? false : true })
       .eq("id", fav.id);
     void refresh();
   }
@@ -241,6 +277,9 @@ export default function FavoriteRestaurantsPage() {
           <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "4px 0 12px" }}>
             {t("favorites.searchAddHint")}
           </p>
+          {verifiedUser && (
+            <PrToggle checked={addPr} onChange={setAddPr} t={t} />
+          )}
           <div style={{ position: "relative" }}>
             <input
               value={searchQuery}
@@ -468,6 +507,11 @@ export default function FavoriteRestaurantsPage() {
                   </button>
                 ))}
               </div>
+              {verifiedUser && (
+                <div style={{ marginBottom: 14 }}>
+                  <PrToggle checked={importPr} onChange={setImportPr} t={t} />
+                </div>
+              )}
 
               <button
                 className="btn-primary"
@@ -506,6 +550,21 @@ export default function FavoriteRestaurantsPage() {
                 >
                   {fav.visibility === "public" ? t("favorites.publicBadge") : t("favorites.privateBadge")}
                 </span>
+                {fav.pr === true && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 900,
+                      padding: "4px 9px",
+                      borderRadius: 100,
+                      flexShrink: 0,
+                      background: "rgba(240,90,40,0.12)",
+                      color: "var(--primary)",
+                    }}
+                  >
+                    {t("official.prChip")}
+                  </span>
+                )}
                 <button
                   onClick={() => toggleVisibility(fav)}
                   style={{
@@ -515,6 +574,17 @@ export default function FavoriteRestaurantsPage() {
                 >
                   {fav.visibility === "public" ? t("favorites.makePrivate") : t("favorites.makePublic")}
                 </button>
+                {verifiedUser && (
+                  <button
+                    onClick={() => togglePr(fav)}
+                    style={{
+                      fontSize: 12, fontWeight: 600, color: "var(--primary)", background: "none",
+                      border: "none", cursor: "pointer", padding: 4, flexShrink: 0,
+                    }}
+                  >
+                    {t("official.prToggle")}
+                  </button>
+                )}
                 <button
                   onClick={() => removeFavorite(fav)}
                   style={{
@@ -530,5 +600,62 @@ export default function FavoriteRestaurantsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function PrToggle({
+  checked,
+  onChange,
+  t,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 10,
+        width: "100%",
+        padding: "10px 0",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      <span
+        style={{
+          flexShrink: 0,
+          width: 22,
+          height: 22,
+          borderRadius: 6,
+          border: checked ? "none" : "1.5px solid var(--border-strong)",
+          backgroundColor: checked ? "var(--primary)" : "transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: 1,
+        }}
+      >
+        {checked && (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        )}
+      </span>
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 14, color: "var(--text-primary)", fontWeight: 700 }}>
+          {t("official.prToggle")}
+        </span>
+        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.45, marginTop: 2 }}>
+          {t("official.prHint")}
+        </span>
+      </span>
+    </button>
   );
 }

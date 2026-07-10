@@ -8,7 +8,7 @@ import { isLocalMode, LOCAL_AUTH_COOKIE } from "@/lib/local-mode";
 // (グループIDは推測不能な UUID で、招待リンクと同等の扱い)
 const PUBLIC_PATHS = ["/login", "/signup", "/callback", "/invite", "/api", "/groups"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 

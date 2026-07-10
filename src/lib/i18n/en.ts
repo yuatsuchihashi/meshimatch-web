@@ -172,6 +172,15 @@ export const en: TranslationShape = {
     errorDesc: "Could not add this user. Try again.",
     notFound: "User not found",
   },
+  official: {
+    badge: "Official",
+    badgeTitle: "Verified official account",
+    prChip: "PR",
+    prToggle: "PR / sponsored",
+    prHint: "Turn this on for any pick involving payment, gifts, invites, or other commercial ties.",
+    publicRecommendationsTitle: "Public recommendations",
+    publicRecommendationsEmpty: "No public recommendations yet",
+  },
   createGroup: {
     step1Title: "Create a Group",
     step1Desc: "Find the perfect restaurant that everyone will love",

@@ -9,6 +9,9 @@ import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { mapProfileRow } from "@/lib/session-data";
 import type { UserProfile } from "@/lib/types";
+import { VerificationBadge } from "@/components/profile/VerificationBadge";
+import { isVerified, type VerificationClient } from "@/lib/verification";
+import { GENRES } from "@/lib/mockData";
 
 type FollowStatus = "idle" | "adding" | "added" | "self" | "login" | "error";
 
@@ -31,6 +34,19 @@ const PROFILE_SELECT = `
   dietary_restrictions
 `;
 
+interface PublicRecommendation {
+  id: string;
+  note: string | null;
+  pr: boolean;
+  restaurants: {
+    id: string;
+    name: string;
+    nearest_area: string | null;
+    genre_id: string | null;
+    price_band: string | null;
+  } | null;
+}
+
 export default function UserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: targetUserId } = use(params);
   const { t } = useLocale();
@@ -39,6 +55,9 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
   const [profileLoading, setProfileLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [followStatus, setFollowStatus] = useState<FollowStatus>("idle");
+  const [verified, setVerified] = useState(false);
+  const [recommendations, setRecommendations] = useState<PublicRecommendation[]>([]);
+  const genreName = new Map(GENRES.map((genre) => [genre.id, genre.name]));
 
   useEffect(() => {
     let cancelled = false;
@@ -57,8 +76,32 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
       if (error || !data) {
         setNotFound(true);
         setProfile(null);
+        setVerified(false);
+        setRecommendations([]);
       } else {
         setProfile(mapProfileRow(data as Record<string, unknown>));
+        const isOfficial = await isVerified(
+          supabase as unknown as VerificationClient,
+          targetUserId
+        );
+        if (cancelled) return;
+        setVerified(isOfficial);
+        if (isOfficial) {
+          const { data: sourceRows } = await supabase
+            .from("restaurant_sources")
+            .select(`
+              id, note, pr,
+              restaurants (id, name, nearest_area, genre_id, price_band)
+            `)
+            .eq("added_by", targetUserId)
+            .eq("visibility", "public")
+            .in("source_type", ["user_favorite", "endorsement"])
+            .order("created_at", { ascending: false });
+          if (cancelled) return;
+          setRecommendations(((sourceRows ?? []) as unknown as PublicRecommendation[]).filter((row) => row.restaurants));
+        } else {
+          setRecommendations([]);
+        }
       }
       setProfileLoading(false);
     }
@@ -152,13 +195,74 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <MemberAvatar name={profile.displayName} imageUrl={profile.avatarUrl} size={88} />
             </div>
-            <div style={{ fontSize: 24, fontWeight: 850, lineHeight: 1.2 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, fontSize: 24, fontWeight: 850, lineHeight: 1.2 }}>
               {profile.displayName}
+              {verified && (
+                <VerificationBadge
+                  label={t("official.badge")}
+                  title={t("official.badgeTitle")}
+                  compact
+                />
+              )}
             </div>
             <div style={{ fontSize: 14, color: "rgba(255,255,255,0.82)", marginTop: 8, lineHeight: 1.5 }}>
               {profile.bio?.trim() || t("profile.bioEmpty")}
             </div>
           </section>
+
+          {verified && (
+            <section className="card" style={{ padding: 18 }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", marginBottom: 12 }}>
+                {t("official.publicRecommendationsTitle")}
+              </div>
+              {recommendations.length === 0 ? (
+                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
+                  {t("official.publicRecommendationsEmpty")}
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 340, overflowY: "auto", paddingRight: 2 }}>
+                  {recommendations.map((source) => (
+                    <div
+                      key={source.id}
+                      style={{
+                        border: "1px solid var(--border-light)",
+                        borderRadius: 14,
+                        padding: "12px 14px",
+                        background: "var(--surface)",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {source.restaurants!.name}
+                        </div>
+                        {source.pr && (
+                          <span style={{ fontSize: 11, fontWeight: 900, color: "var(--primary)", background: "rgba(240,90,40,0.12)", borderRadius: 999, padding: "4px 8px", flexShrink: 0 }}>
+                            {t("official.prChip")}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 3 }}>
+                        {[
+                          source.restaurants!.nearest_area,
+                          source.restaurants!.genre_id
+                            ? genreName.get(source.restaurants!.genre_id) ?? source.restaurants!.genre_id
+                            : null,
+                          source.restaurants!.price_band,
+                        ]
+                          .filter(Boolean)
+                          .join(" ・ ")}
+                      </div>
+                      {source.note?.trim() && (
+                        <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5, marginTop: 8 }}>
+                          {source.note.trim()}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
 
           <section className="card" style={{ padding: 18 }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
