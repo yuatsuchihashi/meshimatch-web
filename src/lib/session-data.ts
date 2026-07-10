@@ -63,6 +63,7 @@ export function mapProfileRow(row: RawProfileRow): UserProfile {
     avatarUrl: (row.avatar_url as string) ?? null,
     allergyNote: (row.allergy_note as string) ?? null,
     dietaryNote: (row.dietary_note as string) ?? null,
+    usualDepartureStation: (row.usual_departure_station as string) ?? null,
     usualPreferMoods: (row.usual_prefer_moods as string[]) ?? [],
     usualAvoidMoods: (row.usual_avoid_moods as string[]) ?? [],
     allergies: (row.allergies as string[]) ?? [],

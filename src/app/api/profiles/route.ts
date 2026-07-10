@@ -15,6 +15,9 @@ function buildProfilePayload(body: Record<string, unknown>) {
   if (body.bio !== undefined) payload.bio = body.bio;
   if (body.allergyNote !== undefined) payload.allergy_note = body.allergyNote;
   if (body.dietaryNote !== undefined) payload.dietary_note = body.dietaryNote;
+  if (body.usualDepartureStation !== undefined) {
+    payload.usual_departure_station = body.usualDepartureStation;
+  }
   if (body.usualPreferMoods !== undefined) payload.usual_prefer_moods = body.usualPreferMoods;
   if (body.usualAvoidMoods !== undefined) payload.usual_avoid_moods = body.usualAvoidMoods;
   if (body.allergies !== undefined) payload.allergies = body.allergies;

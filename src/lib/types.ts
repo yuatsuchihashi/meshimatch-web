@@ -163,6 +163,7 @@ export interface UserProfile {
   avatarUrl?: string | null;
   allergyNote?: string | null;      // アレルギー自由記入 (50字)
   dietaryNote?: string | null;      // 食事制限自由記入 (50字)
+  usualDepartureStation?: string | null;
   usualPreferMoods?: string[];      // 普段の気分 (moods.ts の id)
   usualAvoidMoods?: string[];
   allergies: string[];             // アレルギー → 注意喚起のみ（スコアリング不使用）

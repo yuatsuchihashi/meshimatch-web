@@ -39,6 +39,7 @@ export function useUser(): UseUserResult {
           avatar_url,
           allergy_note,
           dietary_note,
+          usual_departure_station,
           allergies,
           usual_budget_ideal_yen,
           usual_budget_max_yen,

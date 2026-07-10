@@ -39,6 +39,7 @@ create table profiles (
   disliked_items text[] default '{}',
   dietary_restrictions jsonb not null default '[]'::jsonb,
   avatar_url text,
+  usual_departure_station text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
