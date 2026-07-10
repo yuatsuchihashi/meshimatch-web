@@ -196,6 +196,17 @@ function applyDefaults(table: string, values: Row): Row {
   return row;
 }
 
+function enforceRestaurantSourcePrGuard(db: Db, row: Row): void {
+  if (row.pr !== true) return;
+  const addedBy = row.added_by;
+  const verified = (db.official_verification_grants ?? []).some(
+    (grant) => grant.profile_id === addedBy
+  );
+  if (!addedBy || !verified) {
+    row.pr = false;
+  }
+}
+
 // ---------- ストレージ ----------
 
 function dbPath(): string {
@@ -678,6 +689,9 @@ export function executeLocalQuery(query: DbQuery): DbResult {
       const inserted: Row[] = [];
       for (const input of inputs) {
         const row = applyDefaults(table, input as Row);
+        if (table === "restaurant_sources") {
+          enforceRestaurantSourcePrGuard(db, row);
+        }
         const conflict = checkUniques(db, table, row);
         if (conflict) return { data: null, error: conflict };
         db[table].push(row);
@@ -693,6 +707,9 @@ export function executeLocalQuery(query: DbQuery): DbResult {
       for (const row of db[table]) {
         if (!matchesFilters(row, query.filters)) continue;
         Object.assign(row, query.values);
+        if (table === "restaurant_sources") {
+          enforceRestaurantSourcePrGuard(db, row);
+        }
         if ("updated_at" in row) row.updated_at = nowIso();
         updated.push(row);
       }
@@ -714,10 +731,16 @@ export function executeLocalQuery(query: DbQuery): DbResult {
         const existing = findConflict(db, table, candidate, conflictColumns);
         if (existing) {
           Object.assign(existing, candidate, { id: existing.id });
+          if (table === "restaurant_sources") {
+            enforceRestaurantSourcePrGuard(db, existing);
+          }
           if ("updated_at" in existing) existing.updated_at = nowIso();
           results.push(existing);
         } else {
           const row = applyDefaults(table, candidate);
+          if (table === "restaurant_sources") {
+            enforceRestaurantSourcePrGuard(db, row);
+          }
           const conflict = checkUniques(db, table, row);
           if (conflict) return { data: null, error: conflict };
           db[table].push(row);

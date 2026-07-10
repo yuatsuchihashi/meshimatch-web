@@ -6,11 +6,36 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import {
   mapSurveyResponseRow,
   normalizePreferredAreas,
 } from "@/lib/session-data";
+import { isVerified, type VerificationClient } from "@/lib/verification";
+
+type SuggestedRestaurantInput = {
+  id: string;
+  name: string;
+  showName: boolean;
+  pr?: boolean;
+};
+
+function sanitizeSuggestedRestaurantsPr(
+  suggestedRestaurants: unknown,
+  verified: boolean
+): SuggestedRestaurantInput[] {
+  if (!Array.isArray(suggestedRestaurants)) return [];
+
+  return suggestedRestaurants.map((restaurant) => {
+    if (restaurant == null || typeof restaurant !== "object") {
+      return restaurant as SuggestedRestaurantInput;
+    }
+    return {
+      ...(restaurant as SuggestedRestaurantInput),
+      pr: verified && (restaurant as SuggestedRestaurantInput).pr === true,
+    };
+  });
+}
 
 // ----- GET: グループのアンケート取得 -----
 export async function GET(request: NextRequest) {
@@ -87,7 +112,19 @@ export async function POST(request: NextRequest) {
   );
   const normalizedGenrePreferences = genrePreferences ?? [];
 
+  const authClient = await createClient();
+  const {
+    data: { user },
+  } = await authClient.auth.getUser();
   const supabase = await createServiceClient();
+  const verified = await isVerified(
+    supabase as unknown as VerificationClient,
+    user?.id ?? null
+  );
+  const sanitizedSuggestedRestaurants = sanitizeSuggestedRestaurantsPr(
+    suggestedRestaurants,
+    verified
+  );
 
   // 1. サーベイを upsert (同じメンバーが再回答した場合は上書き)
   const { data, error } = await supabase
@@ -108,7 +145,7 @@ export async function POST(request: NextRequest) {
         dietary_note: dietaryNote ?? null,
         prefer_moods: preferMoods ?? [],
         avoid_moods: avoidMoods ?? [],
-        suggested_restaurants: suggestedRestaurants ?? [],
+        suggested_restaurants: sanitizedSuggestedRestaurants,
         response_version: responseVersion ?? 2,
       },
       { onConflict: "group_id,member_id" }

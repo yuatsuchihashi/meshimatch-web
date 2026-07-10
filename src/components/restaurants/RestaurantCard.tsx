@@ -184,7 +184,7 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
                   }}
                 >
                   {primaryLabel}
-                  {hasOfficialBadge && <VerificationBadge compact />}
+                  {hasOfficialBadge && <VerificationBadge title={t("official.badgeTitle")} compact />}
                 </span>
               )}
               {restaurant.pr && (

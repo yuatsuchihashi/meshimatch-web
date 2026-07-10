@@ -2,15 +2,15 @@ import { CheckCircle2 } from "lucide-react";
 
 interface VerificationBadgeProps {
   label?: string;
-  title?: string;
+  title: string;
   compact?: boolean;
 }
 
 export function VerificationBadge({ label, title, compact = false }: VerificationBadgeProps) {
   return (
     <span
-      aria-label={title ?? label ?? "verified"}
-      title={title ?? label}
+      aria-label={title}
+      title={title}
       style={{
         display: "inline-flex",
         alignItems: "center",

@@ -619,7 +619,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
             {current.endorsementLabel && (
               <span className="badge-endorsement" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                 {current.endorsementLabel}
-                {(current.officialRecommendedByNames?.length ?? 0) > 0 && <VerificationBadge compact />}
+                {(current.officialRecommendedByNames?.length ?? 0) > 0 && <VerificationBadge title={t("official.badgeTitle")} compact />}
               </span>
             )}
             {current.pr && (
