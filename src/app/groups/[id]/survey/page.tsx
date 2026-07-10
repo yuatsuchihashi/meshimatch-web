@@ -12,8 +12,10 @@ import { MoodPickGrid, MoodAvoidSection } from "@/components/survey/MoodPills";
 import { SuggestPicker, type SuggestPick } from "@/components/survey/SuggestPicker";
 import {
   buildPlannedSurveyPayload,
+  derivePreferenceMoodsFromGenrePreferences,
   getPlannedSurveyProfileDefaults,
 } from "@/lib/survey-payload";
+import type { GenrePreferenceInput } from "@/lib/types";
 
 const AREAS = SURVEY_AREAS;
 const MAX_SLOT = 2;
@@ -206,6 +208,8 @@ export default function SurveyPage({
   const [preferencePreferMoods, setPreferencePreferMoods] = useState<string[]>([]);
   const [preferenceAvoidMoods, setPreferenceAvoidMoods] = useState<string[]>([]);
   const [preferenceDefaultsChanged, setPreferenceDefaultsChanged] = useState(false);
+  const [existingGenrePreferences, setExistingGenrePreferences] =
+    useState<GenrePreferenceInput[] | null>(null);
   const [profileDefaultsOpen, setProfileDefaultsOpen] = useState(false);
   const [suggestedPicks, setSuggestedPicks] = useState<SuggestPick[]>([]);
   const [suggestShowName, setSuggestShowName] = useState(false);
@@ -214,6 +218,7 @@ export default function SurveyPage({
   const [submitted, setSubmitted] = useState(false);
   const [memberId, setMemberId] = useState<string | null>(null);
   const [editingExisting, setEditingExisting] = useState(false);
+  const [departureConfirmed, setDepartureConfirmed] = useState(false);
   const [quickPicks, setQuickPicks] = useState<{ id: string; name: string; area?: string | null }[]>([]);
 
   const [profileDefaultsApplied, setProfileDefaultsApplied] = useState(false);
@@ -286,6 +291,18 @@ export default function SurveyPage({
       setBudgetMaxYen((existing.budget_max_yen as number | null) ?? null);
       setPreferMoods((existing.prefer_moods as string[]) ?? []);
       setAvoidMoods((existing.avoid_moods as string[]) ?? []);
+      const savedGenrePreferences =
+        (existing.genre_preferences as GenrePreferenceInput[] | null) ?? [];
+      setExistingGenrePreferences(savedGenrePreferences);
+      const derivedPreferenceMoods =
+        derivePreferenceMoodsFromGenrePreferences(savedGenrePreferences);
+      if (derivedPreferenceMoods.prefer.length > 0) {
+        setPreferencePreferMoods(derivedPreferenceMoods.prefer);
+      }
+      if (derivedPreferenceMoods.avoid.length > 0) {
+        setPreferenceAvoidMoods(derivedPreferenceMoods.avoid);
+      }
+      setPreferenceDefaultsChanged(false);
       const savedSuggestions =
         (existing.suggested_restaurants as SuggestPick[] | null) ?? [];
       if (savedSuggestions.length > 0) {
@@ -454,6 +471,7 @@ export default function SurveyPage({
           avoid: preferenceAvoidMoods,
           changed: preferenceDefaultsChanged,
         },
+        existingGenrePreferences,
         preferMoods,
         avoidMoods,
         preferredAreas,
@@ -645,7 +663,9 @@ export default function SurveyPage({
               >
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>
-                    {t("survey.departureConfirm").replace("{station}", profileDepartureStation)}
+                    {departureConfirmed
+                      ? t("survey.departureConfirmed").replace("{station}", profileDepartureStation)
+                      : t("survey.departureConfirm").replace("{station}", profileDepartureStation)}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2 }}>
                     {departureStation.trim() || profileDepartureStation}
@@ -654,15 +674,28 @@ export default function SurveyPage({
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   <button
                     type="button"
-                    onClick={() => setDepartureStation(profileDepartureStation)}
+                    onClick={() => {
+                      setDepartureStation(profileDepartureStation);
+                      setDepartureConfirmed(true);
+                    }}
                     className="chip chip-selected"
-                    style={{ fontSize: 13 }}
+                    style={{
+                      fontSize: 13,
+                      boxShadow: departureConfirmed
+                        ? "0 4px 12px rgba(240,90,40,0.22)"
+                        : "none",
+                    }}
                   >
-                    {t("survey.departureYes")}
+                    {departureConfirmed
+                      ? t("survey.departureConfirmedChip").replace("{station}", profileDepartureStation)
+                      : t("survey.departureYes")}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setEditingDeparture(true)}
+                    onClick={() => {
+                      setDepartureConfirmed(false);
+                      setEditingDeparture(true);
+                    }}
                     className="chip"
                     style={{ fontSize: 13 }}
                   >
@@ -675,7 +708,10 @@ export default function SurveyPage({
                 <input
                   value={departureStation}
                   list="member-departure-stations"
-                  onChange={(event) => setDepartureStation(event.target.value)}
+                  onChange={(event) => {
+                    setDepartureConfirmed(false);
+                    setDepartureStation(event.target.value);
+                  }}
                   placeholder={t("survey.departureStationPlaceholder")}
                   style={inputStyle}
                 />
@@ -689,7 +725,10 @@ export default function SurveyPage({
                     <button
                       key={station}
                       type="button"
-                      onClick={() => setDepartureStation(station)}
+                      onClick={() => {
+                        setDepartureConfirmed(false);
+                        setDepartureStation(station);
+                      }}
                       className={`chip ${departureStation.trim() === station ? "chip-selected" : ""}`}
                       style={{ fontSize: 13 }}
                     >
@@ -819,10 +858,7 @@ export default function SurveyPage({
                 <div style={{ marginBottom: 18 }}>
                   <BudgetCapPicker
                     value={budgetMaxYen}
-                    onChange={(value) => {
-                      setBudgetMaxYen(value);
-                      setPreferenceDefaultsChanged(true);
-                    }}
+                    onChange={setBudgetMaxYen}
                     t={t}
                   />
                 </div>

@@ -660,8 +660,8 @@ export default function GuestSurveyPage({
               type="button"
               onClick={() => {
                 markStarted();
-                setAllergyNote("なし");
-                setDietaryNote("なし");
+                setAllergyNote((current) => current.trim() || "なし");
+                setDietaryNote((current) => current.trim() || "なし");
               }}
               className="chip"
               style={{ fontSize: 13, marginTop: 14 }}

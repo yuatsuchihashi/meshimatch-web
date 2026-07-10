@@ -255,6 +255,8 @@ export const ja = {
     departureMemberHint: "アクセスを見るために、今日どこから向かうかだけ確認するよ",
     departureGuestHint: "任意だよ。入れておくとアクセスも見やすくなるよ",
     departureConfirm: "いつもの{station}から？",
+    departureConfirmed: "{station}からで確定したよ",
+    departureConfirmedChip: "{station}から ✓",
     departureYes: "はい",
     departureChange: "変更する",
     areaTitle: "希望エリア",
