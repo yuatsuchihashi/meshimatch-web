@@ -363,6 +363,62 @@ describe("localdb engine", () => {
     expect(source.pr).toBe(false);
   });
 
+  it("coerces restaurant source pr to false for non-verified users", () => {
+    const profile = insert("profiles", { display_name: "一般ユーザー" });
+    const restaurant = insert("restaurants", { name: "テスト食堂" });
+
+    const inserted = insert("restaurant_sources", {
+      restaurant_id: restaurant.id,
+      source_type: "user_favorite",
+      added_by: profile.id,
+      pr: true,
+    });
+
+    expect(inserted.pr).toBe(false);
+
+    const updated = executeLocalQuery(
+      q({
+        table: "restaurant_sources",
+        action: "update",
+        values: { pr: true },
+        filters: [{ op: "eq", column: "id", value: inserted.id }],
+        select: "*",
+        single: "single",
+      })
+    );
+
+    expect(updated.error).toBeNull();
+    expect((updated.data as Record<string, unknown>).pr).toBe(false);
+  });
+
+  it("keeps restaurant source pr true for verified users", () => {
+    const profile = insert("profiles", { display_name: "公式ユーザー" });
+    insert("official_verification_grants", {
+      profile_id: profile.id,
+      note: "test verified account",
+    });
+    const restaurant = insert("restaurants", { name: "テスト食堂" });
+
+    const source = executeLocalQuery(
+      q({
+        table: "restaurant_sources",
+        action: "upsert",
+        values: {
+          restaurant_id: restaurant.id,
+          source_type: "user_favorite",
+          added_by: profile.id,
+          pr: true,
+        },
+        onConflict: "restaurant_id,source_type,added_by",
+        select: "*",
+        single: "single",
+      })
+    );
+
+    expect(source.error).toBeNull();
+    expect((source.data as Record<string, unknown>).pr).toBe(true);
+  });
+
   it("seeds zone mappings and resolves station names to zones", () => {
     const mapping = executeLocalQuery(
       q({

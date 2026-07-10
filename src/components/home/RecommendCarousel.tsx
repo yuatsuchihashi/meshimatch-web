@@ -154,7 +154,7 @@ export function RecommendCarousel({
                     }}
                   >
                     {label}
-                    {officialNames.length > 0 && <VerificationBadge compact />}
+                    {officialNames.length > 0 && <VerificationBadge title={t("official.badgeTitle")} compact />}
                   </span>
                 )}
                 {item.pr && (
