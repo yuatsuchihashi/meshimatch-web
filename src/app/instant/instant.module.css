@@ -1,0 +1,201 @@
+.screen {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(240, 90, 40, 0.1), transparent 28%),
+    var(--v2-canvas, #f7f2ea);
+  color: var(--v2-ink, #221b16);
+  padding: 28px 18px 36px;
+}
+
+.shell {
+  width: min(100%, 440px);
+  margin: 0 auto;
+}
+
+.header {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  color: var(--v2-accent, #f05a28);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.24;
+  letter-spacing: 0;
+}
+
+.desc {
+  margin: 0;
+  color: var(--v2-muted, #8a7d72);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.panel {
+  background: var(--v2-surface, #fff);
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 28px;
+  box-shadow: var(--v2-shadow, 0 12px 32px rgba(34, 27, 22, 0.07));
+  padding: 18px;
+}
+
+.stack {
+  display: grid;
+  gap: 14px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.input,
+.select {
+  width: 100%;
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 999px;
+  background: var(--v2-surface-soft, #fbf8f2);
+  color: var(--v2-ink, #221b16);
+  font: inherit;
+  font-size: 16px;
+  padding: 13px 16px;
+  outline: none;
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: 52px 1fr 52px;
+  align-items: center;
+  gap: 10px;
+}
+
+.count {
+  min-height: 60px;
+  border-radius: 999px;
+  background: var(--v2-surface-soft, #fbf8f2);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.iconButton {
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 999px;
+  background: var(--v2-surface, #fff);
+  color: var(--v2-ink, #221b16);
+  display: grid;
+  place-items: center;
+}
+
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.timerWrap {
+  display: grid;
+  place-items: center;
+  padding: 8px 0 2px;
+}
+
+.aggregate {
+  border-radius: 22px;
+  background: var(--v2-surface-soft, #fbf8f2);
+  padding: 14px;
+}
+
+.aggregateList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.memberList {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.memberButton {
+  width: 100%;
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 18px;
+  background: var(--v2-surface-soft, #fbf8f2);
+  color: var(--v2-ink, #221b16);
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 800;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.anchorPill {
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 900;
+  border: 1px solid var(--v2-border, #eae0d3);
+  background: var(--v2-surface, #fff);
+  color: var(--v2-ink, #221b16);
+}
+
+.cardText {
+  min-width: 0;
+}
+
+.restaurantName {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.restaurantMeta {
+  margin: 4px 0 0;
+  color: var(--v2-muted, #8a7d72);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.empty {
+  border-radius: 28px;
+  border: 1px dashed var(--v2-border, #eae0d3);
+  background: rgba(255, 255, 255, 0.62);
+  padding: 22px;
+  text-align: center;
+}
+
+.todo {
+  margin-top: 16px;
+  border-radius: 18px;
+  background: var(--v2-canvas-deep, #efe7db);
+  color: var(--v2-muted, #8a7d72);
+  padding: 12px 14px;
+  font-size: 12px;
+  font-weight: 800;
+}
