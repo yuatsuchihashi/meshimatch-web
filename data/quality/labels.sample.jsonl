@@ -1,0 +1,3 @@
+{"external_id":"fixtures/ebisu-test-a","place_id":"fixtures/ebisu-test-a","name":"恵比寿テスト食堂A","label":"good","memo":"席間がゆったりしていてグループ向き","labeled_at":"2026-07-12T00:00:00.000Z"}
+{"external_id":"fixtures/ebisu-test-c","place_id":"fixtures/ebisu-test-c","name":"恵比寿テスト酒場C","label":"ok","memo":"カジュアル飲み会ならあり","labeled_at":"2026-07-12T00:05:00.000Z"}
+{"external_id":"fixtures/ebisu-test-g","place_id":"fixtures/ebisu-test-g","name":"恵比寿テストダイナーG","label":"bad","memo":"大人数は確認が必要","labeled_at":"2026-07-12T00:10:00.000Z"}

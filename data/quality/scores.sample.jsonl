@@ -1,0 +1,3 @@
+{"place_id":"fixtures/ebisu-test-a","external_id":"fixtures/ebisu-test-a","name":"恵比寿テスト食堂A","hazure_risk":0.18,"group_fit_tags":["席間ゆったり"],"negatives":[],"computed_at":"2026-07-12T00:00:00.000Z","engine_version":"sample-r6b"}
+{"place_id":"fixtures/ebisu-test-c","external_id":"fixtures/ebisu-test-c","name":"恵比寿テスト酒場C","hazure_risk":0.42,"group_fit_tags":["賑やか"],"negatives":["週末待ち"],"computed_at":"2026-07-12T00:00:00.000Z","engine_version":"sample-r6b"}
+{"place_id":"fixtures/ebisu-test-g","external_id":"fixtures/ebisu-test-g","name":"恵比寿テストダイナーG","hazure_risk":0.72,"group_fit_tags":["安め"],"negatives":["席数が少ない","大人数確認必要"],"computed_at":"2026-07-12T00:00:00.000Z","engine_version":"sample-r6b"}
