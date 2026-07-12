@@ -54,6 +54,14 @@ _状態: 起案(Kai確認待ち) / 2026-07-12 Chief(Fable)。上位文書: docs/
 | 5 | インセンティブ段階の初期値 | 称号のみで開始→食事補助の条件→収益シェアの料率、の段階設計 |
 | 6 | 「外れないか」の見せ方 | 推奨: 数値・ラベルとも非表示、ダメ店は**そもそも出さない**+良側は group_fit チップで示す(点数非表示原則と整合) |
 
+## 3.5 live有効化チェックリスト(R6aレビューで確定したゲート)
+
+`--live` / `GOOGLE_PLACES_LIVE=1` を有効化する前に必ず:
+1. **P1**: 既存のlive経路 (`src/lib/restaurants/enrich.ts`, `/api/restaurants/manual`) が Google の `rating` を `restaurants` に長期保存している — `fetchDetailsWithCache`(places_cache+TTL)経由に付け替え、rating等の揮発フィールドの長期保存を止める
+2. Google Places ToS のキャッシュ/保存制限を、シードが保存する識別系フィールド(名称・住所・座標・価格帯)について確認
+3. API予算上限の設定(Kai判断#1)
+4. 小物: reviews 5件capのテスト追加、openNow のフィールドマスク修正(currentOpeningHours)
+
 ## 4. バックログ(凍結分の記録)
 
 - R4a/R4b(即時モード実装) — v3.3仕様は保持
