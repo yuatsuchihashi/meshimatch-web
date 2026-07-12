@@ -7,6 +7,7 @@ import { useLocale } from "@/lib/i18n";
 import { INITIAL_STATION_ZONE_MAP } from "@/lib/areas";
 import { MoodPickGrid, MoodAvoidSection } from "@/components/survey/MoodPills";
 import { SuggestPicker, type SuggestPick } from "@/components/survey/SuggestPicker";
+import { PillButton } from "@/components/v2";
 import { buildPlannedSurveyPayload } from "@/lib/survey-payload";
 import { track, AnalyticsEvent } from "@/lib/analytics";
 import { markParticipated } from "@/lib/anon-id";
@@ -45,34 +46,35 @@ function readGuestPrefs(): GuestPrefs {
 }
 
 const cardStyle: React.CSSProperties = {
-  backgroundColor: "var(--surface)",
-  borderRadius: 20,
+  backgroundColor: "var(--v2-surface)",
+  borderRadius: 24,
   padding: 16,
-  border: "1px solid var(--border-light)",
+  border: "1px solid var(--v2-border)",
+  boxShadow: "var(--v2-shadow)",
   marginBottom: 16,
 };
 
 const titleStyle: React.CSSProperties = {
   fontSize: 15,
   fontWeight: 700,
-  color: "var(--text-primary)",
+  color: "var(--v2-ink)",
   marginBottom: 4,
 };
 
 const captionStyle: React.CSSProperties = {
   fontSize: 13,
-  color: "var(--text-secondary)",
+  color: "var(--v2-muted)",
   marginBottom: 12,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "12px 14px",
-  borderRadius: 12,
-  border: "1.5px solid var(--border)",
+  borderRadius: 18,
+  border: "1.5px solid var(--v2-border)",
   fontSize: 15,
-  color: "var(--text-primary)",
-  backgroundColor: "var(--bg)",
+  color: "var(--v2-ink)",
+  backgroundColor: "var(--v2-surface-soft)",
   outline: "none",
 };
 
@@ -390,8 +392,9 @@ export default function GuestSurveyPage({
   if (pageLoading) {
     return (
       <div
+        className="v2-scope"
         style={{
-          backgroundColor: "var(--bg)",
+          backgroundColor: "var(--v2-canvas)",
           minHeight: "100dvh",
           display: "flex",
           alignItems: "center",
@@ -415,8 +418,9 @@ export default function GuestSurveyPage({
   if (notFound) {
     return (
       <div
+        className="v2-scope"
         style={{
-          backgroundColor: "var(--bg)",
+          backgroundColor: "var(--v2-canvas)",
           minHeight: "100dvh",
           display: "flex",
           flexDirection: "column",
@@ -439,8 +443,9 @@ export default function GuestSurveyPage({
   if (step === "done") {
     return (
       <div
+        className="v2-scope"
         style={{
-          backgroundColor: "var(--bg)",
+          backgroundColor: "var(--v2-canvas)",
           minHeight: "100dvh",
           display: "flex",
           flexDirection: "column",
@@ -535,7 +540,7 @@ export default function GuestSurveyPage({
 
   if (step === "name") {
     return (
-      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", padding: "60px 24px 40px" }}>
+      <div className="v2-scope" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", padding: "60px 24px 40px" }}>
         <div style={{ maxWidth: 480, margin: "0 auto" }}>
           <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 4 }}>
             {groupName}
@@ -573,7 +578,7 @@ export default function GuestSurveyPage({
                 border: "1.5px solid var(--border)",
                 fontSize: 16,
                 color: "var(--text-primary)",
-                backgroundColor: "var(--bg)",
+                backgroundColor: "var(--v2-surface-soft)",
                 outline: "none",
                 marginBottom: 4,
               }}
@@ -582,14 +587,14 @@ export default function GuestSurveyPage({
               アカウント登録は不要です
             </div>
 
-            <button
-              className="btn-primary"
+            <PillButton
+              variant="ink"
               onClick={() => setStep("restrictions")}
               disabled={guestName.trim().length === 0}
               style={{ width: "100%" }}
             >
               次へ
-            </button>
+            </PillButton>
           </div>
 
           <StepDots current="name" />
@@ -600,7 +605,7 @@ export default function GuestSurveyPage({
 
   if (step === "restrictions") {
     return (
-      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", padding: "60px 24px 40px" }}>
+      <div className="v2-scope" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", padding: "60px 24px 40px" }}>
         <div style={{ maxWidth: 480, margin: "0 auto" }}>
           <BackButton onClick={() => setStep("name")} />
 
@@ -670,14 +675,14 @@ export default function GuestSurveyPage({
             </button>
           </div>
 
-          <button
-            className="btn-primary"
+          <PillButton
+            variant="ink"
             onClick={() => setStep("survey")}
             disabled={!restrictionsReady}
             style={{ width: "100%" }}
           >
             次へ
-          </button>
+          </PillButton>
           {!restrictionsReady && (
             <div style={{ fontSize: 12, color: "var(--text-tertiary)", textAlign: "center", marginTop: 10 }}>
               {t("survey.restrictionsRequired")}
@@ -691,7 +696,7 @@ export default function GuestSurveyPage({
   }
 
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
+    <div className="v2-scope" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh" }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
         <div style={{ padding: "56px 20px 0" }}>
           <BackButton onClick={() => setStep("restrictions")} />
@@ -835,9 +840,9 @@ export default function GuestSurveyPage({
             {t("survey.privacyNote")}
           </div>
 
-          <button className="btn-primary" onClick={handleSubmit} disabled={submitting || !hasTodayMood}>
+          <PillButton variant="cta" onClick={handleSubmit} disabled={submitting || !hasTodayMood}>
             {submitting ? "送信中..." : t("survey.submit")}
-          </button>
+          </PillButton>
 
           <StepDots current="survey" />
         </div>

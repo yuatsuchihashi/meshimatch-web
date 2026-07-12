@@ -248,9 +248,9 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
-          <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", margin: "0 auto 12px" }} />
+      <div className="v2-scope" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", color: "var(--v2-muted)" }}>
+          <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--v2-border)", borderTopColor: "var(--v2-accent)", borderRadius: "50%", margin: "0 auto 12px" }} />
           <div style={{ fontSize: 14 }}>{t("common.loading")}</div>
         </div>
       </div>
@@ -258,52 +258,49 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="service-canvas" style={{ minHeight: "100dvh", paddingBottom: 80 }}>
+    <div className="v2-scope service-canvas" style={{ minHeight: "100dvh", paddingBottom: 96 }}>
 
-      {/* Profile banner */}
+      {/* Profile summary */}
       <div
         style={{
-          background:
-            "radial-gradient(circle at 86% 20%, rgba(255,255,255,0.24), transparent 28%), linear-gradient(135deg, var(--primary), var(--primary-light))",
-          padding: "56px 20px 28px",
+          padding: "56px 16px 0",
           position: "relative",
-          overflow: "hidden",
         }}
       >
-        <button
-          onClick={openProfileEditor}
-          aria-label={t("profile.editProfile")}
-          style={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            width: 36,
-            height: 36,
-            borderRadius: "50%",
-            backgroundColor: "rgba(255,255,255,0.2)",
-            color: "white",
-            border: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-          </svg>
-        </button>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: 16, padding: 18, position: "relative" }}>
+          <button
+            onClick={openProfileEditor}
+            aria-label={t("profile.editProfile")}
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              backgroundColor: "var(--v2-surface)",
+              color: "var(--v2-ink)",
+              border: "1px solid var(--v2-border)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+            </svg>
+          </button>
           {/* アバター: タップで写真変更 (クライアント側で縮小して data URL 保存) */}
           <label style={{ flexShrink: 0, cursor: "pointer", position: "relative", display: "block" }}>
             <MemberAvatar name={displayName} size={72} imageUrl={user?.avatarUrl} />
             <span
               style={{
                 position: "absolute", right: -2, bottom: -2, width: 24, height: 24,
-                borderRadius: "50%", backgroundColor: "white", color: "var(--primary)",
+                borderRadius: "50%", backgroundColor: "var(--v2-surface)", color: "var(--v2-accent)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 1px 4px rgba(74,53,42,0.25)",
+                border: "1px solid var(--v2-border)",
+                boxShadow: "0 1px 4px rgba(34,27,22,0.10)",
               }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
@@ -318,8 +315,8 @@ export default function ProfilePage() {
               style={{ display: "none" }}
             />
           </label>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 24, fontWeight: 800, color: "white", lineHeight: 1.2 }}>
+          <div style={{ minWidth: 0, paddingRight: 42 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 24, fontWeight: 800, color: "var(--v2-ink)", lineHeight: 1.2, letterSpacing: "var(--v2-tracking-display)" }}>
               {displayName}
               {verifiedUser && (
                 <VerificationBadge
@@ -332,7 +329,7 @@ export default function ProfilePage() {
             <div
               style={{
                 fontSize: 13,
-                color: bio ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.6)",
+                color: bio ? "var(--v2-muted)" : "var(--v2-faint)",
                 marginTop: 4,
                 lineHeight: 1.4,
               }}
@@ -922,11 +919,11 @@ export default function ProfilePage() {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "14px 16px",
-  borderRadius: 12,
-  border: "1.5px solid var(--border)",
+  borderRadius: 18,
+  border: "1.5px solid var(--v2-border)",
   fontSize: 16,
-  color: "var(--text-primary)",
-  backgroundColor: "var(--bg)",
+  color: "var(--v2-ink)",
+  backgroundColor: "var(--v2-surface-soft)",
   outline: "none",
   fontFamily: "inherit",
 };
@@ -937,8 +934,8 @@ function SectionLabel({ children, style }: { children: React.ReactNode; style?: 
       style={{
         fontSize: 12,
         fontWeight: 700,
-        color: "var(--text-tertiary)",
-        letterSpacing: "0.06em",
+        color: "var(--v2-muted)",
+        letterSpacing: 0,
         textTransform: "uppercase",
         marginBottom: 10,
         paddingLeft: 4,
@@ -956,14 +953,14 @@ function EditButton({ onClick, label }: { onClick: () => void; label: string }) 
       onClick={onClick}
       style={{
         fontSize: 13,
-        color: "var(--primary)",
+        color: "var(--v2-accent)",
         fontWeight: 600,
         background: "none",
         border: "none",
         cursor: "pointer",
         padding: "4px 8px",
-        borderRadius: 8,
-        backgroundColor: "rgba(240,90,40,0.08)",
+        borderRadius: 999,
+        backgroundColor: "var(--v2-tint-blush)",
       }}
     >
       {label}
@@ -974,7 +971,7 @@ function EditButton({ onClick, label }: { onClick: () => void; label: string }) 
 function DefaultRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600, marginBottom: 6 }}>
+      <div style={{ fontSize: 12, color: "var(--v2-muted)", fontWeight: 600, marginBottom: 6 }}>
         {label}
       </div>
       {children}
@@ -987,7 +984,7 @@ function ChipRow({ children }: { children: React.ReactNode }) {
 }
 
 function NotSet({ t }: { t: (key: string) => string }) {
-  return <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{t("common.notSet")}</div>;
+  return <div style={{ fontSize: 14, color: "var(--v2-faint)" }}>{t("common.notSet")}</div>;
 }
 
 function EditSheet({

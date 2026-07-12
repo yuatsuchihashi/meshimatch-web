@@ -1,33 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import type { Restaurant } from "@/lib/types";
 import { VerificationBadge } from "@/components/profile/VerificationBadge";
 import { useLocale } from "@/lib/i18n";
+import { Chip, PhotoCard } from "@/components/v2";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
   onClick: (r: Restaurant) => void;
 }
-
-const GENRE_COLORS: Record<string, string> = {
-  G001: "var(--primary)",
-  G002: "#6E6E7A",
-  G003: "#8B6A4A",
-  G004: "var(--primary)",
-  G005: "var(--danger)",
-  G006: "#A04040",
-  G007: "var(--success-deep)",
-  G008: "#6E6E7A",
-  G009: "var(--secondary)",
-  G010: "#8A6B3A",
-  G013: "#8A6B3A",
-  G014: "var(--primary)",
-  G016: "#6B3A2A",
-  G017: "#2D6B8A",
-  G018: "var(--secondary)",
-  G019: "var(--danger)",
-};
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -64,7 +45,6 @@ function initials(name: string) {
 
 export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
   const { t } = useLocale();
-  const genreColor = GENRE_COLORS[restaurant.genreId] ?? "var(--text-secondary)";
   const hasRating = restaurant.rating > 0;
   const recommenderNames = restaurant.recommendedByNames ?? [];
   const officialNames = restaurant.officialRecommendedByNames ?? [];
@@ -76,91 +56,52 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
   const supportingTags = (restaurant.reasonTags ?? [])
     .filter((tag) => tag !== "PR" && tag !== primaryLabel)
     .slice(0, 2);
+  const stateTags = (restaurant.reasonTags ?? [])
+    .filter((tag) => tag.includes("営業中") || tag.includes("要確認"))
+    .slice(0, 1);
   const hasOfficialBadge =
     officialNames.length > 0 || Boolean(primaryLabel?.includes("公式"));
 
   return (
     <div
-      className="card restaurant-note-card"
+      className="v2-scope"
       style={{
-        overflow: "hidden",
         cursor: "pointer",
-        position: "relative",
-        padding: 0,
-        borderColor: "rgba(226,207,192,0.95)",
       }}
       onClick={() => onClick(restaurant)}
     >
-      <Image
-        src="/img/service/07-restaurant-sticker-sheet.webp"
-        alt=""
-        width={86}
-        height={56}
-        className="service-deco"
-        style={{
-          position: "absolute",
-          right: -6,
-          bottom: -20,
-          width: 68,
-          height: "auto",
-          opacity: 0.09,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          inset: "0 auto 0 0",
-          width: 5,
-          backgroundColor: genreColor,
-          opacity: 0.72,
-        }}
-      />
-
-      <div style={{ position: "relative", zIndex: 1, padding: "16px 16px 15px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-        <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-          <div
-            style={{
-              width: 70,
-              height: 70,
-              borderRadius: 18,
-              background: `linear-gradient(145deg, ${genreColor}, rgba(255,245,236,0.72))`,
-              overflow: "hidden",
-              flexShrink: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontSize: 22,
-              fontWeight: 900,
-              boxShadow: "0 8px 18px rgba(74,53,42,0.08)",
-            }}
-          >
-            {restaurant.photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={restaurant.photoUrl}
-                alt={restaurant.name}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              "め"
-            )}
-          </div>
-
-          <div
-            style={{
-              flex: 1,
-              minWidth: 0,
-              display: "flex",
-              flexDirection: "column",
-              gap: 7,
-            }}
-          >
+      <PhotoCard
+        photoSrc={restaurant.photoUrl}
+        photoAlt={restaurant.name}
+        placeholder="め"
+        overlayStart={
+          primaryLabel ? (
+            <Chip
+              label={
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  {primaryLabel}
+                  {hasOfficialBadge && <VerificationBadge title={t("official.badgeTitle")} compact />}
+                </span>
+              }
+            />
+          ) : null
+        }
+        overlayEnd={
+          <span style={{ display: "inline-flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            {stateTags.map((tag) => (
+              <Chip key={tag} variant={tag.includes("要確認") ? "honey" : "sage"} label={tag} />
+            ))}
+            {restaurant.pr && <Chip variant="blush" label={t("official.prChip")} />}
+          </span>
+        }
+      >
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
             <div
               style={{
                 fontSize: 18,
-                fontWeight: 900,
-                color: "var(--text-primary)",
+                fontWeight: 800,
+                color: "var(--v2-ink)",
                 lineHeight: 1.28,
                 wordBreak: "keep-all",
                 overflowWrap: "anywhere",
@@ -168,155 +109,71 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
             >
               {restaurant.name}
             </div>
-            <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-              {primaryLabel && (
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    fontSize: 12,
-                    backgroundColor: "rgba(240,90,40,0.09)",
-                    color: "var(--primary)",
-                    borderRadius: 100,
-                    padding: "5px 11px",
-                    fontWeight: 900,
-                  }}
-                >
-                  {primaryLabel}
-                  {hasOfficialBadge && <VerificationBadge title={t("official.badgeTitle")} compact />}
-                </span>
-              )}
-              {restaurant.pr && (
-                <span
-                  style={{
-                    fontSize: 11,
-                    backgroundColor: "rgba(240,90,40,0.13)",
-                    color: "var(--primary)",
-                    borderRadius: 100,
-                    padding: "5px 9px",
-                    fontWeight: 900,
-                  }}
-                >
-                  {t("official.prChip")}
-                </span>
-              )}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {restaurant.area && <Chip label={restaurant.area} />}
+              {(restaurant.genre || !restaurant.area) && <Chip label={restaurant.genre || "候補"} />}
+              {restaurant.budget && <Chip label={restaurant.budget} />}
+              {restaurant.hasPrivateRoom && <Chip label="個室あり" />}
+              {supportingTags
+                .filter((tag) => !tag.includes("営業中") && !tag.includes("要確認"))
+                .map((tag) => (
+                  <Chip key={tag} variant="sage" label={tag} />
+                ))}
             </div>
+            {restaurant.reasonExplanation && (
+              <div style={{ fontSize: 13, lineHeight: 1.55, color: "var(--v2-muted)" }}>
+                {restaurant.reasonExplanation}
+              </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+              {hasRating ? <StarRating rating={restaurant.rating} /> : <span style={{ fontSize: 12, color: "var(--v2-muted)", fontWeight: 700 }}>詳細を確認</span>}
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "var(--v2-muted)",
+                  maxWidth: "58%",
+                  textAlign: "right",
+                  lineHeight: 1.4,
+                }}
+              >
+                {restaurant.access}
+              </span>
+            </div>
+            {recommenderNames.length > 0 && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex" }}>
+                  {recommenderNames.slice(0, 3).map((name, index) => (
+                    <span
+                      key={`${name}-${index}`}
+                      title={name}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: index % 2 === 0 ? "var(--v2-ink)" : "var(--v2-accent)",
+                        color: "white",
+                        fontSize: 11,
+                        fontWeight: 900,
+                        border: "2px solid var(--v2-surface)",
+                        marginLeft: index === 0 ? 0 : -7,
+                      }}
+                    >
+                      {initials(name)}
+                    </span>
+                  ))}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--v2-muted)", fontWeight: 800 }}>
+                  {recommenderNames.slice(0, 2).join("・")}
+                  {recommenderNames.length > 2 ? ` 他${recommenderNames.length - 2}人` : ""} の公開お気に入り
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {recommenderNames.length > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ display: "flex" }}>
-              {recommenderNames.slice(0, 3).map((name, index) => (
-                <span
-                  key={`${name}-${index}`}
-                  title={name}
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: "50%",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: index % 2 === 0 ? "var(--success-deep)" : "var(--primary)",
-                    color: "white",
-                    fontSize: 11,
-                    fontWeight: 900,
-                    border: "2px solid var(--surface)",
-                    marginLeft: index === 0 ? 0 : -7,
-                  }}
-                >
-                  {initials(name)}
-                </span>
-              ))}
-            </div>
-            <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 800 }}>
-              {recommenderNames.slice(0, 2).join("・")}
-              {recommenderNames.length > 2 ? ` 他${recommenderNames.length - 2}人` : ""} の公開お気に入り
-            </div>
-          </div>
-        )}
-
-        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-          <span
-            style={{
-              fontSize: 12,
-              backgroundColor: "var(--bg-secondary)",
-              color: "var(--text-secondary)",
-              borderRadius: 100,
-              padding: "5px 11px",
-              fontWeight: 800,
-            }}
-          >
-            {restaurant.genre || restaurant.area || "候補"}
-          </span>
-          {restaurant.budget && (
-            <span
-              style={{
-                fontSize: 12,
-                backgroundColor: "var(--bg-secondary)",
-                color: "var(--text-secondary)",
-                borderRadius: 100,
-                padding: "5px 11px",
-                fontWeight: 800,
-              }}
-            >
-              {restaurant.budget}
-            </span>
-          )}
-          {restaurant.hasPrivateRoom && (
-            <span
-              style={{
-                fontSize: 12,
-                backgroundColor: "rgba(26,26,46,0.06)",
-                color: "var(--secondary)",
-                borderRadius: 100,
-                padding: "5px 11px",
-                fontWeight: 800,
-              }}
-            >
-              個室あり
-            </span>
-          )}
-          {supportingTags.map((tag) => (
-            <span
-              key={tag}
-              style={{
-                fontSize: 12,
-                backgroundColor: "rgba(168,198,134,0.15)",
-                color: "var(--success-deep)",
-                borderRadius: 100,
-                padding: "5px 11px",
-                fontWeight: 800,
-              }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {restaurant.reasonExplanation && (
-          <div style={{ fontSize: 13, lineHeight: 1.5, color: "var(--text-secondary)" }}>
-            {restaurant.reasonExplanation}
-          </div>
-        )}
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {hasRating ? <StarRating rating={restaurant.rating} /> : <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 700 }}>詳細を確認</span>}
-          <span
-            style={{
-              fontSize: 12,
-              color: "var(--text-secondary)",
-              maxWidth: "60%",
-              textAlign: "right",
-              lineHeight: 1.4,
-            }}
-          >
-            {restaurant.access}
-          </span>
-        </div>
-      </div>
+      </PhotoCard>
     </div>
   );
 }

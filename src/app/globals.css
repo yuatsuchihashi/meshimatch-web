@@ -97,10 +97,36 @@ body {
 
 /* ── DESIGN v2 primitives (additive; no existing page selectors are changed) ── */
 .v2-scope {
+  --primary: var(--v2-accent);
+  --primary-light: var(--v2-accent-press);
+  --secondary: var(--v2-ink);
+  --bg: var(--v2-canvas);
+  --bg-secondary: var(--v2-canvas-deep);
+  --surface: var(--v2-surface);
+  --surface-hover: var(--v2-surface-soft);
+  --text-primary: var(--v2-ink);
+  --text-secondary: var(--v2-muted);
+  --text-tertiary: var(--v2-faint);
+  --border: var(--v2-border);
+  --border-light: var(--v2-border);
+  --border-strong: var(--v2-border);
+  --warning: var(--v2-tint-honey-text);
+  --success: var(--v2-tint-sage);
+  --success-deep: var(--v2-tint-sage-text);
   background: var(--v2-ticket-notch, var(--v2-canvas));
   color: var(--v2-ink);
   font-family: var(--v2-family-quiet), -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
   letter-spacing: 0;
+}
+
+.v2-scope h1,
+.v2-scope h2,
+.v2-scope h3,
+.v2-scope .btn-primary,
+.v2-scope .btn-secondary,
+.v2-scope .bottom-sheet-title,
+.v2-scope .group-ticket-card {
+  font-family: var(--v2-family-quiet), var(--font-sans), -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
 }
 
 .v2-chip {
@@ -228,6 +254,20 @@ body {
   height: 100%;
   min-height: 104px;
   object-fit: cover;
+}
+.v2-photo-card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 104px;
+  width: 100%;
+  height: 100%;
+  color: var(--v2-muted);
+  font-size: 28px;
+  font-weight: 800;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.22), transparent 44%),
+    var(--v2-greige);
 }
 .v2-photo-card__overlays {
   position: absolute;
@@ -474,6 +514,90 @@ h3,
   background-size: auto, 440px 440px;
   background-position: 0 0, center top;
   background-attachment: scroll, scroll;
+}
+
+.v2-scope.service-canvas,
+.v2-scope .service-canvas {
+  background: var(--v2-canvas);
+}
+
+.v2-scope .service-deco {
+  display: none;
+}
+
+.v2-scope .service-create-card,
+.v2-scope .service-card {
+  background: var(--v2-surface);
+  border-color: var(--v2-border);
+}
+
+.v2-scope .service-card::after {
+  display: none;
+}
+
+.v2-scope .card {
+  border: 1px solid var(--v2-border);
+  border-radius: var(--v2-radius-card);
+  background: var(--v2-surface);
+  box-shadow: var(--v2-shadow);
+}
+
+.v2-scope .btn-primary {
+  min-height: 52px;
+  height: auto;
+  border-radius: var(--v2-radius-pill);
+  background: var(--v2-accent);
+  color: #fff;
+  font-family: var(--v2-family-quiet), var(--font-sans), sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+  box-shadow: 0 8px 20px rgba(240,90,40,0.30);
+}
+.v2-scope .btn-primary:hover {
+  background: var(--v2-accent-press);
+}
+.v2-scope .btn-primary:disabled {
+  background: var(--v2-accent);
+}
+
+.v2-scope .btn-secondary {
+  min-height: 52px;
+  height: auto;
+  border-color: var(--v2-border);
+  border-radius: var(--v2-radius-pill);
+  background: var(--v2-surface);
+  color: var(--v2-ink);
+  font-family: var(--v2-family-quiet), var(--font-sans), sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.v2-scope .chip {
+  border: 1px solid var(--v2-border);
+  border-radius: var(--v2-radius-pill);
+  background: var(--v2-surface);
+  color: var(--v2-ink);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.v2-scope .chip-selected {
+  border-color: var(--v2-accent);
+  background: var(--v2-accent);
+  color: #fff;
+}
+
+.v2-scope input,
+.v2-scope textarea {
+  border-color: var(--v2-border) !important;
+  border-radius: var(--v2-radius-input) !important;
+  background: var(--v2-surface-soft) !important;
+  color: var(--v2-ink) !important;
+  font-family: var(--v2-family-quiet), var(--font-sans), sans-serif;
 }
 
 .service-card {

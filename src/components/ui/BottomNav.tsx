@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
+import { NavBarV2 } from "@/components/v2";
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -78,48 +78,28 @@ export function BottomNav() {
     { href: "/profile", label: t("nav.profile"), Icon: ProfileIcon },
   ];
 
+  const activeHref = tabs.find(({ href }) => pathname.startsWith(href))?.href;
+
   return (
-    <nav
+    <div
+      className="v2-scope"
       style={{
         position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "var(--surface)",
-        borderTop: "1px solid var(--border-light)",
-        display: "flex",
-        paddingBottom: "env(safe-area-inset-bottom)",
+        left: 16,
+        right: 16,
+        bottom: "calc(12px + env(safe-area-inset-bottom))",
         zIndex: 50,
       }}
     >
-      {tabs.map(({ href, label, Icon }) => {
-        const active = pathname.startsWith(href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              paddingTop: 12,
-              paddingBottom: 12,
-              gap: 4,
-              color: active ? "var(--primary)" : "var(--text-tertiary)",
-              textDecoration: "none",
-              fontSize: 10,
-              fontWeight: active ? 600 : 400,
-              letterSpacing: "0.02em",
-              transition: "color 0.2s ease",
-            }}
-          >
-            <Icon active={active} />
-            {label}
-          </Link>
-        );
-      })}
-    </nav>
+      <NavBarV2
+        activeHref={activeHref}
+        aria-label="Primary navigation"
+        items={tabs.map(({ href, label, Icon }) => ({
+          href,
+          label,
+          icon: (active) => <Icon active={active} />,
+        }))}
+      />
+    </div>
   );
 }

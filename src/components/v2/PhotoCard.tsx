@@ -2,8 +2,9 @@ import type { HTMLAttributes, ReactNode } from "react";
 import clsx from "clsx";
 
 export interface PhotoCardProps extends HTMLAttributes<HTMLElement> {
-  photoSrc: string;
+  photoSrc?: string | null;
   photoAlt: string;
+  placeholder?: ReactNode;
   overlayStart?: ReactNode;
   overlayEnd?: ReactNode;
   panelAction?: ReactNode;
@@ -12,6 +13,7 @@ export interface PhotoCardProps extends HTMLAttributes<HTMLElement> {
 export function PhotoCard({
   photoSrc,
   photoAlt,
+  placeholder,
   overlayStart,
   overlayEnd,
   panelAction,
@@ -22,8 +24,14 @@ export function PhotoCard({
   return (
     <article className={clsx("v2-photo-card", className)} {...props}>
       <div className="v2-photo-card__media">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photoSrc} alt={photoAlt} />
+        {photoSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={photoSrc} alt={photoAlt} />
+        ) : (
+          <div className="v2-photo-card__placeholder" aria-label={photoAlt}>
+            {placeholder}
+          </div>
+        )}
         {(overlayStart || overlayEnd) && (
           <div className="v2-photo-card__overlays">
             <div className="v2-photo-card__overlay-group">{overlayStart}</div>
