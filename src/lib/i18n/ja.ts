@@ -473,6 +473,7 @@ export const ja = {
     locationPickerLabel: "近い駅を選ぶ",
     locationPickerPlaceholder: "駅名",
     locationGpsButton: "今いる場所からはじめる",
+    locationPickManually: "駅をえらんではじめる",
     locationPickerButton: "この駅ではじめる",
     locationDenied: "位置情報が使えませんでした。駅を選んでください。",
     partySize: "人数",

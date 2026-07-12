@@ -475,6 +475,7 @@ export const en: TranslationShape = {
     locationPickerLabel: "Choose a nearby station",
     locationPickerPlaceholder: "Station",
     locationGpsButton: "Start from current location",
+    locationPickManually: "Pick a station instead",
     locationPickerButton: "Start from this station",
     locationDenied: "Location was unavailable. Choose a station instead.",
     partySize: "Party size",

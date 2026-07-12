@@ -58,8 +58,16 @@ export default function InstantStartPage() {
       return;
     }
 
+    // 端末がコールバックを一切返さないケース(権限ダイアログ放置など)への保険。
+    // options.timeout だけに頼らず、JS側でも必ずフォールバックさせる (レビューP1)
+    const fallbackTimer = window.setTimeout(() => {
+      setNeedsPicker(true);
+      setLocating(false);
+    }, 5000);
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        window.clearTimeout(fallbackTimer);
         const resolved = nearestInstantZoneFromCoordinates({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
@@ -69,6 +77,7 @@ export default function InstantStartPage() {
         persistAndGo(resolved);
       },
       () => {
+        window.clearTimeout(fallbackTimer);
         setNeedsPicker(true);
         setLocating(false);
       },
@@ -151,6 +160,16 @@ export default function InstantStartPage() {
               <PillButton variant="cta" disabled={locating} onClick={startFromCurrentLocation}>
                 {locating ? t("common.processing") : t("instant.locationGpsButton")}
               </PillButton>
+            )}
+            {/* GPS保留中でも駅選択に必ず抜けられる恒常エスケープ (レビューP1) */}
+            {!needsPicker && (
+              <button
+                type="button"
+                onClick={() => setNeedsPicker(true)}
+                style={{ background: "none", border: 0, color: "var(--v2-muted)", fontSize: 12.5, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer" }}
+              >
+                {t("instant.locationPickManually")}
+              </button>
             )}
             {zone && (
               <PillButton variant="ghost" onClick={() => persistAndGo(zone)}>

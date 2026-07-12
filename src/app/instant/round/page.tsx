@@ -184,6 +184,7 @@ export default function InstantRoundPage() {
 
   function advance(participant: InstantParticipantInput) {
     if (!start || saving) return;
+    if (participants.length >= start.partySize) return; // finalize失敗リトライ中の二重追加ガード (レビューP2)
     const nextParticipants = [...participants, participant];
     setParticipants(nextParticipants);
     if (nextParticipants.length >= start.partySize) {
