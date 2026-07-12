@@ -363,6 +363,33 @@ describe("localdb engine", () => {
     expect(source.pr).toBe(false);
   });
 
+  it("roundtrips R6a catalog provenance and places cache rows", () => {
+    const restaurant = insert("restaurants", {
+      name: "恵比寿テスト食堂A",
+      place_id: "fixtures/ebisu-test-a",
+      external_id: "place:fixtures/ebisu-test-a",
+      catalog_source: "catalog",
+    });
+    const source = insert("restaurant_sources", {
+      restaurant_id: restaurant.id,
+      source_type: "catalog",
+      visibility: "private",
+      added_by: null,
+    });
+    const cache = insert("places_cache", {
+      place_id: "fixtures/ebisu-test-a",
+      raw_details: { id: "fixtures/ebisu-test-a", displayName: { text: "fixture" } },
+      fetched_at: "2026-07-12T00:00:00.000Z",
+      expires_at: "2026-08-11T00:00:00.000Z",
+      source: "fixture",
+    });
+
+    expect(restaurant.catalog_source).toBe("catalog");
+    expect(source.source_type).toBe("catalog");
+    expect(cache.place_id).toBe("fixtures/ebisu-test-a");
+    expect(cache.source).toBe("fixture");
+  });
+
   it("coerces restaurant source pr to false for non-verified users", () => {
     const profile = insert("profiles", { display_name: "一般ユーザー" });
     const restaurant = insert("restaurants", { name: "テスト食堂" });
