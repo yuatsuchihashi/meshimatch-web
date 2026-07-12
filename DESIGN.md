@@ -1,121 +1,85 @@
----
-colors:
-  primary: "#F05A28"        # Primary Orange – CTA, brand, active states
-  coral: "#FF8A5B"          # Coral – hover/pressed, warm secondary accents
-  cream: "#FFF5EC"          # Cream – page background canvas
-  sage: "#A8C686"           # Sage – success, positive votes (○), "decided"
-  espresso: "#4A352A"       # Espresso – primary text, dark surfaces
-  honey: "#F3C96B"          # Honey – ratings, badges, highlights
-  surface: "#FFFFFF"
-  surface-warm: "#FDF0E4"   # Cream を一段濃くした面 (選択チップ背景など)
-  text-primary: "#4A352A"
-  text-secondary: "#8A7568" # Espresso を薄めた温かいグレー
-  text-tertiary: "#B8A99E"
-  border: "#F0E2D6"
-  border-strong: "#E2CFC0"
-  danger: "#D64545"         # ×投票、削除、エラー
-typography:
-  font-family: "var(--font-geist-sans), -apple-system, 'Hiragino Sans', sans-serif"
-  display: { size: 26px, weight: 800, line-height: 1.25, letter-spacing: -0.02em }
-  title: { size: 20px, weight: 700, line-height: 1.3 }
-  body: { size: 15px, weight: 400, line-height: 1.6 }
-  caption: { size: 13px, weight: 500, line-height: 1.4 }
-  micro: { size: 11px, weight: 600, line-height: 1.3, letter-spacing: 0.02em }
-rounded:
-  sm: 10px
-  md: 16px
-  lg: 20px
-  full: 100px
-spacing:
-  xs: 4px
-  sm: 8px
-  md: 16px
-  lg: 24px
-  xl: 40px
-components:
-  button-primary: { bg: colors.primary, color: "#FFFFFF", rounded: rounded.full, height: 52px, pressed-bg: colors.coral }
-  button-secondary: { bg: colors.surface, color: colors.text-primary, border: colors.border-strong, rounded: rounded.full, height: 52px }
-  card: { bg: colors.surface, rounded: rounded.lg, border: colors.border, shadow: "0 1px 3px rgba(74,53,42,0.05), 0 6px 16px rgba(74,53,42,0.04)" }
-  chip: { bg: colors.surface, border: colors.border-strong, rounded: rounded.full, selected-bg: colors.primary, selected-color: "#FFFFFF" }
-  badge-endorsement: { bg: colors.honey, color: colors.espresso, rounded: rounded.full }
-  badge-favorite: { bg: colors.primary, color: "#FFFFFF", rounded: rounded.full }
-  vote-yes: { bg: colors.sage, color: "#FFFFFF" }
-  vote-no: { bg: colors.surface, color: colors.danger, border: colors.danger }
----
+# MeshiMatch DESIGN v2 — 「Tino言語」ドラフト
 
-# MeshiMatch Design System
+_状態: **正式版**(2026-07-12 Kai承認「モックOK大正解」)。D1(トークン+共通コンポーネント)→D2(画面再スキン)で実装。機能変更なし。_
 
-## Overview
+参照: Anastasia Golovko for Tino (dribbble 25595082 / 25578724)。
+重心移動: 「かわいい寄り」→「**静かで上質、ときどき遊ぶ**」。
 
-MeshiMatch is a group dining decision app. The design should feel like a warm
-table, not a form: cream canvas, one confident orange, appetizing warmth.
-Deciding where to eat together should feel playful and fast, never bureaucratic.
+## 1. 色 — アクセント1色主義
 
-Principles:
+```yaml
+canvas:        "#F7F2EA"   # 温かいエクリュ(全画面の地。現行クリームより彩度を落とす)
+canvas-deep:   "#EFE7DB"   # セクションの地・沈み込み面
+greige:        "#E3D9CE"   # ヒーロー写真の背景帯・空状態イラスト地
+surface:       "#FFFFFF"   # カード・チップの地
+surface-soft:  "#FBF8F2"   # カード内のサブ面
 
-1. **One chromatic voice.** Primary Orange is the only loud color. Sage and
-   Honey are supporting cast (success / highlight). If everything is orange,
-   nothing is.
-2. **Warm neutrals only.** No cold greys, no navy. Text is Espresso; greys are
-   warmed (brown-tinted). White cards float on Cream.
-3. **Rounded, soft, tactile.** Full-round buttons and chips, 20px cards,
-   generous tap targets (min 48px). Motion is quick (150-300ms) and springy.
-4. **Decisions look like cards, not lists.** Restaurants are presented as
-   swipeable/tappable cards with photo-area, name, and reason tags. Votes are
-   binary and satisfying (○ sage / × danger).
+ink:           "#221B16"   # 見出し・本文の墨(真っ黒禁止は維持。espressoをさらに深く)
+muted:         "#8A7D72"   # 補足テキスト(暖グレー)
+faint:         "#B5AA9E"   # 三次テキスト・プレースホルダ
 
-## Colors
+accent:        "#F05A28"   # オレンジ。用途は「選択状態・主CTA・アクティブnav・ライブ状態ドット」のみ
+accent-press:  "#D64A1E"
 
-- **Primary Orange `#F05A28`** – CTAs, selected chips, brand marks, member
-  favorite badges. Hover/pressed shifts to **Coral `#FF8A5B`**.
-- **Cream `#FFF5EC`** – the page background everywhere. Never pure white pages.
-- **Espresso `#4A352A`** – all primary text and the dark auth backdrop. Never
-  use black or navy.
-- **Sage `#A8C686`** – success states, "everyone responded", ○ votes, decided
-  restaurants.
-- **Honey `#F3C96B`** – ratings, endorsement badges ("〇〇のおすすめ！"),
-  highlights. Text on Honey is Espresso, never white.
-- **Danger `#D64545`** – × votes, destructive actions only.
+# 支援パステル(状態表示のみ。面積は小さく)
+tint-sage:     "#E7EFD9"   # 営業中・ポジティブ (文字は #4F6B35)
+tint-honey:    "#F8EEDA"   # 要確認・注意 (文字は #8A6A2F)
+tint-blush:    "#FBE7DD"   # PR・アクセントの淡面 (文字は accent)
 
-Do not introduce new hues. Tints of the six palette colors are allowed.
+border:        "#EAE0D3"
+shadow:        "0 2px 4px rgba(34,27,22,0.04), 0 12px 32px rgba(34,27,22,0.07)"
+```
 
-## Typography
+原則:
+- **オレンジの全面塗りは廃止**(現行のオレンジヘッダー等)。地はエクリュ、情報は白カード、強調は墨。
+- 真っ黒・純グレー・ネイビー禁止(v1から継承)。
 
-Geist Sans with Hiragino fallback. Display 26/800 for screen titles, Title
-20/700 for card headers, Body 15/400, Caption 13/500 for secondary info, Micro
-11/600 for badges. Japanese text gets `letter-spacing: -0.01em`.
+## 2. タイプ
 
-## Layout
+```yaml
+family-quiet: "Zen Kaku Gothic New"   # 基本すべて。見出しも本文もこれ
+family-play:  "Zen Maru Gothic"       # 「遊ぶ瞬間」専用: 回し打ちタイマー・チケットのスタンプ・完了演出
+display: { size: 28px, weight: 800, line-height: 1.3, letter-spacing: -0.01em }
+title:   { size: 20px, weight: 700, line-height: 1.35 }
+body:    { size: 15px, weight: 400, line-height: 1.7 }
+caption: { size: 12.5px, weight: 500 }
+chip:    { size: 12px, weight: 700 }
+```
 
-Mobile-first, 390px baseline. Screen padding 20px. Section gap 24px. Bottom
-CTAs are sticky with a cream gradient fade. One primary action per screen.
+- 大きく自信のある見出し × 小さなピルの対比。余白は現行の1.5倍を目安。
 
-## Elevation & Depth
+## 3. 形
 
-Two levels only: flat (page) and card. Card shadow is warm-tinted
-(`rgba(74,53,42,…)`), never grey-black. No stacked modals; use bottom sheets.
+```yaml
+radius-pill:   999px    # チップ・ボタン・入力
+radius-card:   24px     # 標準カード
+radius-photo:  28px     # 写真カード
+radius-input:  18px
+icon-button:   { size: 44px, shape: circle, bg: surface, border: border }  # 戻る・通知・メニューは全て白い円
+```
 
-## Shapes
+- **全部丸い**: 角のある要素を作らない。
 
-Buttons and chips: full round (100px). Cards: 20px. Inputs: 16px. Avatars:
-circles. The vote buttons (○/×) are perfect circles, 64px.
+## 4. コンポーネント文法
 
-## Components
+- **チップ(メタ情報の唯一の器)**: `[アイコン][短語]` のピル。理由バッジ・営業中/要確認・ゾーン・ジャンル・予算はすべてこれに統一。
+  - default: surface地 + border、ink文字
+  - selected: **accent塗り + 白文字**(選択状態はオレンジの専有)
+  - state: tint-sage/honey/blush 地(営業中・要確認・PR)
+- **ボタン**: 主CTA = accentピル(1画面1つまで)。副 = ink塗りピル or 白ピル+border。アイコンボタンは白円。
+- **写真カード(お店)**: 写真フルブリード(radius-photo)+ 下部にグラデ無しの白パネル or 写真上のオーバーレイチップ。推薦者バッジ・営業中チップは写真の上に重ねる(travel参照の Select destination 文法)。
+- **チケット**: 航空券半券を参照した本格半券。左に accent の縦タブ(MESHIMATCH)、ミシン目(破線+両端ノッチ)、`ADMIT / DATE / PLACE` の等幅ラベル行、下部に擬似バーコード。スタンプだけ family-play で遊ぶ。
+- **タイマーリング(回し打ち)**: 円形カウントダウン(fitness の Set Timer 参照)。リングは accent、残り2秒で脈動。中央に大きな残秒。
+- **ナビ**: 構成不変。アクティブのみ accent、非アクティブは faint のラインアイコン。
 
-- **button-primary**: orange, full-width, 52px. One per screen.
-- **chip**: white with warm border; selected = orange fill, white text (was
-  navy - migrate).
-- **restaurant card**: photo area (honey-tinted placeholder with genre emoji if
-  no photo), name (Title), area + genre + price (Caption), reason tags as
-  micro-chips, trust badges top-left (★お気に入り = orange, 🏅おすすめ = honey).
-- **vote controls**: × (white circle, danger border) left, ○ (sage fill) right.
-- **progress ring**: waiting room count uses primary orange ring on cream.
+## 5. ホームの状態依存レイアウト(UX再構成・合意済み)
 
-## Do's and Don'ts
+- **進行中ご飯会あり**: チケット(半券カード)を最上部に昇格。モード2枚(今すぐ/予定を組む)はその下にコンパクトなピル型2連ボタンに縮小。
+- **進行中なし**: 「🍜 今すぐ」「📅 予定を組む」の大きな2枚カードがヒーロー。
+- 別タブは作らない。過去のご飯会はグループ側アーカイブ(現行どおり)。
 
-- Do keep one CTA per screen; secondary actions are text links or ghosts.
-- Do use sage only for positive/completed semantics, never decoration.
-- Don't use navy `#1A1A2E` or terracotta `#C26A4A` anywhere (legacy palette).
-- Don't put white text on Honey or Sage tints; use Espresso.
-- Don't use pure black shadows; warm them with Espresso alpha.
-- Don't exceed two font weights per screen beyond the display title.
+## 6. 移行の原則(Dストリーム)
+
+- D1: 本トークン+共通コンポーネント(チップ/ボタン/カード/バッジ/ナビ)を実装し、既存クラスを差し替え可能にする
+- D2: 画面単位の再スキン(ホーム状態依存化を含む)。**機能・データフローは一切変更しない**
+- R4a/R4b(即時モード)は最初からこの言語で新規実装
