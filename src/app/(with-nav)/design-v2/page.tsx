@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Bell,
@@ -29,6 +30,9 @@ import {
 const iconSize = 14;
 
 export default function DesignV2GalleryPage() {
+  // dev専用ギャラリー: 本番ビルドでは公開しない (D1レビューP2対応)
+  if (process.env.NODE_ENV === "production") notFound();
+
   return (
     <main className="v2-scope" style={{ minHeight: "100dvh", padding: "28px 18px 40px" }}>
       <div style={{ maxWidth: 430, margin: "0 auto" }}>

@@ -37,8 +37,8 @@ export function TicketStub({
         </div>
         {stamp && <div className="v2-ticket-stub__stamp">{stamp}</div>}
         <div className="v2-ticket-stub__grid">
-          {items.map((item) => (
-            <div key={item.label}>
+          {items.map((item, index) => (
+            <div key={`${item.label}-${index}`}>
               <span className="v2-ticket-stub__item-label">{item.label}</span>
               <span className="v2-ticket-stub__item-value">{item.value}</span>
             </div>

@@ -55,6 +55,8 @@
   --v2-radius-card: 24px;
   --v2-radius-photo: 28px;
   --v2-radius-input: 18px;
+  /* 見出し字間はDESIGN.md §2が正 (v2画面はこのトークンを使う) */
+  --v2-tracking-display: -0.01em;
   --v2-icon-button-size: 44px;
   --v2-family-quiet: "Zen Kaku Gothic New";
   --v2-family-play: "Zen Maru Gothic";
@@ -95,7 +97,7 @@ body {
 
 /* ── DESIGN v2 primitives (additive; no existing page selectors are changed) ── */
 .v2-scope {
-  background: var(--v2-canvas);
+  background: var(--v2-ticket-notch, var(--v2-canvas));
   color: var(--v2-ink);
   font-family: var(--v2-family-quiet), -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
   letter-spacing: 0;
@@ -291,7 +293,7 @@ body {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--v2-canvas);
+  background: var(--v2-ticket-notch, var(--v2-canvas));
   z-index: 1;
 }
 .v2-ticket-stub__body::before {
