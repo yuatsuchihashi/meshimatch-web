@@ -102,7 +102,7 @@ export function formatEvalResult(result, options) {
     for (const item of result.disagreements) {
       const reasons = item.negatives.length > 0 ? item.negatives.join(", ") : "no negatives";
       lines.push(
-        `- ${item.name} (${item.external_id}): label=${item.label}, bucket=${item.risk_bucket}, risk=${item.hazure_risk.toFixed(2)}, reasons=${reasons}`
+        `- ${item.name} (${item.external_id}): label=${item.label}, bucket=${item.risk_bucket}, risk=${(typeof item.hazure_risk === "number" ? item.hazure_risk.toFixed(2) : "n/a")}, reasons=${reasons}`
       );
     }
   }
