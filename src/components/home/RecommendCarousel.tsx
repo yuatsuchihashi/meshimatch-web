@@ -12,6 +12,7 @@ import { useLocale } from "@/lib/i18n";
 import { genreEmoji } from "@/lib/genre-emoji";
 import type { Restaurant } from "@/lib/types";
 import { VerificationBadge } from "@/components/profile/VerificationBadge";
+import { Chip, PhotoCard } from "@/components/v2";
 
 export interface RecommendedRestaurant extends Restaurant {
   isMemberFavorite?: boolean;
@@ -54,10 +55,10 @@ export function RecommendCarousel({
   return (
     <div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "var(--v2-ink)", letterSpacing: "var(--v2-tracking-display)" }}>
           {t("home.recommendTitle")}
         </div>
-        <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+        <div style={{ fontSize: 12, color: "var(--v2-muted)" }}>
           {t("home.recommendSub")}
         </div>
       </div>
@@ -90,108 +91,67 @@ export function RecommendCarousel({
                   : (item.publicFavoriteCount ?? 0) > 0
                     ? t("home.recommendBadgePopular")
                     : null);
+          const stateTag = item.reasonTags?.find((tag) => tag.includes("営業中") || tag.includes("要確認"));
           return (
             <button
               key={`${item.id}-${index}`}
               onClick={() => onSelect(item)}
-              className="card"
               style={{
-                flex: "0 0 164px",
+                flex: "0 0 226px",
                 scrollSnapAlign: "start",
                 padding: 0,
-                overflow: "hidden",
                 cursor: "pointer",
                 textAlign: "left",
-                border: "1px solid var(--border)",
+                border: "none",
+                background: "none",
               }}
             >
-              <div
-                style={{
-                  height: 92,
-                  background: "linear-gradient(140deg, #FBEBC9, #F7DFA8)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 34,
-                  position: "relative",
-                }}
+              <PhotoCard
+                photoSrc={item.photoUrl}
+                photoAlt={item.name}
+                placeholder={genreEmoji(item.genreId)}
+                overlayStart={
+                  label ? (
+                    <Chip
+                      label={
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                          {label}
+                          {officialNames.length > 0 && <VerificationBadge title={t("official.badgeTitle")} compact />}
+                        </span>
+                      }
+                    />
+                  ) : null
+                }
+                overlayEnd={
+                  <span style={{ display: "inline-flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                    {stateTag && (
+                      <Chip variant={stateTag.includes("要確認") ? "honey" : "sage"} label={stateTag} />
+                    )}
+                    {item.pr && <Chip variant="blush" label={t("official.prChip")} />}
+                  </span>
+                }
+                style={{ ["--v2-ticket-notch" as string]: "var(--v2-canvas)" }}
               >
-                {item.photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.photoUrl}
-                    alt={item.name}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  genreEmoji(item.genreId)
-                )}
-                {label && (
-                  <span
+                <div style={{ minWidth: 0 }}>
+                  <div
                     style={{
-                      position: "absolute",
-                      top: 6,
-                      left: 6,
-                      right: 6,
-                      fontSize: 10,
+                      fontSize: 15,
                       fontWeight: 800,
-                      padding: "4px 8px",
-                      borderRadius: 100,
-                      backgroundColor: item.isMemberFavorite
-                        ? "var(--primary)"
-                        : item.endorsementLabel
-                          ? "var(--warning)"
-                          : "rgba(255,255,255,0.94)",
-                      color: item.isMemberFavorite
-                        ? "white"
-                        : "var(--secondary)",
+                      color: "var(--v2-ink)",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
                     }}
                   >
-                    {label}
-                    {officialNames.length > 0 && <VerificationBadge title={t("official.badgeTitle")} compact />}
-                  </span>
-                )}
-                {item.pr && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      right: 6,
-                      bottom: 6,
-                      fontSize: 10,
-                      fontWeight: 900,
-                      padding: "4px 7px",
-                      borderRadius: 100,
-                      backgroundColor: "rgba(255,255,255,0.94)",
-                      color: "var(--primary)",
-                    }}
-                  >
-                    {t("official.prChip")}
-                  </span>
-                )}
-              </div>
-              <div style={{ padding: "10px 12px 12px" }}>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 800,
-                    color: "var(--text-primary)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {item.name}
+                    {item.name}
+                  </div>
+                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 7 }}>
+                    {item.area && <Chip label={item.area} />}
+                    {item.genre && <Chip label={item.genre} />}
+                    {item.budget && <Chip label={item.budget} />}
+                  </div>
                 </div>
-                <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-                  {names.length > 0 ? `${names.slice(0, 2).join("・")}の公開お気に入り` : item.area}
-                </div>
-              </div>
+              </PhotoCard>
             </button>
           );
         })}

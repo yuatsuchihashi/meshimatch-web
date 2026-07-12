@@ -1,7 +1,6 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/lib/hooks/useUser";
@@ -218,9 +217,9 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
   if (loading) {
     return (
-      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
-          <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", marginBottom: 12 }} />
+      <div className="v2-scope" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", color: "var(--v2-muted)" }}>
+          <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--v2-border)", borderTopColor: "var(--v2-accent)", borderRadius: "50%", marginBottom: 12 }} />
           <div style={{ fontSize: 14 }}>{t("results.loading")}</div>
         </div>
       </div>
@@ -240,7 +239,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   })();
 
   return (
-    <div className="service-canvas" style={{ minHeight: "100dvh" }}>
+    <div className="v2-scope service-canvas" style={{ minHeight: "100dvh" }}>
       {/* Header */}
       <div style={{ padding: "60px 20px 16px" }}>
         <Link
@@ -249,7 +248,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            color: "var(--primary)",
+            color: "var(--v2-ink)",
             textDecoration: "none",
             fontSize: 15,
             fontWeight: 600,
@@ -264,12 +263,12 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "var(--v2-ink)", letterSpacing: "var(--v2-tracking-display)", marginBottom: 4 }}>
               {groupName}
             </div>
             {/* 候補エリア: タップで概要シート */}
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-              <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600 }}>
+              <span style={{ fontSize: 12, color: "var(--v2-muted)", fontWeight: 600 }}>
                 候補エリア:
               </span>
               {areas.map((area) => (
@@ -284,12 +283,12 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                   }}
                   style={{
                     fontSize: 12,
-                    backgroundColor: "rgba(240,90,40,0.08)",
-                    color: "var(--primary)",
+                    backgroundColor: "var(--v2-surface)",
+                    color: "var(--v2-ink)",
                     borderRadius: 100,
                     padding: "4px 12px",
                     fontWeight: 600,
-                    border: "none",
+                    border: "1px solid var(--v2-border)",
                     cursor: "pointer",
                   }}
                 >
@@ -314,7 +313,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     border: "none",
                     cursor: "pointer",
                     padding: 4,
-                    color: "var(--text-tertiary)",
+                      color: "var(--v2-muted)",
                     display: "flex",
                     alignItems: "center",
                   }}
@@ -406,36 +405,21 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
           style={{
             position: "relative",
             margin: "0 20px 16px",
-            backgroundColor: "rgba(168,198,134,0.14)",
-            border: "1.5px solid rgba(168,198,134,0.55)",
-            borderRadius: 20,
-            padding: "14px 126px 14px 16px",
+            backgroundColor: "var(--v2-surface)",
+            border: "1px solid var(--v2-border)",
+            borderRadius: "var(--v2-radius-card)",
+            padding: "16px",
             display: "flex",
             alignItems: "center",
             gap: 10,
             minHeight: 118,
           }}
         >
-          <Image
-            src="/img/service/04-result-ticket-check.webp"
-            alt=""
-            width={134}
-            height={102}
-            className="service-deco"
-            style={{
-              position: "absolute",
-              right: -4,
-              bottom: -2,
-              width: 124,
-              height: "auto",
-              opacity: 0.96,
-            }}
-          />
           <div style={{ flex: 1, position: "relative", zIndex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--success-deep)", marginBottom: 2 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--v2-tint-sage-text)", marginBottom: 2 }}>
               {t("results.decided")}
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--v2-ink)" }}>
               {decidedRestaurant}
             </div>
             {/* 決定後の導線: 地図と予約検索 */}
@@ -443,7 +427,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               <button
                 onClick={() => setShowTicket(true)}
                 style={{
-                  fontSize: 12, fontWeight: 700, color: "white", backgroundColor: "var(--primary)",
+                  fontSize: 12, fontWeight: 800, color: "white", backgroundColor: "var(--v2-accent)",
                   border: "none", borderRadius: 100, padding: "6px 14px", cursor: "pointer",
                 }}
               >
@@ -453,7 +437,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(decidedRestaurant)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontSize: 12, fontWeight: 700, color: "var(--primary)", textDecoration: "none" }}
+                style={{ fontSize: 12, fontWeight: 700, color: "var(--v2-accent)", textDecoration: "none" }}
               >
                 Googleマップ →
               </a>
@@ -478,35 +462,21 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             margin: "0 20px 16px",
             padding: "16px 94px 16px 16px",
             borderRadius: 16,
-            border: "1px dashed var(--border)",
+            border: "1px solid var(--v2-border)",
+            background: "var(--v2-surface)",
             textDecoration: "none",
             minHeight: 86,
           }}
         >
-          <Image
-            src="/img/service/02-create-group-plate.webp"
-            alt=""
-            width={96}
-            height={77}
-            className="service-deco"
-            style={{
-              position: "absolute",
-              right: 4,
-              bottom: -10,
-              width: 88,
-              height: "auto",
-              opacity: 0.9,
-            }}
-          />
           <div style={{ position: "relative", zIndex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--v2-ink)" }}>
               自分のグループでもやってみる
             </div>
-            <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: "var(--v2-muted)", marginTop: 2 }}>
               次の食事会、あなたが幹事に
             </div>
           </div>
-          <span style={{ position: "relative", zIndex: 1, fontSize: 18, fontWeight: 800, color: "var(--primary)" }}>→</span>
+          <span style={{ position: "relative", zIndex: 1, fontSize: 18, fontWeight: 800, color: "var(--v2-accent)" }}>→</span>
         </Link>
       )}
 

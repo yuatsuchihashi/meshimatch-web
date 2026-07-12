@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { Restaurant } from "@/lib/types";
 import { useLocale } from "@/lib/i18n";
+import { Chip } from "@/components/v2";
 
 const GENRE_GRADIENTS: Record<string, [string, string]> = {
   G001: ["#C4552A", "#E8734A"],
@@ -65,6 +66,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
 
   return (
     <div
+      className="v2-scope"
       style={{
         position: "fixed",
         inset: 0,
@@ -90,7 +92,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
       <div
         style={{
           position: "relative",
-          backgroundColor: "var(--bg)",
+          backgroundColor: "var(--v2-canvas)",
           borderRadius: "24px 24px 0 0",
           maxHeight: "90dvh",
           overflowY: "auto",
@@ -100,7 +102,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
       >
         {/* Drag handle */}
         <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 0" }}>
-          <div style={{ width: 40, height: 4, backgroundColor: "var(--border)", borderRadius: 2 }} />
+          <div style={{ width: 40, height: 4, backgroundColor: "var(--v2-border)", borderRadius: 2 }} />
         </div>
 
         {/* 写真の代わりに: 公式写真があれば表示、なければGoogleマップ埋め込み */}
@@ -130,24 +132,27 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
 
         <div style={{ padding: "20px 20px 40px" }}>
           {/* Name */}
-          <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "var(--v2-ink)", letterSpacing: "var(--v2-tracking-display)", marginBottom: 8 }}>
             {restaurant.name}
           </div>
-          <div style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 16 }}>
-            {restaurant.genre} · {restaurant.budget}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+            {restaurant.genre && <Chip label={restaurant.genre} />}
+            {restaurant.budget && <Chip label={restaurant.budget} />}
+            {restaurant.area && <Chip label={restaurant.area} />}
+            {restaurant.pr && <Chip variant="blush" label={t("official.prChip")} />}
           </div>
 
           {recommendationLabel && (
             <div
               style={{
-                backgroundColor: "rgba(240,90,40,0.08)",
-                color: "var(--primary)",
-                borderRadius: 16,
-                padding: "12px 14px",
+                backgroundColor: "var(--v2-tint-blush)",
+                color: "var(--v2-accent)",
+                borderRadius: 999,
+                padding: "10px 14px",
                 marginBottom: 16,
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: 800,
-                border: "1px solid rgba(240,90,40,0.12)",
+                border: "none",
               }}
             >
               {recommendationLabel}
@@ -157,10 +162,10 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
           {/* Details */}
           <div
             style={{
-              backgroundColor: "var(--surface)",
-              borderRadius: 16,
+              backgroundColor: "var(--v2-surface)",
+              borderRadius: "var(--v2-radius-card)",
               overflow: "hidden",
-              border: "1px solid var(--border-light)",
+              border: "1px solid var(--v2-border)",
               marginBottom: 16,
             }}
           >
@@ -236,20 +241,20 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
                       alignItems: "flex-start",
                       gap: 12,
                       padding: "14px 16px",
-                      borderBottom: i < arr.length - 1 ? "1px solid var(--border-light)" : "none",
+                      borderBottom: i < arr.length - 1 ? "1px solid var(--v2-border)" : "none",
                     }}
                   >
                     <span style={{ fontSize: 16, flexShrink: 0, width: 20, textAlign: "center" }}>
                       {row.icon}
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 2 }}>
+                      <div style={{ fontSize: 12, color: "var(--v2-muted)", marginBottom: 2 }}>
                         {row.label}
                       </div>
                       <div
                         style={{
                           fontSize: 15,
-                          color: "var(--text-primary)",
+                          color: "var(--v2-ink)",
                           wordBreak: "break-all",
                           lineHeight: 1.4,
                         }}
@@ -268,7 +273,7 @@ export function RestaurantDetailModal({ restaurant, onClose, onDecide }: Props) 
             {onDecide && (
               <button
                 className="btn-primary"
-                style={{ backgroundColor: "var(--success)", gap: 8, fontSize: 16, fontWeight: 800 }}
+                style={{ gap: 8, fontSize: 16, fontWeight: 800 }}
                 onClick={() => { onDecide(restaurant); handleClose(); }}
               >
                 {t("restaurantDetail.decide")}

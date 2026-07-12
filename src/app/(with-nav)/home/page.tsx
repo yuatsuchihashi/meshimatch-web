@@ -141,6 +141,8 @@ export default function HomePage() {
   const visibleActiveGroups = allActiveGroups.filter((g) => !hiddenGroupIds.has(g.id));
   const hiddenActiveGroups = allActiveGroups.filter((g) => hiddenGroupIds.has(g.id));
   const archivedGroups = groups.filter((g) => g.status === "archived");
+  const primaryActiveGroup = visibleActiveGroups[0] ?? null;
+  const remainingActiveGroups = visibleActiveGroups.slice(1);
 
   function toggleHide(groupId: string) {
     setHiddenGroupIds((prev) => {
@@ -227,9 +229,9 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
-          <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", margin: "0 auto 12px" }} />
+      <div className="v2-scope" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", color: "var(--v2-muted)" }}>
+          <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--v2-border)", borderTopColor: "var(--v2-accent)", borderRadius: "50%", margin: "0 auto 12px" }} />
           <div style={{ fontSize: 14 }}>{t("common.loading")}</div>
         </div>
       </div>
@@ -237,7 +239,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="service-canvas" style={{ minHeight: "100dvh" }}>
+    <div className="v2-scope service-canvas" style={{ minHeight: "100dvh" }}>
       {/* Header */}
       <div
         style={{
@@ -248,10 +250,10 @@ export default function HomePage() {
         }}
       >
         <div>
-          <div style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 4 }}>
+          <div style={{ fontSize: 14, color: "var(--v2-muted)", marginBottom: 4 }}>
             {t("home.greeting")}
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)" }}>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "var(--v2-ink)", letterSpacing: "var(--v2-tracking-display)" }}>
             {user?.displayName ?? "ユーザー"}{t("home.greetingSuffix")}
           </div>
         </div>
@@ -266,8 +268,8 @@ export default function HomePage() {
               width: 44,
               height: 44,
               borderRadius: 100,
-              backgroundColor: "var(--surface)",
-              border: "1px solid var(--border)",
+              backgroundColor: "var(--v2-surface)",
+              border: "1px solid var(--v2-border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -279,7 +281,7 @@ export default function HomePage() {
               width={22}
               height={22}
               style={{
-                filter: "brightness(0) saturate(100%) invert(45%) sepia(10%) saturate(500%) hue-rotate(210deg) brightness(95%)",
+                filter: "brightness(0) saturate(100%) invert(10%) sepia(8%) saturate(1150%) hue-rotate(340deg) brightness(98%)",
               }}
             />
           </div>
@@ -292,14 +294,14 @@ export default function HomePage() {
                 width: 18,
                 height: 18,
                 borderRadius: "50%",
-                backgroundColor: "var(--primary)",
+                backgroundColor: "var(--v2-accent)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: 11,
                 fontWeight: 700,
                 color: "white",
-                border: "2px solid var(--bg)",
+                border: "2px solid var(--v2-canvas)",
               }}
             >
               {invitations.length}
@@ -310,83 +312,106 @@ export default function HomePage() {
       </div>
 
       <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
-        {/* Create Group CTA */}
-        <Link href="/groups/create" style={{ textDecoration: "none" }}>
-          <div
-            className="card service-create-card"
-            style={{
-              padding: "20px 88px 20px 20px",
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-              minHeight: 104,
-            }}
-          >
-            <Image
-              src="/img/service/02-create-group-plate.webp"
-              alt=""
-              width={112}
-              height={90}
-              className="service-deco"
-              style={{
-                position: "absolute",
-                right: 6,
-                bottom: 0,
-                width: 82,
-                height: "auto",
-                opacity: 0.96,
-              }}
-            />
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 14,
-                background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                boxShadow: "0 8px 18px rgba(240,90,40,0.24)",
-                position: "relative",
-                zIndex: 1,
-              }}
+        {primaryActiveGroup ? (
+          <>
+            <section>
+              <div style={{ fontSize: 12, fontWeight: 800, color: "var(--v2-muted)", marginBottom: 10 }}>
+                {t("home.activeGroups")}
+              </div>
+              <GroupCard
+                group={primaryActiveGroup}
+                onSwipeArchive={() => void handleArchiveGroup(primaryActiveGroup.id)}
+                onSwipeDelete={() => void handleSwipeDeleteGroup(primaryActiveGroup.id)}
+              />
+            </section>
+            <Link
+              href="/groups/create"
+              className="v2-pill-button v2-pill-button--ink"
+              style={{ textDecoration: "none" }}
             >
               <Image
                 src="/icons/add_line.svg"
-                alt="作成"
-                width={24}
-                height={24}
-                style={{ filter: "brightness(0) invert(1)" }}
-              />
-            </div>
-            <div style={{ position: "relative", zIndex: 1 }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
-                {t("home.createGroup")}
-              </div>
-              <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.45 }}>
-                {t("home.createGroupDesc")}
-              </div>
-            </div>
-            <div style={{ marginLeft: "auto", color: "var(--text-tertiary)" }}>
-              <Image
-                src="/icons/arrow_right_line.svg"
                 alt=""
                 width={18}
                 height={18}
-                style={{ filter: "brightness(0) saturate(100%) invert(70%) sepia(5%) saturate(400%) hue-rotate(210deg)" }}
+                style={{ filter: "brightness(0) invert(1)" }}
               />
+              <span>{t("home.createGroup")}</span>
+            </Link>
+          </>
+        ) : (
+          <Link href="/groups/create" style={{ textDecoration: "none" }}>
+            <div
+              className="card"
+              style={{
+                overflow: "hidden",
+                display: "grid",
+                gridTemplateRows: "150px auto",
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  background: "var(--v2-greige)",
+                  overflow: "hidden",
+                }}
+              >
+                <Image
+                  src="/img/service/02-create-group-plate.webp"
+                  alt=""
+                  width={240}
+                  height={192}
+                  priority
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    bottom: -28,
+                    width: 178,
+                    height: "auto",
+                  }}
+                />
+              </div>
+              <div style={{ padding: "16px 18px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: 21, fontWeight: 800, color: "var(--v2-ink)", letterSpacing: "var(--v2-tracking-display)", marginBottom: 4 }}>
+                    {t("home.createGroup")}
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--v2-muted)", lineHeight: 1.45 }}>
+                    {t("home.createGroupDesc")}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    background: "var(--v2-accent)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Image
+                    src="/icons/arrow_right_line.svg"
+                    alt=""
+                    width={18}
+                    height={18}
+                    style={{ filter: "brightness(0) invert(1)" }}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+        )}
 
         {/* また行きたい？カード (決定の翌日に1回だけ) */}
         {revisitGroup && (
           <div className="card animate-fade-in" style={{ padding: "16px 18px" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--primary)", marginBottom: 4 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--v2-accent)", marginBottom: 4 }}>
               {t("home.revisitEyebrow", { group: revisitGroup.name })}
             </div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--v2-ink)" }}>
               {t("home.revisitQuestion", { name: revisitGroup.decidedRestaurant ?? "" })}
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
@@ -394,7 +419,7 @@ export default function HomePage() {
                 onClick={() => handleRevisit(true)}
                 style={{
                   flex: 1, height: 42, borderRadius: 100, border: "none",
-                  background: "var(--success)", color: "white", fontWeight: 700,
+                  background: "var(--v2-tint-sage)", color: "var(--v2-tint-sage-text)", fontWeight: 700,
                   fontSize: 14, cursor: "pointer",
                 }}
               >
@@ -404,8 +429,8 @@ export default function HomePage() {
                 onClick={() => handleRevisit(false)}
                 style={{
                   flex: 1, height: 42, borderRadius: 100,
-                  border: "1.5px solid var(--border-strong)", background: "var(--surface)",
-                  color: "var(--text-secondary)", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                  border: "1.5px solid var(--v2-border)", background: "var(--v2-surface)",
+                  color: "var(--v2-muted)", fontWeight: 700, fontSize: 14, cursor: "pointer",
                 }}
               >
                 {t("home.revisitNo")}
@@ -417,16 +442,13 @@ export default function HomePage() {
         {/* おすすめカルーセル (新規CTAの直下: 発見枠) */}
         <RecommendCarousel userId={userId} onSelect={setSelectedRecommend} />
 
-        {/* Active Groups */}
-        <div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
-            {t("home.activeGroups")}
-          </div>
-          {visibleActiveGroups.length === 0 ? (
-            <EmptyState />
-          ) : (
+        {remainingActiveGroups.length > 0 && (
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--v2-ink)", marginBottom: 12 }}>
+              {t("home.activeGroups")}
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {visibleActiveGroups.map((group) => (
+              {remainingActiveGroups.map((group) => (
                 <GroupCard
                   key={group.id}
                   group={group}
@@ -435,8 +457,8 @@ export default function HomePage() {
                 />
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Hidden Groups */}
         {hiddenActiveGroups.length > 0 && (
@@ -666,38 +688,6 @@ export default function HomePage() {
         restaurant={selectedRecommend}
         onClose={() => setSelectedRecommend(null)}
       />
-    </div>
-  );
-}
-
-function EmptyState() {
-  const { t } = useLocale();
-  return (
-    <div
-      className="card service-create-card"
-      style={{
-        textAlign: "center",
-        padding: "28px 20px 30px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 12,
-      }}
-    >
-      <Image
-        src="/img/service/02-create-group-plate.webp"
-        alt=""
-        width={132}
-        height={106}
-        className="service-deco"
-        style={{ width: 126, height: "auto" }}
-      />
-      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-secondary)" }}>
-        {t("home.noGroups")}
-      </div>
-      <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
-        {t("home.noGroupsHint")}
-      </div>
     </div>
   );
 }

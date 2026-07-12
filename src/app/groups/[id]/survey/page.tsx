@@ -10,6 +10,7 @@ import { INITIAL_STATION_ZONE_MAP, SURVEY_AREAS } from "@/lib/areas";
 import { BudgetCapPicker } from "@/components/survey/GenreTiles";
 import { MoodPickGrid, MoodAvoidSection } from "@/components/survey/MoodPills";
 import { SuggestPicker, type SuggestPick } from "@/components/survey/SuggestPicker";
+import { PillButton } from "@/components/v2";
 import { buildSuggestedRestaurantPayload } from "@/lib/suggestions";
 import { isVerified, type VerificationClient } from "@/lib/verification";
 import {
@@ -63,7 +64,7 @@ function SubmittingScreen({
   return (
     <div
       style={{
-        backgroundColor: "var(--bg)",
+        backgroundColor: "var(--v2-canvas)",
         minHeight: "100dvh",
         display: "flex",
         flexDirection: "column",
@@ -82,7 +83,7 @@ function SubmittingScreen({
               position: "absolute",
               inset: -(index * 20),
               borderRadius: "50%",
-              border: "2px solid var(--primary)",
+              border: "2px solid var(--v2-accent)",
               opacity: 0.3 / index,
               animationDelay: `${index * 0.3}s`,
             }}
@@ -94,7 +95,7 @@ function SubmittingScreen({
             width: 80,
             height: 80,
             borderRadius: "50%",
-            backgroundColor: "rgba(240,90,40,0.12)",
+            backgroundColor: "var(--v2-tint-blush)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -106,8 +107,8 @@ function SubmittingScreen({
             style={{
               width: 36,
               height: 36,
-              border: "4px solid var(--border-light)",
-              borderTop: "4px solid var(--primary)",
+              border: "4px solid var(--v2-border)",
+              borderTop: "4px solid var(--v2-accent)",
               borderRadius: "50%",
               animation: "spin 0.8s linear infinite",
             }}
@@ -119,7 +120,7 @@ function SubmittingScreen({
         <div
           style={{
             height: 6,
-            backgroundColor: "var(--border-light)",
+            backgroundColor: "var(--v2-border)",
             borderRadius: 6,
             overflow: "hidden",
             marginBottom: 12,
@@ -129,7 +130,7 @@ function SubmittingScreen({
             style={{
               height: "100%",
               width: `${percent}%`,
-              backgroundColor: "var(--primary)",
+              backgroundColor: "var(--v2-accent)",
               borderRadius: 6,
               transition: "width 0.1s linear",
             }}
@@ -158,34 +159,35 @@ function SubmittingScreen({
 }
 
 const cardStyle: React.CSSProperties = {
-  backgroundColor: "var(--surface)",
-  borderRadius: 20,
+  backgroundColor: "var(--v2-surface)",
+  borderRadius: 24,
   padding: 16,
-  border: "1px solid var(--border-light)",
+  border: "1px solid var(--v2-border)",
+  boxShadow: "var(--v2-shadow)",
   marginBottom: 16,
 };
 
 const titleStyle: React.CSSProperties = {
   fontSize: 15,
   fontWeight: 700,
-  color: "var(--text-primary)",
+  color: "var(--v2-ink)",
   marginBottom: 4,
 };
 
 const captionStyle: React.CSSProperties = {
   fontSize: 13,
-  color: "var(--text-secondary)",
+  color: "var(--v2-muted)",
   marginBottom: 12,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "12px 14px",
-  borderRadius: 12,
-  border: "1.5px solid var(--border)",
+  borderRadius: 18,
+  border: "1.5px solid var(--v2-border)",
   fontSize: 15,
-  color: "var(--text-primary)",
-  backgroundColor: "var(--bg)",
+  color: "var(--v2-ink)",
+  backgroundColor: "var(--v2-surface-soft)",
   outline: "none",
 };
 
@@ -565,7 +567,7 @@ export default function SurveyPage({
   }
 
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
+    <div className="v2-scope" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh" }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
         <div style={{ padding: "56px 20px 0" }}>
           <Link
@@ -953,9 +955,9 @@ export default function SurveyPage({
             {t("survey.privacyNote")}
           </div>
 
-          <button className="btn-primary" onClick={handleSubmit} disabled={!hasTodayMood}>
+          <PillButton variant="cta" onClick={handleSubmit} disabled={!hasTodayMood}>
             {t("survey.submit")}
-          </button>
+          </PillButton>
         </div>
       </div>
     </div>
