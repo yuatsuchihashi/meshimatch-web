@@ -444,8 +444,9 @@ export default function HomePage() {
 
         {remainingActiveGroups.length > 0 && (
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--v2-ink)", marginBottom: 12 }}>
-              {t("home.activeGroups")}
+            {/* 見出しはヒーローチケット上の eyebrow が既に出しているため、ここでは「そのほか」扱いの控えめ表示 */}
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--v2-muted)", letterSpacing: "0.05em", marginBottom: 12 }}>
+              {t("home.activeGroupsMore")}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {remainingActiveGroups.map((group) => (
