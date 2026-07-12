@@ -30,6 +30,7 @@ const TABLES = [
   "restaurant_sources",
   "restaurant_votes",
   "official_verification_grants",
+  "places_cache",
   "zones",
   "station_zone_map",
 ] as const;
@@ -66,6 +67,7 @@ const UNIQUE_CONSTRAINTS: Record<string, string[][]> = {
   restaurant_sources: [["id"], ["restaurant_id", "source_type", "added_by"]],
   restaurant_votes: [["id"], ["group_id", "member_id", "restaurant_id"]],
   official_verification_grants: [["id"], ["profile_id"]],
+  places_cache: [["place_id"]],
   zones: [["id", "generation"]],
   station_zone_map: [["id"], ["station", "generation"]],
 };
@@ -152,6 +154,7 @@ function applyDefaults(table: string, values: Row): Row {
       row.opening_hours ??= null;
       row.opening_hours_source ??= null;
       row.opening_hours_updated_at ??= null;
+      row.catalog_source ??= null; // "catalog" marks quality-evaluation catalog rows
       row.external_id ??= null; // overture:<id> / fsq:<id> / manual:<slug>
       row.created_at ??= stamp;
       row.updated_at ??= stamp;
@@ -165,6 +168,15 @@ function applyDefaults(table: string, values: Row): Row {
       row.note ??= null;
       row.pr ??= false;
       row.created_at ??= stamp;
+      break;
+    case "places_cache":
+      row.place_id ??= row.id;
+      row.raw_details ??= {};
+      row.fetched_at ??= stamp;
+      row.expires_at ??= stamp;
+      row.source ??= "google_places_new";
+      row.created_at ??= stamp;
+      row.updated_at ??= stamp;
       break;
     case "official_verification_grants":
       row.profile_id ??= null;
@@ -385,6 +397,7 @@ function backfillDb(db: Db): boolean {
       "opening_hours",
       "opening_hours_source",
       "opening_hours_updated_at",
+      "catalog_source",
     ]) {
       if (!(column in row)) {
         row[column] = null;
@@ -396,6 +409,21 @@ function backfillDb(db: Db): boolean {
   for (const row of db.restaurant_sources) {
     if (row.pr == null) {
       row.pr = false;
+      changed = true;
+    }
+  }
+
+  for (const row of db.places_cache) {
+    if (!("source" in row)) {
+      row.source = "google_places_new";
+      changed = true;
+    }
+    if (!("created_at" in row)) {
+      row.created_at = nowIso();
+      changed = true;
+    }
+    if (!("updated_at" in row)) {
+      row.updated_at = nowIso();
       changed = true;
     }
   }

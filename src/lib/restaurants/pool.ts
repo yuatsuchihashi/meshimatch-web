@@ -29,12 +29,13 @@ export interface RestaurantRow {
   opening_hours?: Record<string, unknown> | null;
   opening_hours_source?: RestaurantMetadataSource | null;
   opening_hours_updated_at?: string | null;
+  catalog_source?: "catalog" | null;
 }
 
 export interface SourceRow {
   id: string;
   restaurant_id: string;
-  source_type: "base_curated" | "endorsement" | "user_favorite";
+  source_type: "base_curated" | "endorsement" | "user_favorite" | "catalog";
   visibility: "public" | "private";
   added_by: string | null;
   display_label: string | null;
@@ -170,6 +171,7 @@ export function composePool(params: {
   }
 
   for (const source of sources) {
+    if (source.source_type === "catalog") continue;
     if (!source.added_by) continue;
     const isMember = memberIds.has(source.added_by);
     const isFollowed = followedIds.has(source.added_by);

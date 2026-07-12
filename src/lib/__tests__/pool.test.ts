@@ -101,6 +101,30 @@ describe("trust-ring pool", () => {
     expect(pool[0].contributorLabels).toContain("Kaiのおすすめ");
   });
 
+  it("excludes catalog rows from the trust-ring candidate pool", () => {
+    const pool = composePool({
+      restaurants: [row("catalog-only"), row("member-pick")],
+      sources: [
+        source({
+          id: "catalog",
+          restaurant_id: "catalog-only",
+          source_type: "catalog",
+          visibility: "public",
+          added_by: "member",
+        }),
+        source({
+          id: "member",
+          restaurant_id: "member-pick",
+          source_type: "user_favorite",
+          added_by: "member",
+        }),
+      ],
+      memberProfileIds: ["member"],
+    });
+
+    expect(pool.map((entry) => entry.restaurant.id)).toEqual(["member-pick"]);
+  });
+
   it("adds strength when multiple people recommend the same place", () => {
     const trust = computeTrust({
       sources: [
