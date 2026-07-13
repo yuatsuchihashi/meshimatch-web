@@ -60,13 +60,17 @@ export default function InstantRevealPage() {
               : t("instant.revealEyebrow")}
           </p>
           <h1 className={styles.revealTitle}>
-            {t("instant.revealTitle", {
-              icon: stored.winner.icon,
-              genre: stored.winner.name,
-            })}
+            {stored.winner.isFallback
+              ? t("instant.revealFallbackTitle", { icon: stored.winner.icon })
+              : t("instant.revealTitle", {
+                  icon: stored.winner.icon,
+                  genre: stored.winner.name,
+                })}
           </h1>
           <p className={styles.desc}>
-            {stored.winnerChanged && stored.previousWinner
+            {stored.winner.isFallback
+              ? t("instant.revealFallbackDesc")
+              : stored.winnerChanged && stored.previousWinner
               ? t("instant.revealChangedDesc", {
                   previous: stored.previousWinner.name,
                   current: stored.winner.name,

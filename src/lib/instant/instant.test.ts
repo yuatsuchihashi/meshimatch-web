@@ -104,6 +104,17 @@ describe("selectInstantWinningGenre", () => {
     expect(nextWinner.genreId).toBe("G013");
     expect(didInstantWinnerChange(firstWinner, nextWinner)).toBe(true);
   });
+
+  it("marks all-omakase rounds as a zero-vote fallback", () => {
+    const winner = selectInstantWinningGenre([
+      participant("p1", []),
+      participant("p2", []),
+    ]);
+
+    expect(winner.isFallback).toBe(true);
+    expect(winner.genreId).toBe("G015");
+    expect(winner.votes).toBe(0);
+  });
 });
 
 describe("instantTurnAccent", () => {
@@ -161,6 +172,8 @@ describe("buildInstantGroupCreationRows", () => {
 
     expect(rows.group.mode).toBe("instant");
     expect(rows.group.group_size).toBe(2);
+    expect(rows.members[0].profile_id).toBe("user-1");
+    expect(rows.members[1].profile_id).toBeNull();
     expect(rows.surveys).toHaveLength(2);
     expect(rows.surveys[0].departure_station).toBe("渋谷駅");
     expect(containsRawCoordinates(rows)).toBe(false);
