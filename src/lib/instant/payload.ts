@@ -19,11 +19,14 @@ function instantGroupName(nowIso: string) {
   return `今からごはん ${label}`;
 }
 
-function participantSurvey(participant: InstantParticipantInput, station: string, area: string) {
+function participantSurvey(
+  participant: InstantParticipantInput,
+  zone: InstantGroupCreationInput["zone"]
+) {
   return {
-    departure_area: area,
-    departure_station: station,
-    preferred_areas: [area],
+    departure_area: zone?.name ?? null,
+    departure_station: zone?.station ?? null,
+    preferred_areas: zone ? [zone.name] : [],
     genre_preferences: participant.genrePreferences,
     dietary_restrictions: participant.dietaryRestrictions,
     allergy_note: participant.allergyNote ?? null,
@@ -57,7 +60,7 @@ export function buildInstantGroupCreationRows(
       has_survey: true,
     })),
     surveys: input.participants.map((participant) =>
-      participantSurvey(participant, input.zone.station, input.zone.name)
+      participantSurvey(participant, input.zone)
     ),
   };
 }

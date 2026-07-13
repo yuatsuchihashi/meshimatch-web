@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { Chip, PillButton } from "@/components/v2";
-import { INITIAL_STATION_ZONE_MAP } from "@/lib/areas";
 import { useLocale } from "@/lib/i18n";
-import { instantZoneFromStation, nearestInstantZoneFromCoordinates } from "@/lib/instant/zones";
+import { nearestInstantZoneFromCoordinates } from "@/lib/instant/zones";
 import type { InstantStartState, InstantZoneSelection } from "@/lib/instant/types";
 import styles from "./instant.module.css";
 
@@ -15,18 +14,13 @@ const START_KEY = "meshimatch_instant_start";
 export default function InstantStartPage() {
   const router = useRouter();
   const { t } = useLocale();
-  const stations = useMemo(
-    () => INITIAL_STATION_ZONE_MAP.map((entry) => entry.station),
-    []
-  );
   const [partySize, setPartySize] = useState(3);
-  const [station, setStation] = useState(stations[0] ?? "渋谷駅");
   const [zone, setZone] = useState<InstantZoneSelection | null>(null);
-  const [needsPicker, setNeedsPicker] = useState(false);
+  const [needsLocationless, setNeedsLocationless] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locationTried, setLocationTried] = useState(false);
 
-  function persistAndGo(selectedZone: InstantZoneSelection) {
+  function persistAndGo(selectedZone: InstantZoneSelection | null) {
     const state: InstantStartState = {
       zone: selectedZone,
       partySize,
@@ -36,24 +30,17 @@ export default function InstantStartPage() {
     router.push("/instant/round");
   }
 
-  function usePickerStation() {
-    const selected = instantZoneFromStation(station);
-    if (!selected) return;
-    setZone(selected);
-    persistAndGo(selected);
-  }
-
   function startFromCurrentLocation() {
     if (locationTried || locating) {
       if (zone) persistAndGo(zone);
-      else setNeedsPicker(true);
+      else setNeedsLocationless(true);
       return;
     }
 
     setLocationTried(true);
     setLocating(true);
     if (!("geolocation" in navigator)) {
-      setNeedsPicker(true);
+      setNeedsLocationless(true);
       setLocating(false);
       return;
     }
@@ -61,7 +48,7 @@ export default function InstantStartPage() {
     // 端末がコールバックを一切返さないケース(権限ダイアログ放置など)への保険。
     // options.timeout だけに頼らず、JS側でも必ずフォールバックさせる (レビューP1)
     const fallbackTimer = window.setTimeout(() => {
-      setNeedsPicker(true);
+      setNeedsLocationless(true);
       setLocating(false);
     }, 5000);
 
@@ -78,7 +65,7 @@ export default function InstantStartPage() {
       },
       () => {
         window.clearTimeout(fallbackTimer);
-        setNeedsPicker(true);
+        setNeedsLocationless(true);
         setLocating(false);
       },
       { enableHighAccuracy: false, timeout: 4500, maximumAge: 0 }
@@ -103,27 +90,8 @@ export default function InstantStartPage() {
             </div>
           )}
 
-          {needsPicker && (
-            <div className={styles.stack}>
-              <p className={styles.desc}>{t("instant.locationDenied")}</p>
-              <label className={styles.stack}>
-                <span className={styles.sectionTitle}>
-                  {t("instant.locationPickerLabel")}
-                </span>
-                <input
-                  className={styles.input}
-                  list="instant-stations"
-                  value={station}
-                  placeholder={t("instant.locationPickerPlaceholder")}
-                  onChange={(event) => setStation(event.target.value)}
-                />
-              </label>
-              <datalist id="instant-stations">
-                {stations.map((item) => (
-                  <option key={item} value={item} />
-                ))}
-              </datalist>
-            </div>
+          {needsLocationless && (
+            <p className={styles.desc}>{t("instant.locationDenied")}</p>
           )}
 
           <div className={styles.stack}>
@@ -152,24 +120,14 @@ export default function InstantStartPage() {
           </div>
 
           <div className={styles.actions}>
-            {needsPicker ? (
-              <PillButton variant="cta" onClick={usePickerStation}>
-                {t("instant.locationPickerButton")}
+            {needsLocationless ? (
+              <PillButton variant="cta" onClick={() => persistAndGo(null)}>
+                {t("instant.locationlessButton")}
               </PillButton>
             ) : (
               <PillButton variant="cta" disabled={locating} onClick={startFromCurrentLocation}>
                 {locating ? t("common.processing") : t("instant.locationGpsButton")}
               </PillButton>
-            )}
-            {/* GPS保留中でも駅選択に必ず抜けられる恒常エスケープ (レビューP1) */}
-            {!needsPicker && (
-              <button
-                type="button"
-                onClick={() => setNeedsPicker(true)}
-                style={{ background: "none", border: 0, color: "var(--v2-muted)", fontSize: 12.5, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer" }}
-              >
-                {t("instant.locationPickManually")}
-              </button>
             )}
             {zone && (
               <PillButton variant="ghost" onClick={() => persistAndGo(zone)}>

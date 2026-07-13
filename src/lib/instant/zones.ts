@@ -1,11 +1,9 @@
 import {
   AREA_CENTERS,
   INITIAL_ZONES,
-  ZONE_GENERATION,
   haversineKm,
-  resolveZoneForStation,
 } from "@/lib/areas";
-import type { InstantLocationSource, InstantZoneSelection } from "./types";
+import type { InstantZoneSelection } from "./types";
 
 type Coordinates = { lat: number; lng: number };
 
@@ -31,8 +29,7 @@ export const ZONE_REPRESENTATIVE_COORDS: Record<string, Coordinates> = {
 };
 
 export function nearestInstantZoneFromCoordinates(
-  coords: Coordinates,
-  source: InstantLocationSource = "gps"
+  coords: Coordinates
 ): InstantZoneSelection {
   let nearest = INITIAL_ZONES[0];
   let nearestKm = Infinity;
@@ -51,20 +48,6 @@ export function nearestInstantZoneFromCoordinates(
     zoneId: nearest.id,
     name: nearest.name,
     station: nearest.station,
-    source,
-  };
-}
-
-export function instantZoneFromStation(
-  station: string,
-  source: InstantLocationSource = "picker"
-): InstantZoneSelection | null {
-  const zone = resolveZoneForStation(station, ZONE_GENERATION);
-  if (!zone) return null;
-  return {
-    zoneId: zone.id,
-    name: zone.name,
-    station: zone.station,
-    source,
+    source: "gps",
   };
 }

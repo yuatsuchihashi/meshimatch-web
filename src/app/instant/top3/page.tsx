@@ -8,6 +8,7 @@ import { Chip, CircleIconButton, PhotoCard, PillButton } from "@/components/v2";
 import { useLocale } from "@/lib/i18n";
 import { openingStateForRestaurant } from "@/lib/recommendation/ranking";
 import type { InstantAggregate, InstantZoneSelection } from "@/lib/instant/types";
+import type { InstantWinningGenre } from "@/lib/instant/winner";
 import type { Restaurant } from "@/lib/types";
 import styles from "../instant.module.css";
 
@@ -17,9 +18,10 @@ const FALLBACK_PHOTO = "/img/service/07-restaurant-sticker-sheet.webp";
 
 type StoredGroup = {
   groupId: string;
-  zone: InstantZoneSelection;
+  zone: InstantZoneSelection | null;
   partySize: number;
   aggregate: InstantAggregate;
+  winner?: InstantWinningGenre;
 };
 
 type ResultsResponse = {
@@ -78,15 +80,27 @@ export default function InstantTop3Page() {
     void load();
   }, [stored, t]);
 
-  const visible = useMemo(() => restaurants.slice(offset, offset + 3), [restaurants, offset]);
+  const genreMatched = useMemo(
+    () =>
+      stored?.winner
+        ? restaurants.filter((restaurant) => restaurant.genreId === stored.winner?.genreId)
+        : restaurants,
+    [restaurants, stored?.winner]
+  );
+  const hasGenreMatches = genreMatched.length > 0;
+  const displayPool = hasGenreMatches ? genreMatched : restaurants;
+  const visible = useMemo(
+    () => displayPool.slice(offset, offset + 3),
+    [displayPool, offset]
+  );
 
   function redraw() {
-    if (restaurants.length <= 3) {
+    if (displayPool.length <= 3) {
       setOffset(0);
       return;
     }
     const next = offset + 3;
-    setOffset(next >= restaurants.length ? 0 : next);
+    setOffset(next >= displayPool.length ? 0 : next);
   }
 
   async function chooseRestaurant(restaurant: Restaurant) {
@@ -130,8 +144,16 @@ export default function InstantTop3Page() {
       <div className={styles.shell}>
         <header className={styles.header}>
           <span className={styles.eyebrow}>{t("instant.top3Eyebrow")}</span>
-          <h1 className={styles.title}>{t("instant.top3Title")}</h1>
-          <p className={styles.desc}>{t("instant.top3Desc")}</p>
+          <h1 className={styles.title}>
+            {stored.winner
+              ? t("instant.top3TitleWithGenre", { genre: stored.winner.name })
+              : t("instant.top3Title")}
+          </h1>
+          <p className={styles.desc}>
+            {stored.zone
+              ? t("instant.top3DescWithZone", { zone: stored.zone.name })
+              : t("instant.top3DescLocationless")}
+          </p>
         </header>
 
         {loading && <section className={styles.panel}>{t("common.loading")}</section>}
@@ -144,6 +166,15 @@ export default function InstantTop3Page() {
             <Link className={styles.anchorPill} href={`/groups/${stored.groupId}/suggest`}>
               {t("instant.addByLink")}
             </Link>
+          </section>
+        )}
+
+        {!loading && !isEmpty && !hasGenreMatches && stored.winner && (
+          <section className={`${styles.empty} ${styles.stack}`}>
+            <h2 className={styles.restaurantName}>
+              {t("instant.genrePoolEmptyTitle", { genre: stored.winner.name })}
+            </h2>
+            <p className={styles.desc}>{t("instant.genrePoolEmptyDesc")}</p>
           </section>
         )}
 
@@ -208,6 +239,9 @@ export default function InstantTop3Page() {
             </PillButton>
             <Link className={styles.anchorPill} href={`/groups/${stored.groupId}/suggest`}>
               {t("instant.addByLink")}
+            </Link>
+            <Link className={styles.anchorPill} href="/instant/round?add=1">
+              {t("instant.addLater")}
             </Link>
           </div>
         )}

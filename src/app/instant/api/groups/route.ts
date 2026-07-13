@@ -6,10 +6,11 @@ import type { InstantGroupCreationInput } from "@/lib/instant/types";
 type InsertedMember = { id: string };
 
 function isValidBody(body: Partial<InstantGroupCreationInput>) {
+  const hasValidZone =
+    body.zone === null ||
+    Boolean(body.zone?.zoneId && body.zone?.station && body.zone?.name);
   return (
-    body.zone?.zoneId &&
-    body.zone?.station &&
-    body.zone?.name &&
+    hasValidZone &&
     typeof body.partySize === "number" &&
     body.partySize >= 2 &&
     body.partySize <= 8 &&

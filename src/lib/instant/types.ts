@@ -1,6 +1,6 @@
 import type { DietaryRestrictionInput, GenrePreferenceInput } from "@/lib/types";
 
-export type InstantLocationSource = "gps" | "picker";
+export type InstantLocationSource = "gps";
 export type InstantParticipantSource = "manual" | "profile" | "auto";
 
 export interface InstantZoneSelection {
@@ -11,7 +11,7 @@ export interface InstantZoneSelection {
 }
 
 export interface InstantStartState {
-  zone: InstantZoneSelection;
+  zone: InstantZoneSelection | null;
   partySize: number;
   createdAt: string;
 }
@@ -39,7 +39,7 @@ export interface InstantAggregate {
 }
 
 export interface InstantGroupCreationInput {
-  zone: InstantZoneSelection;
+  zone: InstantZoneSelection | null;
   partySize: number;
   participants: InstantParticipantInput[];
   createdBy?: string | null;
