@@ -502,6 +502,8 @@ export const en: TranslationShape = {
     revealChangedEyebrow: "Updated after one more answer",
     revealTitle: "Tonight is {icon} {genre}!",
     revealDesc: "Decided with {count} votes. Next up: three nearby places.",
+    revealFallbackTitle: "Dealer's choice today! {icon}",
+    revealFallbackDesc: "This group is open to anything. Pick lightly from the nearby options.",
     revealChangedDesc: "The later answer changed the winner from {previous} to {current}.",
     revealCta: "See three nearby places",
     revealMissing: "Genre result was not found",

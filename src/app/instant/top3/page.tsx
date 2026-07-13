@@ -163,9 +163,14 @@ export default function InstantTop3Page() {
           <section className={`${styles.empty} ${styles.stack}`}>
             <h2 className={styles.restaurantName}>{t("instant.thinPoolTitle")}</h2>
             <p className={styles.desc}>{t("instant.thinPoolDesc")}</p>
-            <Link className={styles.anchorPill} href={`/groups/${stored.groupId}/suggest`}>
-              {t("instant.addByLink")}
-            </Link>
+            <div className={styles.actions}>
+              <Link className={styles.anchorPill} href={`/groups/${stored.groupId}/suggest`}>
+                {t("instant.addByLink")}
+              </Link>
+              <Link className={styles.anchorPill} href="/instant/round?add=1">
+                {t("instant.addLater")}
+              </Link>
+            </div>
           </section>
         )}
 

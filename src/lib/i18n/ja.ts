@@ -500,6 +500,8 @@ export const ja = {
     revealChangedEyebrow: "再集計で更新",
     revealTitle: "今夜は {icon} {genre}！",
     revealDesc: "{count}票で決まり。次は近くの3軒だけ見ます。",
+    revealFallbackTitle: "今日はおまかせで！{icon}",
+    revealFallbackDesc: "なんでも行けるメンバーだ。近くの候補から軽く選ぼう。",
     revealChangedDesc: "あとから来た人の回答で、{previous}から{current}に変わりました。",
     revealCta: "近くの3軒を見る",
     revealMissing: "ジャンル結果が見つかりません",

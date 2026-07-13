@@ -54,7 +54,7 @@ export function buildInstantGroupCreationRows(
   return {
     group,
     members: input.participants.map((participant, index) => ({
-      profile_id: participant.profileId ?? null,
+      profile_id: participant.profileId ?? (index === 0 ? input.createdBy ?? null : null),
       display_name: participant.nickname || `Guest ${index + 1}`,
       role: index === 0 ? "owner" : "member",
       has_survey: true,
