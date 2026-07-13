@@ -498,6 +498,7 @@ export const en: TranslationShape = {
     aggregateGenre: "{label} {count} votes",
     saving: "Finalizing the genre...",
     saveFailed: "Could not create instant group",
+    addLimitReached: "This instant session already has 8 answers. Continue with the current nearby options.",
     revealEyebrow: "Genre decided",
     revealChangedEyebrow: "Updated after one more answer",
     revealTitle: "Tonight is {icon} {genre}!",

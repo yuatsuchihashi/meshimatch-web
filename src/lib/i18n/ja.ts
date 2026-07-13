@@ -496,6 +496,7 @@ export const ja = {
     aggregateGenre: "{label} {count}票",
     saving: "ジャンルを集計中...",
     saveFailed: "即時グループを作成できませんでした",
+    addLimitReached: "このセッションは8人まで回答済みです。追加せず、このまま近くの候補を見てください。",
     revealEyebrow: "ジャンル決定",
     revealChangedEyebrow: "再集計で更新",
     revealTitle: "今夜は {icon} {genre}！",
