@@ -149,7 +149,7 @@ export const DIETARY_PRESETS: DietaryPreset[] = [
     name: "アルコール不可",
     emoji: "",
     genreScores: {
-      G001:  0.0,  // 和食
+      G001: -0.8,  // 居酒屋(instant taxonomy): アルコールが主目的
       G002:  0.0,  // 洋食
       G003: -0.2,  // イタリアン・フレンチ: ワイン文化だが食事OK
       G004:  0.0,  // 中華

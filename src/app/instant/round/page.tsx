@@ -6,8 +6,10 @@ import { ChevronRight, RotateCcw } from "lucide-react";
 import { Chip, PillButton, TimerRing } from "@/components/v2";
 import { useLocale } from "@/lib/i18n";
 import { GENRES } from "@/lib/restaurant-taxonomy";
+import { INSTANT_NG_PRESETS, toggleInstantNgDraft } from "@/lib/instant/ng";
 import {
   aggregateInstantParticipants,
+  shouldRetryInstantFinalize,
   timedOutDraftToParticipant,
   type InstantRoundDraft,
 } from "@/lib/instant/round";
@@ -28,13 +30,8 @@ import styles from "../instant.module.css";
 const START_KEY = "meshimatch_instant_start";
 const GROUP_KEY = "meshimatch_instant_group";
 const ROUND_KEY = "meshimatch_instant_round";
-
-const NG_PRESETS = [
-  "instant.ngSpicy",
-  "instant.ngHeavy",
-  "instant.ngAlcohol",
-  "instant.ngGarlic",
-] as const;
+const TICKET_KEY = "meshimatch_instant_ticket";
+const MAX_INSTANT_PARTY_SIZE = 8;
 
 type StoredRound = {
   participants: InstantParticipantInput[];
@@ -73,6 +70,7 @@ export default function InstantRoundPage() {
   const [previousWinner, setPreviousWinner] = useState<InstantWinningGenre | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem(START_KEY);
@@ -100,11 +98,15 @@ export default function InstantRoundPage() {
       setStart(parsed);
       return;
     }
+    if (existingParticipants.length >= MAX_INSTANT_PARTY_SIZE) {
+      setBlockedMessage(t("instant.addLimitReached"));
+      return;
+    }
     setParticipants(existingParticipants);
     setPreviousWinner(storedRound?.winner ?? storedGroup?.winner ?? null);
     setCurrentIndex(existingParticipants.length);
     setStart({ ...parsed, partySize: existingParticipants.length + 1 });
-  }, [router]);
+  }, [router, t]);
 
   useEffect(() => {
     setSeconds(10);
@@ -117,8 +119,8 @@ export default function InstantRoundPage() {
       advance(
         timedOutDraftToParticipant({
           draft,
-          index: currentIndex,
           id: idFor(currentIndex),
+          label: t("instant.personLabel", { number: currentIndex + 1 }),
         })
       );
       return;
@@ -139,14 +141,8 @@ export default function InstantRoundPage() {
     setSeconds(10);
   }
 
-  function toggleNg(label: string) {
-    setDraft((value) => {
-      const selected = value.ngLabels.includes(label);
-      const ngLabels = selected
-        ? value.ngLabels.filter((item) => item !== label)
-        : [...value.ngLabels, label];
-      return { ...value, ngLabels };
-    });
+  function toggleNg(preset: (typeof INSTANT_NG_PRESETS)[number], label: string) {
+    setDraft((value) => toggleInstantNgDraft(value, preset, label));
   }
 
   function toggleGenre(genreId: string) {
@@ -165,15 +161,6 @@ export default function InstantRoundPage() {
     setError(null);
     const nextAggregate = aggregateInstantParticipants(nextParticipants);
     const winner = selectInstantWinningGenre(nextParticipants);
-    localStorage.setItem(
-      ROUND_KEY,
-      JSON.stringify({
-        participants: nextParticipants,
-        aggregate: nextAggregate,
-        winner,
-      })
-    );
-
     try {
       const res = await fetch("/instant/api/groups", {
         method: "POST",
@@ -187,6 +174,14 @@ export default function InstantRoundPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "failed");
       localStorage.setItem(
+        ROUND_KEY,
+        JSON.stringify({
+          participants: nextParticipants,
+          aggregate: nextAggregate,
+          winner,
+        })
+      );
+      localStorage.setItem(
         GROUP_KEY,
         JSON.stringify({
           groupId: data.group.id,
@@ -198,6 +193,7 @@ export default function InstantRoundPage() {
           winnerChanged: didInstantWinnerChange(previousWinner, winner),
         })
       );
+      localStorage.removeItem(TICKET_KEY);
       router.push("/instant/reveal");
     } catch {
       setError(t("instant.saveFailed"));
@@ -207,7 +203,15 @@ export default function InstantRoundPage() {
 
   function advance(participant: InstantParticipantInput) {
     if (!start || saving) return;
-    if (participants.length >= start.partySize) return; // finalize失敗リトライ中の二重追加ガード (レビューP2)
+    if (
+      shouldRetryInstantFinalize({
+        participantsLength: participants.length,
+        partySize: start.partySize,
+      })
+    ) {
+      void finalize(participants);
+      return;
+    }
     const nextParticipants = [...participants, participant];
     setParticipants(nextParticipants);
     if (nextParticipants.length >= start.partySize) {
@@ -226,9 +230,21 @@ export default function InstantRoundPage() {
       allergyNote: null,
       dietaryNote: null,
       genrePreferences: draft.genrePreferences,
-      dietaryRestrictions: [],
+      dietaryRestrictions: draft.dietaryRestrictions,
     };
     advance(participant);
+  }
+
+  if (blockedMessage) {
+    return (
+      <main className={styles.screen}>
+        <div className={styles.shell}>
+          <section className={`${styles.empty} ${styles.stack}`}>
+            <p className={styles.desc}>{blockedMessage}</p>
+          </section>
+        </div>
+      </main>
+    );
   }
 
   if (!start) {
@@ -286,16 +302,16 @@ export default function InstantRoundPage() {
           </div>
 
           <div className={styles.ngRow} aria-label={t("instant.ngTitle")}>
-            {NG_PRESETS.map((key) => {
-              const label = t(key);
+            {INSTANT_NG_PRESETS.map((preset) => {
+              const label = t(preset.key);
               return (
                 <button
-                  key={key}
+                  key={preset.key}
                   type="button"
                   className={`${styles.ngButton} ${
                     draft.ngLabels.includes(label) ? styles.ngButtonSelected : ""
                   }`}
-                  onClick={() => toggleNg(label)}
+                  onClick={() => toggleNg(preset, label)}
                 >
                   {label}
                 </button>

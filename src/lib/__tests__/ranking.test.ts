@@ -133,6 +133,38 @@ describe("rankCandidatePool", () => {
     expect(rankCandidatePool({ ...common, mode: "instant" })).toHaveLength(0);
     expect(rankCandidatePool({ ...common, mode: "planned" })).toHaveLength(1);
   });
+
+  it("hard-filters izakaya candidates when no-alcohol is a must restriction", () => {
+    const pooled = composePool({
+      restaurants: [
+        row({ id: "izakaya-old", genre_id: "G008" }),
+        row({ id: "izakaya-instant", genre_id: "G001" }),
+        row({ id: "ramen", genre_id: "G014" }),
+      ],
+      sources: [
+        source({ id: "old", restaurant_id: "izakaya-old" }),
+        source({ id: "instant", restaurant_id: "izakaya-instant" }),
+        source({ id: "ramen", restaurant_id: "ramen" }),
+      ],
+      memberProfileIds: ["member"],
+    });
+
+    const ranked = rankCandidatePool({
+      pooled,
+      mode: "instant",
+      surveys: [
+        survey({
+          dietaryRestrictions: [{ restrictionId: "no_alcohol", priority: "must" }],
+        }),
+      ],
+      groupGenreScores: {},
+      groupSize: 2,
+      sessionAtmosphere: null,
+      sessionFocus: null,
+    });
+
+    expect(ranked.map((restaurant) => restaurant.id)).toEqual(["ramen"]);
+  });
 });
 
 

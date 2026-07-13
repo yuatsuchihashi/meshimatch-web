@@ -2,14 +2,8 @@ import { GENRES } from "@/lib/restaurant-taxonomy";
 import type {
   DietaryRestrictionInput,
   GenrePreferenceInput,
-  PriorityLevel,
-  UserProfile,
 } from "@/lib/types";
-import type {
-  InstantAggregate,
-  InstantParticipantInput,
-  InstantParticipantSource,
-} from "./types";
+import type { InstantAggregate, InstantParticipantInput } from "./types";
 
 export interface InstantRoundDraft {
   ngLabels: string[];
@@ -58,12 +52,12 @@ export function aggregateInstantParticipants(
 
 export function timedOutDraftToParticipant(params: {
   draft: InstantRoundDraft;
-  index: number;
   id: string;
+  label: string;
 }): InstantParticipantInput {
   return {
     id: params.id,
-    nickname: `${params.index + 1}人目`,
+    nickname: params.label,
     source: "auto",
     ngLabels: params.draft.ngLabels,
     allergyNote: null,
@@ -73,30 +67,9 @@ export function timedOutDraftToParticipant(params: {
   };
 }
 
-function priority(value: PriorityLevel | null | undefined): PriorityLevel {
-  return value ?? "prefer";
-}
-
-export function profileToInstantParticipant(
-  profile: UserProfile,
-  id: string,
-  source: InstantParticipantSource = "profile"
-): InstantParticipantInput {
-  return {
-    id,
-    nickname: profile.displayName,
-    profileId: profile.id,
-    source,
-    ngLabels: [...(profile.allergies ?? []), ...(profile.dislikedItems ?? [])],
-    allergyNote: profile.allergyNote ?? null,
-    dietaryNote: profile.dietaryNote ?? null,
-    genrePreferences: (profile.favoriteGenres ?? []).map((genre) => ({
-      genreId: genre.genreId,
-      priority: priority(genre.priority),
-    })),
-    dietaryRestrictions: (profile.dietaryRestrictions ?? []).map((restriction) => ({
-      restrictionId: restriction.restrictionId,
-      priority: priority(restriction.priority),
-    })),
-  };
+export function shouldRetryInstantFinalize(params: {
+  participantsLength: number;
+  partySize: number;
+}) {
+  return params.participantsLength >= params.partySize;
 }

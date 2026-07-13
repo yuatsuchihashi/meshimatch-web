@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { nearestInstantZoneFromCoordinates } from "./zones";
-import { aggregateInstantParticipants, timedOutDraftToParticipant } from "./round";
+import {
+  aggregateInstantParticipants,
+  shouldRetryInstantFinalize,
+  timedOutDraftToParticipant,
+} from "./round";
 import { buildInstantGroupCreationRows, containsRawCoordinates } from "./payload";
+import { INSTANT_NG_PRESETS, toggleInstantNgDraft } from "./ng";
 import {
   didInstantWinnerChange,
   instantTurnAccent,
@@ -54,7 +59,7 @@ describe("timedOutDraftToParticipant", () => {
   it("turns an expired empty round into auto omakase", () => {
     const participant = timedOutDraftToParticipant({
       id: "p1",
-      index: 0,
+      label: "Person 1",
       draft: {
         ngLabels: [],
         genrePreferences: [],
@@ -63,8 +68,38 @@ describe("timedOutDraftToParticipant", () => {
     });
 
     expect(participant.source).toBe("auto");
-    expect(participant.nickname).toBe("1人目");
+    expect(participant.nickname).toBe("Person 1");
     expect(participant.genrePreferences).toEqual([]);
+  });
+});
+
+describe("shouldRetryInstantFinalize", () => {
+  it("retries finalize when a full round already exists after a failed POST", () => {
+    expect(
+      shouldRetryInstantFinalize({ participantsLength: 3, partySize: 3 })
+    ).toBe(true);
+    expect(
+      shouldRetryInstantFinalize({ participantsLength: 2, partySize: 3 })
+    ).toBe(false);
+  });
+});
+
+describe("toggleInstantNgDraft", () => {
+  it("maps the no-alcohol chip back to a must dietary restriction", () => {
+    const noAlcohol = INSTANT_NG_PRESETS.find(
+      (preset) => preset.key === "instant.ngAlcohol"
+    );
+    expect(noAlcohol).toBeDefined();
+    const draft = toggleInstantNgDraft(
+      { ngLabels: [], genrePreferences: [], dietaryRestrictions: [] },
+      noAlcohol!,
+      "お酒なし"
+    );
+
+    expect(draft.ngLabels).toEqual(["お酒なし"]);
+    expect(draft.dietaryRestrictions).toEqual([
+      { restrictionId: "no_alcohol", priority: "must" },
+    ]);
   });
 });
 
