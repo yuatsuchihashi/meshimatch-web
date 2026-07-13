@@ -12,10 +12,7 @@ import type {
 } from "./types";
 
 export interface InstantRoundDraft {
-  nickname: string;
   ngLabels: string[];
-  allergyNote?: string;
-  dietaryNote?: string;
   genrePreferences: GenrePreferenceInput[];
   dietaryRestrictions: DietaryRestrictionInput[];
 }
@@ -64,14 +61,13 @@ export function timedOutDraftToParticipant(params: {
   index: number;
   id: string;
 }): InstantParticipantInput {
-  const nickname = params.draft.nickname.trim() || `おまかせ${params.index + 1}`;
   return {
     id: params.id,
-    nickname,
+    nickname: `${params.index + 1}人目`,
     source: "auto",
     ngLabels: params.draft.ngLabels,
-    allergyNote: params.draft.allergyNote?.trim() || null,
-    dietaryNote: params.draft.dietaryNote?.trim() || null,
+    allergyNote: null,
+    dietaryNote: null,
     genrePreferences: params.draft.genrePreferences,
     dietaryRestrictions: params.draft.dietaryRestrictions,
   };

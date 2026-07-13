@@ -13,7 +13,7 @@ const TICKET_KEY = "meshimatch_instant_ticket";
 
 type StoredTicket = {
   groupId: string;
-  zone: InstantZoneSelection;
+  zone: InstantZoneSelection | null;
   partySize: number;
   aggregate: InstantAggregate;
   restaurant: Restaurant;
@@ -89,7 +89,7 @@ export default function InstantTicketPage() {
 
         <TicketStub
           heading={ticket.restaurant.name}
-          subtitle={ticket.restaurant.area || ticket.zone.name}
+          subtitle={ticket.restaurant.area || ticket.zone?.name || t("instant.nearby")}
           stamp={t("instant.ticketStamp")}
           items={[
             {
@@ -99,7 +99,10 @@ export default function InstantTicketPage() {
                 minute: "2-digit",
               }),
             },
-            { label: t("instant.ticketZone"), value: ticket.zone.name },
+            {
+              label: t("instant.ticketZone"),
+              value: ticket.zone?.name ?? t("instant.locationlessTicket"),
+            },
             {
               label: t("instant.ticketPeople"),
               value: t("instant.people", { count: ticket.partySize }),
@@ -116,6 +119,9 @@ export default function InstantTicketPage() {
           <PillButton variant="ghost" icon={<Share2 size={16} />} onClick={shareOnWay}>
             {copied ? t("instant.shareCopied") : t("instant.shareOnWay")}
           </PillButton>
+          <Link className={styles.anchorPill} href="/instant/round?add=1">
+            {t("instant.addLater")}
+          </Link>
         </div>
 
         <div className={styles.todo}>{t("instant.todoGuestConversion")}</div>
