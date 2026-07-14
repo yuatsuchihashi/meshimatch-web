@@ -13,8 +13,8 @@ export type InstantConsensusNg = "none" | "no_heavy" | "no_spicy";
 export interface InstantConsensusAnswer<TStyle extends string = InstantConsensusStyle> {
   ng: InstantConsensusNg;
   dietaryRestrictions: DietaryRestrictionInput[];
-  mood: InstantConsensusMood;
-  style: TStyle;
+  mood: InstantConsensusMood | null;
+  style: TStyle | null;
 }
 
 export interface CandidateSourceCell<TStyle extends string = InstantConsensusStyle> {
@@ -30,10 +30,61 @@ export interface DerivedCandidateGenre<TStyle extends string = InstantConsensusS
   sourceCells: CandidateSourceCell<TStyle>[];
 }
 
-export function deriveCandidateGenres<TStyle extends string = InstantConsensusStyle>(
+export interface InstantConsensusResolution<TStyle extends string = InstantConsensusStyle> {
+  proposals: DerivedCandidateGenre<TStyle>[];
+  candidates: DerivedCandidateGenre<TStyle>[];
+  answeredCount: number;
+  hardExcludedGenres: GenreCode[];
+}
+
+const DEFAULT_CONSENSUS_CONFIG: InstantConsensusConfig<InstantConsensusStyle> =
+  INSTANT_CONSENSUS_CONFIG;
+type AnyConsensusStyle = any;
+
+export function resolveConsensus(
+  answers: readonly InstantConsensusAnswer[],
+  config?: InstantConsensusConfig
+): InstantConsensusResolution;
+export function resolveConsensus<TStyle extends string>(
   answers: readonly InstantConsensusAnswer<TStyle>[],
-  config: InstantConsensusConfig<TStyle> = INSTANT_CONSENSUS_CONFIG as unknown as InstantConsensusConfig<TStyle>
-): DerivedCandidateGenre<TStyle>[] {
+  config: InstantConsensusConfig<TStyle>
+): InstantConsensusResolution<TStyle>;
+export function resolveConsensus(
+  answers: readonly InstantConsensusAnswer<AnyConsensusStyle>[],
+  config: InstantConsensusConfig<AnyConsensusStyle> = DEFAULT_CONSENSUS_CONFIG
+): InstantConsensusResolution<AnyConsensusStyle> {
+  const hardExcludedGenres = hardExcludedGenresByDietaryRestrictions(
+    answers,
+    config.taxonomyOrder
+  );
+  const candidates = deriveCandidateGenres(answers, config, hardExcludedGenres);
+
+  return {
+    proposals: selectTwoProposals(candidates, config),
+    candidates,
+    answeredCount: countAnsweredParticipants(answers),
+    hardExcludedGenres,
+  };
+}
+
+export function deriveCandidateGenres(
+  answers: readonly InstantConsensusAnswer[],
+  config?: InstantConsensusConfig,
+  hardExcludedGenres?: readonly GenreCode[]
+): DerivedCandidateGenre[];
+export function deriveCandidateGenres<TStyle extends string>(
+  answers: readonly InstantConsensusAnswer<TStyle>[],
+  config: InstantConsensusConfig<TStyle>,
+  hardExcludedGenres?: readonly GenreCode[]
+): DerivedCandidateGenre<TStyle>[];
+export function deriveCandidateGenres(
+  answers: readonly InstantConsensusAnswer<AnyConsensusStyle>[],
+  config: InstantConsensusConfig<AnyConsensusStyle> = DEFAULT_CONSENSUS_CONFIG,
+  hardExcludedGenres: readonly GenreCode[] = hardExcludedGenresByDietaryRestrictions(
+    answers,
+    config.taxonomyOrder
+  )
+): DerivedCandidateGenre<AnyConsensusStyle>[] {
   if (answers.length === 0) return [];
 
   const selectedMoods = topVotedValues(
@@ -44,8 +95,8 @@ export function deriveCandidateGenres<TStyle extends string = InstantConsensusSt
     answers.map((answer) => answer.style),
     config.secondaryAxis.options.map((option) => option.value)
   );
-  const hardExcludedGenres = excludedGenresByDietaryRestrictions(answers);
-  const candidates = new Map<GenreCode, CandidateSourceCell<TStyle>[]>();
+  const hardExcludedGenreSet = new Set(hardExcludedGenres);
+  const candidates = new Map<GenreCode, CandidateSourceCell<AnyConsensusStyle>[]>();
 
   for (const mood of selectedMoods) {
     for (const style of selectedStyles) {
@@ -53,7 +104,7 @@ export function deriveCandidateGenres<TStyle extends string = InstantConsensusSt
       const sourceCell = { mood, style, key: `${mood}:${style}` };
 
       for (const genreCode of cellGenres) {
-        if (hardExcludedGenres.has(genreCode)) continue;
+        if (hardExcludedGenreSet.has(genreCode)) continue;
         const sourceCells = candidates.get(genreCode) ?? [];
         if (!sourceCells.some((cell) => cell.key === sourceCell.key)) {
           sourceCells.push(sourceCell);
@@ -107,12 +158,13 @@ export function selectTwoProposals<TStyle extends string = InstantConsensusStyle
 }
 
 function topVotedValues<TValue extends string>(
-  values: readonly TValue[],
+  values: readonly (TValue | null)[],
   allowedValues: readonly TValue[]
 ): TValue[] {
   const counts = new Map<TValue, number>();
   for (const allowedValue of allowedValues) counts.set(allowedValue, 0);
   for (const value of values) {
+    if (value === null) continue;
     if (counts.has(value)) counts.set(value, (counts.get(value) ?? 0) + 1);
   }
 
@@ -120,9 +172,10 @@ function topVotedValues<TValue extends string>(
   return allowedValues.filter((value) => counts.get(value) === maxCount);
 }
 
-function excludedGenresByDietaryRestrictions<TStyle extends string>(
-  answers: readonly InstantConsensusAnswer<TStyle>[]
-): Set<GenreCode> {
+function hardExcludedGenresByDietaryRestrictions<TStyle extends string>(
+  answers: readonly InstantConsensusAnswer<TStyle>[],
+  taxonomyOrder: readonly GenreCode[]
+): GenreCode[] {
   const excluded = new Set<GenreCode>();
   const mustRestrictionIds = answers.flatMap((answer) =>
     answer.dietaryRestrictions
@@ -139,7 +192,20 @@ function excludedGenresByDietaryRestrictions<TStyle extends string>(
     }
   }
 
-  return excluded;
+  const taxonomyRank = taxonomyRankMap(taxonomyOrder);
+  return Array.from(excluded).sort((a, b) => taxonomyRank(a) - taxonomyRank(b));
+}
+
+function countAnsweredParticipants<TStyle extends string>(
+  answers: readonly InstantConsensusAnswer<TStyle>[]
+) {
+  return answers.filter(
+    (answer) =>
+      answer.ng !== "none" ||
+      answer.dietaryRestrictions.length > 0 ||
+      answer.mood !== null ||
+      answer.style !== null
+  ).length;
 }
 
 function taxonomyRankMap(taxonomyOrder: readonly GenreCode[]) {

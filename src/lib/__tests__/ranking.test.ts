@@ -134,16 +134,18 @@ describe("rankCandidatePool", () => {
     expect(rankCandidatePool({ ...common, mode: "planned" })).toHaveLength(1);
   });
 
-  it("hard-filters izakaya candidates when no-alcohol is a must restriction", () => {
+  it("hard-filters alcohol-centered candidates when no-alcohol is a must restriction", () => {
     const pooled = composePool({
       restaurants: [
-        row({ id: "izakaya-old", genre_id: "G008" }),
-        row({ id: "izakaya-instant", genre_id: "G001" }),
-        row({ id: "ramen", genre_id: "G014" }),
+        row({ id: "yakiniku", genre_id: "G008" }),
+        row({ id: "izakaya", genre_id: "G001" }),
+        row({ id: "bar", genre_id: "G012" }),
+        row({ id: "ramen", genre_id: "G013" }),
       ],
       sources: [
-        source({ id: "old", restaurant_id: "izakaya-old" }),
-        source({ id: "instant", restaurant_id: "izakaya-instant" }),
+        source({ id: "yakiniku", restaurant_id: "yakiniku" }),
+        source({ id: "izakaya", restaurant_id: "izakaya" }),
+        source({ id: "bar", restaurant_id: "bar" }),
         source({ id: "ramen", restaurant_id: "ramen" }),
       ],
       memberProfileIds: ["member"],
@@ -163,7 +165,7 @@ describe("rankCandidatePool", () => {
       sessionFocus: null,
     });
 
-    expect(ranked.map((restaurant) => restaurant.id)).toEqual(["ramen"]);
+    expect(ranked.map((restaurant) => restaurant.id)).toEqual(["yakiniku", "ramen"]);
   });
 });
 
