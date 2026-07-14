@@ -1,9 +1,9 @@
 "use client";
 
 import { signUp } from "@/actions/auth";
-import { GlassButton } from "@/components/ui/GlassButton";
-import { GlassInput } from "@/components/ui/GlassInput";
+import { PillButton } from "@/components/v2";
 import Link from "next/link";
+import type { InputHTMLAttributes } from "react";
 import { useActionState } from "react";
 import { useLocale } from "@/lib/i18n";
 
@@ -18,19 +18,33 @@ export default function SignupPage() {
   );
 
   return (
-    <form action={formAction} className="glass-strong p-8 max-w-sm w-full flex flex-col gap-5">
+    <form
+      action={formAction}
+      style={{
+        width: "100%",
+        maxWidth: 400,
+        display: "flex",
+        flexDirection: "column",
+        gap: 20,
+        border: "1px solid var(--v2-border)",
+        borderRadius: "var(--v2-radius-card)",
+        background: "var(--v2-surface)",
+        boxShadow: "var(--v2-shadow)",
+        padding: "32px 24px 28px",
+      }}
+    >
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-white">{t("auth.signup.title")}</h1>
-        <p className="text-white/60 text-sm mt-1">{t("auth.signup.subtitle")}</p>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--v2-ink)", lineHeight: 1.3, letterSpacing: "var(--v2-tracking-display)" }}>{t("auth.signup.title")}</h1>
+        <p style={{ color: "var(--v2-muted)", fontSize: 14, marginTop: 6 }}>{t("auth.signup.subtitle")}</p>
       </div>
 
       {state?.error && (
-        <p className="text-red-300 text-sm text-center bg-red-500/10 rounded-xl px-4 py-2">
+        <p style={{ color: "var(--v2-accent)", background: "var(--v2-tint-blush)", borderRadius: 16, padding: "10px 14px", fontSize: 14, fontWeight: 700, textAlign: "center" }}>
           {state.error}
         </p>
       )}
 
-      <GlassInput
+      <AuthInput
         id="display_name"
         name="display_name"
         type="text"
@@ -38,7 +52,7 @@ export default function SignupPage() {
         placeholder={t("auth.signup.displayNamePlaceholder")}
         required
       />
-      <GlassInput
+      <AuthInput
         id="email"
         name="email"
         type="email"
@@ -46,7 +60,7 @@ export default function SignupPage() {
         placeholder="you@example.com"
         required
       />
-      <GlassInput
+      <AuthInput
         id="password"
         name="password"
         type="password"
@@ -56,16 +70,45 @@ export default function SignupPage() {
         required
       />
 
-      <GlassButton type="submit" variant="accent" size="lg" disabled={pending}>
+      <PillButton type="submit" variant="cta" disabled={pending}>
         {pending ? t("auth.signup.submitting") : t("auth.signup.submit")}
-      </GlassButton>
+      </PillButton>
 
-      <p className="text-white/60 text-sm text-center">
+      <p style={{ color: "var(--v2-muted)", fontSize: 14, textAlign: "center" }}>
         {t("auth.signup.hasAccount")}{" "}
-        <Link href="/login" className="text-white underline font-medium">
+        <Link href="/login" style={{ color: "var(--v2-ink)", fontWeight: 700, textDecoration: "underline" }}>
           {t("auth.signup.login")}
         </Link>
       </p>
     </form>
+  );
+}
+
+function AuthInput({
+  label,
+  id,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+      <label htmlFor={id} style={{ color: "var(--v2-ink)", fontSize: 13, fontWeight: 800 }}>
+        {label}
+      </label>
+      <input
+        id={id}
+        style={{
+          width: "100%",
+          minHeight: 52,
+          border: "1px solid var(--v2-border)",
+          borderRadius: "var(--v2-radius-input)",
+          background: "var(--v2-surface-soft)",
+          color: "var(--v2-ink)",
+          padding: "0 16px",
+          fontSize: 16,
+          outline: "none",
+        }}
+        {...props}
+      />
+    </div>
   );
 }

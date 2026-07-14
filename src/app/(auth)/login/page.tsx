@@ -1,9 +1,9 @@
 "use client";
 
 import { signIn } from "@/actions/auth";
-import { GlassButton } from "@/components/ui/GlassButton";
-import { GlassInput } from "@/components/ui/GlassInput";
+import { PillButton } from "@/components/v2";
 import Link from "next/link";
+import type { InputHTMLAttributes } from "react";
 import { useActionState } from "react";
 import { useLocale } from "@/lib/i18n";
 
@@ -18,19 +18,33 @@ export default function LoginPage() {
   );
 
   return (
-    <form action={formAction} className="glass-strong p-8 max-w-sm w-full flex flex-col gap-5">
+    <form
+      action={formAction}
+      style={{
+        width: "100%",
+        maxWidth: 400,
+        display: "flex",
+        flexDirection: "column",
+        gap: 20,
+        border: "1px solid var(--v2-border)",
+        borderRadius: "var(--v2-radius-card)",
+        background: "var(--v2-surface)",
+        boxShadow: "var(--v2-shadow)",
+        padding: "32px 24px 28px",
+      }}
+    >
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-white">{t("auth.login.title")}</h1>
-        <p className="text-white/60 text-sm mt-1">{t("auth.login.subtitle")}</p>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--v2-ink)", lineHeight: 1.3, letterSpacing: "var(--v2-tracking-display)" }}>{t("auth.login.title")}</h1>
+        <p style={{ color: "var(--v2-muted)", fontSize: 14, marginTop: 6 }}>{t("auth.login.subtitle")}</p>
       </div>
 
       {state?.error && (
-        <p className="text-red-300 text-sm text-center bg-red-500/10 rounded-xl px-4 py-2">
+        <p style={{ color: "var(--v2-accent)", background: "var(--v2-tint-blush)", borderRadius: 16, padding: "10px 14px", fontSize: 14, fontWeight: 700, textAlign: "center" }}>
           {state.error}
         </p>
       )}
 
-      <GlassInput
+      <AuthInput
         id="email"
         name="email"
         type="email"
@@ -38,7 +52,7 @@ export default function LoginPage() {
         placeholder="you@example.com"
         required
       />
-      <GlassInput
+      <AuthInput
         id="password"
         name="password"
         type="password"
@@ -47,33 +61,63 @@ export default function LoginPage() {
         required
       />
 
-      <GlassButton type="submit" variant="accent" size="lg" disabled={pending}>
+      <PillButton type="submit" variant="cta" disabled={pending}>
         {pending ? t("auth.login.submitting") : t("auth.login.submit")}
-      </GlassButton>
+      </PillButton>
 
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-white/20" />
-        <span className="text-white/50 text-xs">{t("auth.login.or")}</span>
-        <div className="flex-1 h-px bg-white/20" />
+        <div style={{ flex: 1, height: 1, background: "var(--v2-border)" }} />
+        <span style={{ color: "var(--v2-faint)", fontSize: 12, fontWeight: 700 }}>{t("auth.login.or")}</span>
+        <div style={{ flex: 1, height: 1, background: "var(--v2-border)" }} />
       </div>
 
       <a
         href="/api/auth/line/start"
         style={{
           display: "flex", alignItems: "center", justifyContent: "center",
-          height: 52, borderRadius: 100, background: "#06C755", color: "white",
-          fontWeight: 700, fontSize: 15, textDecoration: "none",
+          height: 52, borderRadius: 100, background: "var(--v2-surface)",
+          border: "1px solid var(--v2-border)", color: "var(--v2-ink)",
+          fontWeight: 800, fontSize: 15, textDecoration: "none",
         }}
       >
         {t("auth.login.line")}
       </a>
 
-      <p className="text-white/60 text-sm text-center">
+      <p style={{ color: "var(--v2-muted)", fontSize: 14, textAlign: "center" }}>
         {t("auth.login.noAccount")}{" "}
-        <Link href="/signup" className="text-white underline font-medium">
+        <Link href="/signup" style={{ color: "var(--v2-ink)", fontWeight: 700, textDecoration: "underline" }}>
           {t("auth.login.signup")}
         </Link>
       </p>
     </form>
+  );
+}
+
+function AuthInput({
+  label,
+  id,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+      <label htmlFor={id} style={{ color: "var(--v2-ink)", fontSize: 13, fontWeight: 800 }}>
+        {label}
+      </label>
+      <input
+        id={id}
+        style={{
+          width: "100%",
+          minHeight: 52,
+          border: "1px solid var(--v2-border)",
+          borderRadius: "var(--v2-radius-input)",
+          background: "var(--v2-surface-soft)",
+          color: "var(--v2-ink)",
+          padding: "0 16px",
+          fontSize: 16,
+          outline: "none",
+        }}
+        {...props}
+      />
+    </div>
   );
 }
