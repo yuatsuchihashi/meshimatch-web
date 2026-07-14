@@ -14,6 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { CATEGORY_TO_GENRE } from "./genre-space.mjs";
 
 const geojsonPath = process.argv[2];
 if (!geojsonPath) {
@@ -35,57 +36,6 @@ const AREA_CENTERS = {
   "上野": { lat: 35.7138, lng: 139.7774 },
 };
 const AREA_RADIUS_KM = 1.2;
-
-// Overture カテゴリ → 既存ジャンルID (mockData.ts の GENRES に対応)
-const CATEGORY_TO_GENRE = {
-  japanese_restaurant: "G001",
-  sushi_restaurant: "G017",
-  seafood_restaurant: "G017",
-  ramen_restaurant: "G014",
-  noodle_house: "G014",
-  udon_restaurant: "G001",
-  soba_restaurant: "G001",
-  tempura_restaurant: "G001",
-  tonkatsu_restaurant: "G001",
-  unagi_restaurant: "G001",
-  barbecue_restaurant: "G005",
-  yakiniku_restaurant: "G005",
-  korean_restaurant: "G006",
-  chinese_restaurant: "G004",
-  taiwanese_restaurant: "G004",
-  thai_restaurant: "G007",
-  vietnamese_restaurant: "G007",
-  indian_restaurant: "G007",
-  asian_restaurant: "G007",
-  italian_restaurant: "G003",
-  french_restaurant: "G003",
-  pizza_restaurant: "G003",
-  spanish_restaurant: "G009",
-  mexican_restaurant: "G009",
-  american_restaurant: "G002",
-  burger_restaurant: "G019",
-  steakhouse: "G019",
-  hamburger_restaurant: "G019",
-  izakaya: "G008",
-  sake_bar: "G008",
-  pub: "G008",
-  gastropub: "G009",
-  wine_bar: "G009",
-  cocktail_bar: "G009",
-  bar: "G009",
-  bistro: "G002",
-  diner: "G002",
-  cafe: "G013",
-  coffee_shop: "G013",
-  dessert_shop: "G013",
-  bakery: "G013",
-  hot_pot_restaurant: "G018",
-  shabu_shabu_restaurant: "G018",
-  okonomiyaki_restaurant: "G011",
-  yakitori_restaurant: "G016",
-  restaurant: "G010",
-  fusion_restaurant: "G010",
-};
 
 const MIN_CONFIDENCE = 0.6;
 

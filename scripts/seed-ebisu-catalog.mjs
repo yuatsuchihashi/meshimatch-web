@@ -6,6 +6,10 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  EBISU_FIXTURE_GENRE_BY_PLACE_ID,
+  TAXONOMY_GENRES,
+} from "./genre-space.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -90,7 +94,7 @@ function buildRows(fixture) {
       lat: place.location?.latitude ?? null,
       lng: place.location?.longitude ?? null,
       nearest_area: "恵比寿",
-      genre_id: "G004",
+      genre_id: EBISU_FIXTURE_GENRE_BY_PLACE_ID[place.id] ?? TAXONOMY_GENRES.other,
       price_band: priceBand(place.priceLevel),
       address: place.formattedAddress ?? null,
       url: null,
