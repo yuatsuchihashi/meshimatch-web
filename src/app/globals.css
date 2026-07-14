@@ -600,6 +600,15 @@ h3,
   font-family: var(--v2-family-quiet), var(--font-sans), sans-serif;
 }
 
+/* キーボード操作時のフォーカス可視性(WCAG 2.4.7)— inline outline:none より優先 */
+.v2-scope input:focus-visible,
+.v2-scope textarea:focus-visible,
+.v2-scope button:focus-visible,
+.v2-scope a:focus-visible {
+  outline: 2px solid var(--v2-accent) !important;
+  outline-offset: 2px;
+}
+
 .service-card {
   position: relative;
   overflow: hidden;
