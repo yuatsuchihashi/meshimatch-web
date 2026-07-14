@@ -73,3 +73,16 @@ export function shouldRetryInstantFinalize(params: {
 }) {
   return params.participantsLength >= params.partySize;
 }
+
+export function shouldAutoAdvanceInstantTimeout(params: {
+  seconds: number;
+  participantsLength: number;
+  partySize: number;
+  dietaryOpen: boolean;
+}) {
+  return (
+    params.seconds <= 0 &&
+    !params.dietaryOpen &&
+    params.participantsLength < params.partySize
+  );
+}
