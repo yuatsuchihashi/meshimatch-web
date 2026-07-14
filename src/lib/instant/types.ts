@@ -1,4 +1,5 @@
 import type { DietaryRestrictionInput, GenrePreferenceInput } from "@/lib/types";
+import type { InstantConsensusAnswer } from "./consensus";
 
 export type InstantLocationSource = "gps";
 export type InstantParticipantSource = "manual" | "profile" | "auto";
@@ -21,6 +22,7 @@ export interface InstantParticipantInput {
   nickname: string;
   profileId?: string | null;
   source: InstantParticipantSource;
+  consensusAnswer?: InstantConsensusAnswer;
   ngLabels: string[];
   allergyNote?: string | null;
   dietaryNote?: string | null;

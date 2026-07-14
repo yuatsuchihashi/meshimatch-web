@@ -2,16 +2,25 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, RotateCcw } from "lucide-react";
+import { ChevronRight, RotateCcw, Utensils } from "lucide-react";
 import { Chip, PillButton, TimerRing } from "@/components/v2";
+import { DIETARY_PRESETS } from "@/lib/dietary-presets";
 import { useLocale } from "@/lib/i18n";
-import { GENRES } from "@/lib/restaurant-taxonomy";
-import { INSTANT_NG_PRESETS, toggleInstantNgDraft } from "@/lib/instant/ng";
+import {
+  buildInstantParticipantFromConsensus,
+  emptyInstantConsensusAnswerDraft,
+  toggleInstantDietaryRestriction,
+  type InstantConsensusAnswerDraft,
+} from "@/lib/instant/answers";
+import { type InstantConsensusNg } from "@/lib/instant/consensus";
+import {
+  INSTANT_CONSENSUS_CONFIG,
+  type InstantConsensusMood,
+  type InstantConsensusStyle,
+} from "@/lib/instant/consensus-config";
 import {
   aggregateInstantParticipants,
   shouldRetryInstantFinalize,
-  timedOutDraftToParticipant,
-  type InstantRoundDraft,
 } from "@/lib/instant/round";
 import type {
   InstantAggregate,
@@ -19,12 +28,7 @@ import type {
   InstantStartState,
   InstantZoneSelection,
 } from "@/lib/instant/types";
-import {
-  didInstantWinnerChange,
-  instantTurnAccent,
-  selectInstantWinningGenre,
-  type InstantWinningGenre,
-} from "@/lib/instant/winner";
+import { instantTurnAccent, type InstantWinningGenre } from "@/lib/instant/winner";
 import styles from "../instant.module.css";
 
 const START_KEY = "meshimatch_instant_start";
@@ -43,17 +47,21 @@ type StoredGroup = {
   groupId: string;
   zone: InstantZoneSelection | null;
   partySize: number;
+  participants?: InstantParticipantInput[];
   aggregate: InstantAggregate;
   winner?: InstantWinningGenre;
 };
 
-function emptyDraft(): InstantRoundDraft {
-  return {
-    ngLabels: [],
-    genrePreferences: [],
-    dietaryRestrictions: [],
-  };
-}
+type QuestionIndex = 0 | 1 | 2;
+
+const AVOID_OPTIONS = [
+  { value: "none", labelKey: "instant.avoidNone" },
+  { value: "no_heavy", labelKey: "instant.avoidHeavy" },
+  { value: "no_spicy", labelKey: "instant.avoidSpicy" },
+] as const satisfies readonly {
+  value: InstantConsensusNg;
+  labelKey: string;
+}[];
 
 function idFor(index: number) {
   return `instant-${Date.now()}-${index}`;
@@ -64,8 +72,12 @@ export default function InstantRoundPage() {
   const { t } = useLocale();
   const [start, setStart] = useState<InstantStartState | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [questionIndex, setQuestionIndex] = useState<QuestionIndex>(0);
   const [seconds, setSeconds] = useState(10);
-  const [draft, setDraft] = useState<InstantRoundDraft>(() => emptyDraft());
+  const [draft, setDraft] = useState<InstantConsensusAnswerDraft>(() =>
+    emptyInstantConsensusAnswerDraft()
+  );
+  const [dietaryOpen, setDietaryOpen] = useState(false);
   const [participants, setParticipants] = useState<InstantParticipantInput[]>([]);
   const [previousWinner, setPreviousWinner] = useState<InstantWinningGenre | null>(null);
   const [saving, setSaving] = useState(false);
@@ -93,7 +105,8 @@ export default function InstantRoundPage() {
     const storedGroup = storedGroupRaw
       ? (JSON.parse(storedGroupRaw) as StoredGroup)
       : null;
-    const existingParticipants = storedRound?.participants ?? [];
+    const existingParticipants =
+      storedRound?.participants ?? storedGroup?.participants ?? [];
     if (existingParticipants.length === 0) {
       setStart(parsed);
       return;
@@ -110,19 +123,15 @@ export default function InstantRoundPage() {
 
   useEffect(() => {
     setSeconds(10);
-    setDraft(emptyDraft());
+    setQuestionIndex(0);
+    setDraft(emptyInstantConsensusAnswerDraft());
+    setDietaryOpen(false);
   }, [currentIndex]);
 
   useEffect(() => {
     if (!start || saving) return;
     if (seconds <= 0) {
-      advance(
-        timedOutDraftToParticipant({
-          draft,
-          id: idFor(currentIndex),
-          label: t("instant.personLabel", { number: currentIndex + 1 }),
-        })
-      );
+      advanceCurrentDraft({ draft, source: "auto" });
       return;
     }
     const timer = window.setTimeout(() => setSeconds((value) => value - 1), 1000);
@@ -136,23 +145,52 @@ export default function InstantRoundPage() {
     [participants]
   );
 
+  function ngLabelFor(value: InstantConsensusNg | null) {
+    if (!value || value === "none") return null;
+    const option = AVOID_OPTIONS.find((item) => item.value === value);
+    return option ? t(option.labelKey) : null;
+  }
+
+  function advanceCurrentDraft(params: {
+    draft: InstantConsensusAnswerDraft;
+    source?: InstantParticipantInput["source"];
+  }) {
+    advance(
+      buildInstantParticipantFromConsensus({
+        id: idFor(currentIndex),
+        label: t("instant.personLabel", { number: currentIndex + 1 }),
+        draft: params.draft,
+        source: params.source,
+        ngLabel: ngLabelFor(params.draft.ng),
+      })
+    );
+  }
+
   function resetCurrentDraft() {
-    setDraft(emptyDraft());
+    setDraft(emptyInstantConsensusAnswerDraft());
+    setQuestionIndex(0);
+    setDietaryOpen(false);
     setSeconds(10);
   }
 
-  function toggleNg(preset: (typeof INSTANT_NG_PRESETS)[number], label: string) {
-    setDraft((value) => toggleInstantNgDraft(value, preset, label));
+  function answerAvoid(value: InstantConsensusNg) {
+    setDraft((current) => ({ ...current, ng: value }));
+    setQuestionIndex(1);
   }
 
-  function toggleGenre(genreId: string) {
-    setDraft((value) => {
-      const selected = value.genrePreferences.some((item) => item.genreId === genreId);
-      const genrePreferences = selected
-        ? value.genrePreferences.filter((item) => item.genreId !== genreId)
-        : [...value.genrePreferences, { genreId, priority: "prefer" as const }];
-      return { ...value, genrePreferences };
-    });
+  function answerMood(value: InstantConsensusMood) {
+    setDraft((current) => ({ ...current, mood: value }));
+    setQuestionIndex(2);
+  }
+
+  function answerStyle(value: InstantConsensusStyle) {
+    const nextDraft = { ...draft, style: value };
+    setDraft(nextDraft);
+    advanceCurrentDraft({ draft: nextDraft });
+  }
+
+  function toggleDietary(restrictionId: string) {
+    setDraft((current) => toggleInstantDietaryRestriction(current, restrictionId));
   }
 
   async function finalize(nextParticipants: InstantParticipantInput[]) {
@@ -160,7 +198,6 @@ export default function InstantRoundPage() {
     setSaving(true);
     setError(null);
     const nextAggregate = aggregateInstantParticipants(nextParticipants);
-    const winner = selectInstantWinningGenre(nextParticipants);
     try {
       const res = await fetch("/instant/api/groups", {
         method: "POST",
@@ -178,7 +215,6 @@ export default function InstantRoundPage() {
         JSON.stringify({
           participants: nextParticipants,
           aggregate: nextAggregate,
-          winner,
         })
       );
       localStorage.setItem(
@@ -187,10 +223,9 @@ export default function InstantRoundPage() {
           groupId: data.group.id,
           zone: start.zone,
           partySize: nextParticipants.length,
+          participants: nextParticipants,
           aggregate: nextAggregate,
-          winner,
           previousWinner,
-          winnerChanged: didInstantWinnerChange(previousWinner, winner),
         })
       );
       localStorage.removeItem(TICKET_KEY);
@@ -222,17 +257,13 @@ export default function InstantRoundPage() {
   }
 
   function submitManual() {
-    const participant: InstantParticipantInput = {
-      id: idFor(currentIndex),
-      nickname: t("instant.personLabel", { number: currentIndex + 1 }),
-      source: "manual",
-      ngLabels: draft.ngLabels,
-      allergyNote: null,
-      dietaryNote: null,
-      genrePreferences: draft.genrePreferences,
-      dietaryRestrictions: draft.dietaryRestrictions,
-    };
-    advance(participant);
+    advanceCurrentDraft({ draft });
+  }
+
+  function consensusOptionLabel(axisId: string, value: string, fallback: string) {
+    const key = `instant.consensusOptions.${axisId}.${value}`;
+    const translated = t(key);
+    return translated === key ? fallback : translated;
   }
 
   if (blockedMessage) {
@@ -252,10 +283,18 @@ export default function InstantRoundPage() {
   }
 
   const total = start.partySize;
-  const selectedGenres = new Set(draft.genrePreferences.map((item) => item.genreId));
   const hasAggregate = aggregate.ng.length > 0 || aggregate.genres.length > 0;
   const personLabel = t("instant.personLabel", { number: currentIndex + 1 });
   const accentClass = styles[instantTurnAccent(currentIndex)];
+  const selectedRestrictions = new Set(
+    draft.dietaryRestrictions.map((item) => item.restrictionId)
+  );
+  const questionTitle =
+    questionIndex === 0
+      ? t("instant.avoidQuestion")
+      : questionIndex === 1
+      ? t(INSTANT_CONSENSUS_CONFIG.moodAxis.questionKey)
+      : t(INSTANT_CONSENSUS_CONFIG.secondaryAxis.questionKey);
 
   return (
     <main className={`${styles.screen} ${accentClass}`}>
@@ -282,42 +321,95 @@ export default function InstantRoundPage() {
 
           <div className={styles.heroQuestion}>
             <span className={styles.personPill}>{personLabel}</span>
-            <h2>{t("instant.genreQuestion")}</h2>
+            <span className={styles.questionMeta}>
+              {t("instant.questionProgress", { current: questionIndex + 1, total: 3 })}
+            </span>
+            <h2>{questionTitle}</h2>
           </div>
 
-          <div className={styles.genreHeroGrid}>
-            {GENRES.slice(0, 17).map((genre) => (
+          {questionIndex === 0 && (
+            <>
+              <div className={styles.choiceGrid}>
+                {AVOID_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`${styles.choiceButton} ${
+                      draft.ng === option.value ? styles.choiceButtonSelected : ""
+                    }`}
+                    onClick={() => answerAvoid(option.value)}
+                  >
+                    {t(option.labelKey)}
+                  </button>
+                ))}
+              </div>
               <button
-                key={genre.code}
                 type="button"
-                className={`${styles.genreHeroChip} ${
-                  selectedGenres.has(genre.code) ? styles.genreHeroSelected : ""
-                }`}
-                onClick={() => toggleGenre(genre.code)}
+                className={styles.dietaryToggle}
+                onClick={() => setDietaryOpen((value) => !value)}
               >
-                <span>{genre.icon}</span>
-                {genre.name}
+                <Utensils size={18} />
+                {t("instant.dietaryPickerButton")}
               </button>
-            ))}
-          </div>
 
-          <div className={styles.ngRow} aria-label={t("instant.ngTitle")}>
-            {INSTANT_NG_PRESETS.map((preset) => {
-              const label = t(preset.key);
-              return (
+              {dietaryOpen && (
+                <div className={styles.dietaryPicker}>
+                  <p className={styles.desc}>{t("instant.dietaryPickerHint")}</p>
+                  <div className={styles.dietaryGrid}>
+                    {DIETARY_PRESETS.map((preset) => {
+                      const selected = selectedRestrictions.has(preset.id);
+                      return (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          className={`${styles.ngButton} ${
+                            selected ? styles.ngButtonSelected : ""
+                          }`}
+                          onClick={() => toggleDietary(preset.id)}
+                        >
+                          {t(`instant.dietaryPreset.${preset.id}`)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {questionIndex === 1 && (
+            <div className={styles.choiceGrid}>
+              {INSTANT_CONSENSUS_CONFIG.moodAxis.options.map((option) => (
                 <button
-                  key={preset.key}
+                  key={option.value}
                   type="button"
-                  className={`${styles.ngButton} ${
-                    draft.ngLabels.includes(label) ? styles.ngButtonSelected : ""
+                  className={`${styles.choiceButton} ${
+                    draft.mood === option.value ? styles.choiceButtonSelected : ""
                   }`}
-                  onClick={() => toggleNg(preset, label)}
+                  onClick={() => answerMood(option.value)}
                 >
-                  {label}
+                  {consensusOptionLabel("mood", option.value, option.label)}
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
+
+          {questionIndex === 2 && (
+            <div className={styles.choiceGrid}>
+              {INSTANT_CONSENSUS_CONFIG.secondaryAxis.options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`${styles.choiceButton} ${
+                    draft.style === option.value ? styles.choiceButtonSelected : ""
+                  }`}
+                  onClick={() => answerStyle(option.value)}
+                >
+                  {consensusOptionLabel("style", option.value, option.label)}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className={styles.actions}>
             <PillButton
@@ -345,14 +437,6 @@ export default function InstantRoundPage() {
                 {aggregate.ng.map((item) => (
                   <Chip key={`ng-${item.label}`} variant="honey">
                     {t("instant.aggregateNg", { label: item.label, count: item.count })}
-                  </Chip>
-                ))}
-                {aggregate.genres.map((item) => (
-                  <Chip key={`genre-${item.label}`} variant="sage">
-                    {t("instant.aggregateGenre", {
-                      label: item.label,
-                      count: item.count,
-                    })}
                   </Chip>
                 ))}
               </div>

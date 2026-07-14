@@ -38,8 +38,11 @@ export default function InstantTicketPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const raw = localStorage.getItem(TICKET_KEY);
-    setTicket(raw ? (JSON.parse(raw) as StoredTicket) : null);
+    const timer = window.setTimeout(() => {
+      const raw = localStorage.getItem(TICKET_KEY);
+      setTicket(raw ? (JSON.parse(raw) as StoredTicket) : null);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const ngMemo = useMemo(() => {
