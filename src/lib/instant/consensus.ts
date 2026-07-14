@@ -39,7 +39,7 @@ export interface InstantConsensusResolution<TStyle extends string = InstantConse
 
 const DEFAULT_CONSENSUS_CONFIG: InstantConsensusConfig<InstantConsensusStyle> =
   INSTANT_CONSENSUS_CONFIG;
-type AnyConsensusStyle = any;
+type AnyConsensusStyle = string;
 
 export function resolveConsensus(
   answers: readonly InstantConsensusAnswer[],
