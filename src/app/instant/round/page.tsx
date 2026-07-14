@@ -20,6 +20,7 @@ import {
 } from "@/lib/instant/consensus-config";
 import {
   aggregateInstantParticipants,
+  shouldAutoAdvanceInstantTimeout,
   shouldRetryInstantFinalize,
 } from "@/lib/instant/round";
 import type {
@@ -28,7 +29,7 @@ import type {
   InstantStartState,
   InstantZoneSelection,
 } from "@/lib/instant/types";
-import { instantTurnAccent, type InstantWinningGenre } from "@/lib/instant/winner";
+import { instantTurnAccent } from "@/lib/instant/winner";
 import styles from "../instant.module.css";
 
 const START_KEY = "meshimatch_instant_start";
@@ -40,7 +41,6 @@ const MAX_INSTANT_PARTY_SIZE = 8;
 type StoredRound = {
   participants: InstantParticipantInput[];
   aggregate: InstantAggregate;
-  winner?: InstantWinningGenre;
 };
 
 type StoredGroup = {
@@ -49,7 +49,6 @@ type StoredGroup = {
   partySize: number;
   participants?: InstantParticipantInput[];
   aggregate: InstantAggregate;
-  winner?: InstantWinningGenre;
 };
 
 type QuestionIndex = 0 | 1 | 2;
@@ -79,7 +78,6 @@ export default function InstantRoundPage() {
   );
   const [dietaryOpen, setDietaryOpen] = useState(false);
   const [participants, setParticipants] = useState<InstantParticipantInput[]>([]);
-  const [previousWinner, setPreviousWinner] = useState<InstantWinningGenre | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
@@ -116,7 +114,6 @@ export default function InstantRoundPage() {
       return;
     }
     setParticipants(existingParticipants);
-    setPreviousWinner(storedRound?.winner ?? storedGroup?.winner ?? null);
     setCurrentIndex(existingParticipants.length);
     setStart({ ...parsed, partySize: existingParticipants.length + 1 });
   }, [router, t]);
@@ -130,15 +127,22 @@ export default function InstantRoundPage() {
 
   useEffect(() => {
     if (!start || saving) return;
-    if (seconds <= 0) {
+    const shouldAutoAdvance = shouldAutoAdvanceInstantTimeout({
+      seconds,
+      participantsLength: participants.length,
+      partySize: start.partySize,
+      dietaryOpen,
+    });
+    if (shouldAutoAdvance) {
       advanceCurrentDraft({ draft, source: "auto" });
       return;
     }
+    if (dietaryOpen || seconds <= 0 || participants.length >= start.partySize) return;
     const timer = window.setTimeout(() => setSeconds((value) => value - 1), 1000);
     return () => window.clearTimeout(timer);
     // The expiry path intentionally captures the visible draft for this one turn.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seconds, start, saving]);
+  }, [seconds, start, saving, dietaryOpen, participants.length]);
 
   const aggregate: InstantAggregate = useMemo(
     () => aggregateInstantParticipants(participants),
@@ -225,13 +229,13 @@ export default function InstantRoundPage() {
           partySize: nextParticipants.length,
           participants: nextParticipants,
           aggregate: nextAggregate,
-          previousWinner,
         })
       );
       localStorage.removeItem(TICKET_KEY);
       router.push("/instant/reveal");
     } catch {
       setError(t("instant.saveFailed"));
+      setSeconds(10);
       setSaving(false);
     }
   }
@@ -264,6 +268,12 @@ export default function InstantRoundPage() {
     const key = `instant.consensusOptions.${axisId}.${value}`;
     const translated = t(key);
     return translated === key ? fallback : translated;
+  }
+
+  function aggregateNgLabel(label: string) {
+    const key = `instant.dietaryPreset.${label}`;
+    const translated = t(key);
+    return translated === key ? label : translated;
   }
 
   if (blockedMessage) {
@@ -436,7 +446,10 @@ export default function InstantRoundPage() {
               <div className={styles.aggregateList}>
                 {aggregate.ng.map((item) => (
                   <Chip key={`ng-${item.label}`} variant="honey">
-                    {t("instant.aggregateNg", { label: item.label, count: item.count })}
+                    {t("instant.aggregateNg", {
+                      label: aggregateNgLabel(item.label),
+                      count: item.count,
+                    })}
                   </Chip>
                 ))}
               </div>

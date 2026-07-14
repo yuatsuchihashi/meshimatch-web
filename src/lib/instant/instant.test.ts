@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { nearestInstantZoneFromCoordinates } from "./zones";
 import {
   aggregateInstantParticipants,
+  shouldAutoAdvanceInstantTimeout,
   shouldRetryInstantFinalize,
   timedOutDraftToParticipant,
 } from "./round";
@@ -81,6 +82,41 @@ describe("shouldRetryInstantFinalize", () => {
     expect(
       shouldRetryInstantFinalize({ participantsLength: 2, partySize: 3 })
     ).toBe(false);
+  });
+});
+
+describe("shouldAutoAdvanceInstantTimeout", () => {
+  it("does not auto-advance after the party is already full", () => {
+    expect(
+      shouldAutoAdvanceInstantTimeout({
+        seconds: 0,
+        participantsLength: 3,
+        partySize: 3,
+        dietaryOpen: false,
+      })
+    ).toBe(false);
+  });
+
+  it("pauses timeout auto-advance while the dietary picker is open", () => {
+    expect(
+      shouldAutoAdvanceInstantTimeout({
+        seconds: 0,
+        participantsLength: 2,
+        partySize: 3,
+        dietaryOpen: true,
+      })
+    ).toBe(false);
+  });
+
+  it("auto-advances only on timeout before the party is full", () => {
+    expect(
+      shouldAutoAdvanceInstantTimeout({
+        seconds: 0,
+        participantsLength: 2,
+        partySize: 3,
+        dietaryOpen: false,
+      })
+    ).toBe(true);
   });
 });
 

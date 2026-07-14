@@ -133,6 +133,7 @@ export default function InstantRevealPage() {
     resolution.candidates.length === 0 &&
     resolution.hardExcludedGenres.length > 0;
   const proposals = noAnswers || hardExcludedEmpty ? [] : resolution.proposals;
+  const genericEmpty = !noAnswers && !hardExcludedEmpty && proposals.length === 0;
   const title =
     proposals.length === 1
       ? t("instant.revealSingleTitle")
@@ -157,6 +158,14 @@ export default function InstantRevealPage() {
             <section className={`${styles.empty} ${styles.stack}`}>
               <h2 className={styles.restaurantName}>{t("instant.hardExcludedTitle")}</h2>
               <p className={styles.desc}>{t("instant.hardExcludedDesc")}</p>
+              <EmptyActions />
+            </section>
+          )}
+
+          {genericEmpty && (
+            <section className={`${styles.empty} ${styles.stack}`}>
+              <h2 className={styles.restaurantName}>{t("instant.genericEmptyTitle")}</h2>
+              <p className={styles.desc}>{t("instant.genericEmptyDesc")}</p>
               <EmptyActions />
             </section>
           )}
