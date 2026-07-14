@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
+import { Chip } from "@/components/v2";
 import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 
@@ -113,17 +114,17 @@ export default function NotificationsPage() {
 
   if (userLoading || loading) {
     return (
-      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%" }} />
+      <div className="v2-scope service-canvas" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--v2-border)", borderTopColor: "var(--v2-accent)", borderRadius: "50%" }} />
       </div>
     );
   }
 
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
+    <div className="v2-scope service-canvas" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh" }}>
       {/* Header */}
-      <div style={{ padding: "60px 20px 20px" }}>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)" }}>
+      <div style={{ padding: "60px 20px 24px" }}>
+        <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.3, letterSpacing: "var(--v2-tracking-display)", color: "var(--v2-ink)" }}>
           通知
         </div>
       </div>
@@ -146,7 +147,7 @@ export default function NotificationsPage() {
               height="48"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="var(--text-tertiary)"
+              stroke="var(--v2-faint)"
               strokeWidth={1.5}
             >
               <path
@@ -155,10 +156,10 @@ export default function NotificationsPage() {
                 d="M9.143 17.082a24.248 24.248 0 003.844.148m-3.844-.148a23.856 23.856 0 01-5.455-1.31 8.964 8.964 0 002.3-5.542m3.155 6.852a3 3 0 005.667 1.329m.14-6.544-.33.33m0 0a2.25 2.25 0 000-3.182l-.33-.33m0 3.512L14 12m-3 3l-1.5 1.5M14 12l-1.5-1.5M7.5 7.5L9 9m5.5-1.5L13 9M12 5.25a.75.75 0 01.75.75v.01a.75.75 0 01-1.5 0V6a.75.75 0 01.75-.75z"
               />
             </svg>
-            <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-secondary)" }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--v2-muted)" }}>
               通知はありません
             </div>
-            <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
+            <div style={{ fontSize: 14, color: "var(--v2-faint)" }}>
               グループに招待されると<br />ここに表示されます
             </div>
           </div>
@@ -181,10 +182,10 @@ export default function NotificationsPage() {
                 >
                   <MemberAvatar name={inv.inviterName} size={40} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
-                      <span style={{ color: "var(--primary)" }}>{inv.inviterName}</span>さんから招待が届いています
+                    <div style={{ fontSize: 14, fontWeight: 500, color: "var(--v2-ink)" }}>
+                      <span style={{ fontWeight: 800 }}>{inv.inviterName}</span>さんから招待が届いています
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2 }}>
+                    <div style={{ fontSize: 12, color: "var(--v2-faint)", marginTop: 2 }}>
                       {timeAgo(inv.createdAt)}
                     </div>
                   </div>
@@ -193,8 +194,9 @@ export default function NotificationsPage() {
                 {/* Group info */}
                 <div
                   style={{
-                    backgroundColor: "var(--bg-secondary)",
-                    borderRadius: 12,
+                    backgroundColor: "var(--v2-surface-soft)",
+                    border: "1px solid var(--v2-border)",
+                    borderRadius: "var(--v2-radius-input)",
                     padding: 14,
                     marginBottom: 14,
                   }}
@@ -207,23 +209,12 @@ export default function NotificationsPage() {
                       marginBottom: 8,
                     }}
                   >
-                    <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "var(--v2-ink)" }}>
                       {inv.groupName}
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <span
-                      style={{
-                        fontSize: 12,
-                        backgroundColor: "var(--surface)",
-                        color: "var(--text-secondary)",
-                        borderRadius: 8,
-                        padding: "3px 10px",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {inv.memberCount}名
-                    </span>
+                    <Chip label={`${inv.memberCount}名`} />
                   </div>
                 </div>
 
@@ -233,7 +224,7 @@ export default function NotificationsPage() {
                   onClick={() => handleAccept(inv.id, inv.groupId)}
                   style={{ textDecoration: "none" }}
                 >
-                  <button className="btn-primary" style={{ height: 46, fontSize: 15 }}>
+                  <button className="btn-primary">
                     参加してアンケートに回答する
                   </button>
                 </Link>
