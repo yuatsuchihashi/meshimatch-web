@@ -4,6 +4,7 @@ import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, UserPlus } from "lucide-react";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
+import { Chip, PillButton } from "@/components/v2";
 import { useLocale } from "@/lib/i18n";
 import { useUser } from "@/lib/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
@@ -147,20 +148,20 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
   const loading = userLoading || profileLoading;
 
   return (
-    <main style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", padding: "18px 16px 96px" }}>
+    <main className="v2-scope service-canvas" style={{ minHeight: "100dvh", padding: "18px 16px 96px" }}>
       <Link
         href="/home"
         aria-label={t("common.back")}
         style={{
-          width: 40,
-          height: 40,
+          width: 44,
+          height: 44,
           borderRadius: "50%",
-          backgroundColor: "var(--surface)",
-          border: "1px solid var(--border-light)",
+          backgroundColor: "var(--v2-surface)",
+          border: "1px solid var(--v2-border)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "var(--text-primary)",
+          color: "var(--v2-ink)",
           textDecoration: "none",
           marginBottom: 18,
         }}
@@ -169,15 +170,15 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
       </Link>
 
       {loading ? (
-        <div style={{ minHeight: 360, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", fontSize: 14 }}>
+        <div style={{ minHeight: 360, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--v2-muted)", fontSize: 14 }}>
           {t("common.loading")}
         </div>
       ) : notFound || !profile ? (
-        <div className="card" style={{ padding: 22, textAlign: "center" }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
+        <div style={{ padding: 22, textAlign: "center", border: "1px solid var(--v2-border)", borderRadius: "var(--v2-radius-card)", background: "var(--v2-surface)", boxShadow: "var(--v2-shadow)" }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--v2-ink)", marginBottom: 8 }}>
             {t("userProfile.notFound")}
           </div>
-          <Link href="/home" className="btn-primary" style={{ marginTop: 14, textDecoration: "none" }}>
+          <Link href="/home" className="v2-pill-button v2-pill-button--cta" style={{ marginTop: 14, textDecoration: "none" }}>
             {t("waiting.backToHome")}
           </Link>
         </div>
@@ -185,17 +186,19 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <section
             style={{
-              backgroundColor: "var(--primary)",
-              borderRadius: 18,
-              padding: "28px 20px",
-              color: "white",
+              backgroundColor: "var(--v2-surface)",
+              border: "1px solid var(--v2-border)",
+              borderRadius: "var(--v2-radius-card)",
+              boxShadow: "var(--v2-shadow)",
+              padding: "30px 20px",
+              color: "var(--v2-ink)",
               textAlign: "center",
             }}
           >
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <MemberAvatar name={profile.displayName} imageUrl={profile.avatarUrl} size={88} />
             </div>
-            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, fontSize: 24, fontWeight: 850, lineHeight: 1.2 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, maxWidth: "100%", fontSize: 24, fontWeight: 850, lineHeight: 1.25, color: "var(--v2-ink)", letterSpacing: "var(--v2-tracking-display)" }}>
               {profile.displayName}
               {verified && (
                 <VerificationBadge
@@ -205,18 +208,18 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
                 />
               )}
             </div>
-            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.82)", marginTop: 8, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 14, color: "var(--v2-muted)", marginTop: 8, lineHeight: 1.6 }}>
               {profile.bio?.trim() || t("profile.bioEmpty")}
             </div>
           </section>
 
           {verified && (
-            <section className="card" style={{ padding: 18 }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", marginBottom: 12 }}>
+            <section style={{ padding: 18, border: "1px solid var(--v2-border)", borderRadius: "var(--v2-radius-card)", background: "var(--v2-surface)", boxShadow: "var(--v2-shadow)" }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "var(--v2-ink)", marginBottom: 12 }}>
                 {t("official.publicRecommendationsTitle")}
               </div>
               {recommendations.length === 0 ? (
-                <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>
+                <div style={{ fontSize: 14, color: "var(--v2-faint)" }}>
                   {t("official.publicRecommendationsEmpty")}
                 </div>
               ) : (
@@ -225,35 +228,25 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
                     <div
                       key={source.id}
                       style={{
-                        border: "1px solid var(--border-light)",
-                        borderRadius: 14,
+                        border: "1px solid var(--v2-border)",
+                        borderRadius: 20,
                         padding: "12px 14px",
-                        background: "var(--surface)",
+                        background: "var(--v2-surface-soft)",
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <div style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800, color: "var(--v2-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {source.restaurants!.name}
                         </div>
                         {source.pr && (
-                          <span style={{ fontSize: 11, fontWeight: 900, color: "var(--primary)", background: "rgba(240,90,40,0.12)", borderRadius: 999, padding: "4px 8px", flexShrink: 0 }}>
-                            {t("official.prChip")}
-                          </span>
+                          <Chip variant="blush" label={t("official.prChip")} style={{ flexShrink: 0 }} />
                         )}
                       </div>
-                      <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 3 }}>
-                        {[
-                          source.restaurants!.nearest_area,
-                          source.restaurants!.genre_id
-                            ? genreName.get(source.restaurants!.genre_id) ?? source.restaurants!.genre_id
-                            : null,
-                          source.restaurants!.price_band,
-                        ]
-                          .filter(Boolean)
-                          .join(" ・ ")}
+                      <div style={{ marginTop: 8 }}>
+                        <Chip label={recommendationMeta(source, genreName)} />
                       </div>
                       {source.note?.trim() && (
-                        <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5, marginTop: 8 }}>
+                        <div style={{ fontSize: 13, color: "var(--v2-muted)", lineHeight: 1.5, marginTop: 8 }}>
                           {source.note.trim()}
                         </div>
                       )}
@@ -264,11 +257,11 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
             </section>
           )}
 
-          <section className="card" style={{ padding: 18 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
+          <section style={{ padding: 18, border: "1px solid var(--v2-border)", borderRadius: "var(--v2-radius-card)", background: "var(--v2-surface)", boxShadow: "var(--v2-shadow)" }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--v2-ink)", marginBottom: 8 }}>
               {t("userProfile.qrOpened")}
             </div>
-            <div style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 16 }}>
+            <div style={{ fontSize: 14, color: "var(--v2-muted)", lineHeight: 1.6, marginBottom: 16 }}>
               {statusText(followStatus, t)}
             </div>
 
@@ -282,8 +275,8 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
                   width: "100%",
                   minHeight: 52,
                   borderRadius: 100,
-                  backgroundColor: "rgba(92,139,82,0.12)",
-                  color: "#4F7C46",
+                  backgroundColor: "var(--v2-tint-sage)",
+                  color: "var(--v2-tint-sage-text)",
                   fontSize: 16,
                   fontWeight: 800,
                 }}
@@ -292,20 +285,34 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
                 {followStatus === "self" ? t("userProfile.selfProfile") : t("userProfile.added")}
               </div>
             ) : followStatus === "login" ? (
-              <Link href="/login" className="btn-primary" style={{ textDecoration: "none" }}>
+              <Link href="/login" className="v2-pill-button v2-pill-button--cta" style={{ textDecoration: "none" }}>
                 {t("userProfile.loginToAdd")}
               </Link>
             ) : (
-              <button className="btn-primary" onClick={addConnection} disabled={followStatus === "adding"}>
-                <UserPlus size={18} style={{ marginRight: 8, verticalAlign: "middle" }} />
+              <PillButton variant="cta" onClick={addConnection} disabled={followStatus === "adding"} icon={<UserPlus size={18} />}>
                 {followStatus === "adding" ? t("common.processing") : t("userProfile.addFriend")}
-              </button>
+              </PillButton>
             )}
           </section>
         </div>
       )}
     </main>
   );
+}
+
+function recommendationMeta(
+  source: PublicRecommendation,
+  genreName: Map<string, string>
+) {
+  return [
+    source.restaurants!.nearest_area,
+    source.restaurants!.genre_id
+      ? genreName.get(source.restaurants!.genre_id) ?? source.restaurants!.genre_id
+      : null,
+    source.restaurants!.price_band,
+  ]
+    .filter(Boolean)
+    .join(" ・ ");
 }
 
 function statusText(status: FollowStatus, t: (key: string) => string) {

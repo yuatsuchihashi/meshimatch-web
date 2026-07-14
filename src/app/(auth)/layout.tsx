@@ -6,9 +6,9 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-mesh min-h-dvh flex items-center justify-center px-6">
+    <div className="v2-scope service-canvas min-h-dvh flex items-center justify-center px-6">
       <div className="fixed top-5 right-5 z-10">
-        <LocaleToggle light />
+        <LocaleToggle />
       </div>
       {children}
     </div>
