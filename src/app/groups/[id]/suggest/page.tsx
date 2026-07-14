@@ -230,8 +230,9 @@ export default function SuggestPage({
   if (needSurvey) {
     return (
       <div
+        className="v2-scope service-canvas"
         style={{
-          backgroundColor: "var(--bg)",
+          backgroundColor: "var(--v2-canvas)",
           minHeight: "100dvh",
           display: "flex",
           flexDirection: "column",
@@ -246,7 +247,7 @@ export default function SuggestPage({
         </div>
         <Link
           href={`/groups/${groupId}/survey`}
-          style={{ color: "var(--primary)", fontSize: 15, fontWeight: 700, textDecoration: "none" }}
+          style={{ color: "var(--v2-ink)", fontSize: 15, fontWeight: 700, textDecoration: "none" }}
         >
           {t("suggest.goSurvey")}
         </Link>
@@ -257,8 +258,9 @@ export default function SuggestPage({
   if (!memberId) {
     return (
       <div
+        className="v2-scope service-canvas"
         style={{
-          backgroundColor: "var(--bg)",
+          backgroundColor: "var(--v2-canvas)",
           minHeight: "100dvh",
           display: "flex",
           alignItems: "center",
@@ -280,7 +282,7 @@ export default function SuggestPage({
   }
 
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
+    <div className="v2-scope service-canvas" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh" }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
         <div style={{ padding: "56px 20px 0" }}>
           <Link
@@ -289,7 +291,7 @@ export default function SuggestPage({
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
-              color: "var(--primary)",
+              color: "var(--v2-ink)",
               textDecoration: "none",
               fontSize: 16,
               fontWeight: 600,
@@ -317,6 +319,7 @@ export default function SuggestPage({
               borderRadius: 20,
               padding: 16,
               border: "1px solid var(--border-light)",
+              boxShadow: "var(--v2-shadow)",
               marginBottom: 20,
             }}
           >

@@ -326,7 +326,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
     return (
       <Screen>
         <CenterMessage icon={BowlIcon} title={error ?? t("vote.noCandidates")}>
-          <Link href={`/groups/${groupId}/results`} style={{ display: "inline-block", marginTop: 16, color: "var(--primary)", fontWeight: 600 }}>
+          <Link href={`/groups/${groupId}/results`} style={{ display: "inline-block", marginTop: 16, color: "var(--v2-ink)", fontWeight: 600 }}>
             {t("vote.backToResults")}
           </Link>
         </CenterMessage>
@@ -338,7 +338,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
     return (
       <Screen>
         <CenterMessage icon={ClockIcon} title={t("vote.waitingForOrganizer")} sub={t("vote.waitingForOrganizerSub")}>
-          <Link href={`/groups/${groupId}/waiting`} style={{ display: "inline-block", marginTop: 16, color: "var(--primary)", fontWeight: 600 }}>
+          <Link href={`/groups/${groupId}/waiting`} style={{ display: "inline-block", marginTop: 16, color: "var(--v2-ink)", fontWeight: 600 }}>
             ← {t("waiting.backToHome")}
           </Link>
         </CenterMessage>
@@ -356,7 +356,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
               <path d="M7.5 12.5 10.5 15.5 16.5 9" stroke="white" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", marginTop: 8 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: 0, marginTop: 8 }}>
             {picked.length > 0
               ? t("vote.organizerConfirmTitle", { count: picked.length })
               : t("vote.organizerNonePicked")}
@@ -402,13 +402,13 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
     return (
       <Screen>
         <div style={{ padding: "72px 20px 24px", textAlign: "center" }}>
-          <div className="animate-bounce-in" style={{ display: "flex", justifyContent: "center", color: "var(--primary)" }}>
+          <div className="animate-bounce-in" style={{ display: "flex", justifyContent: "center", color: "var(--v2-ink)" }}>
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 3 3.6 10.3c-.8.35-.75 1.5.1 1.76l6.04 1.9 1.9 6.05c.26.84 1.4.9 1.75.09L21 3Z" />
               <path d="m10 14 11-11" />
             </svg>
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.02em", marginTop: 10 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: 0, marginTop: 10 }}>
             {t("vote.shareTitle")}
           </h1>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 6 }}>
@@ -461,7 +461,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
               <path d="M7.5 12.5 10.5 15.5 16.5 9" stroke="white" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em" }}>{t("vote.done")}</h1>
+          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: 0 }}>{t("vote.done")}</h1>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 6 }}>{t("vote.doneSub")}</p>
           <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 4 }}>
             {t("vote.votedCount", { count: votedMemberCount })}
@@ -516,7 +516,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
           )}
           <Link
             href={`/groups/${groupId}/results`}
-            style={{ textAlign: "center", color: "var(--primary)", fontWeight: 600, fontSize: 14, marginTop: 4 }}
+            style={{ textAlign: "center", color: "var(--v2-ink)", fontWeight: 600, fontSize: 14, marginTop: 4 }}
           >
             {t("vote.backToResults")}
           </Link>
@@ -544,10 +544,10 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
     <Screen>
       {/* header */}
       <div style={{ padding: "56px 20px 8px", textAlign: "center" }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: 0 }}>
           {mode === "curate" ? t("vote.organizerIntro") : t("vote.title")}
         </h1>
-        <p style={{ fontSize: 13, color: mode === "curate" ? "var(--primary)" : "var(--text-secondary)", marginTop: 4, fontWeight: mode === "curate" ? 700 : 400 }}>
+          <p style={{ fontSize: 13, color: mode === "curate" ? "var(--v2-accent)" : "var(--text-secondary)", marginTop: 4, fontWeight: mode === "curate" ? 700 : 400 }}>
           {mode === "curate" ? t("vote.organizerImpactNote") : t("vote.subtitle")}
         </p>
         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--primary)", marginTop: 10 }}>
@@ -600,7 +600,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
           {/* photo area */}
           <div style={{
             height: 170, display: "flex", alignItems: "center", justifyContent: "center",
-            background: "linear-gradient(140deg, #FBEBC9 0%, #F7DFA8 100%)",
+              background: "var(--v2-greige)",
             fontSize: 64,
           }}>
             {current.photoUrl ? (
@@ -640,7 +640,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
           </div>
 
           <div style={{ padding: 18 }}>
-            <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: "-0.01em", lineHeight: 1.3 }}>
+            <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: 0, lineHeight: 1.3 }}>
               {current.name}
             </div>
             <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 6 }}>
@@ -653,7 +653,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
                 {(current.reasonTags ?? []).filter((tag) => tag !== "PR").slice(0, 3).map((tag) => (
                   <span key={tag} style={{
                     fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 100,
-                    background: "var(--bg-secondary)", color: "var(--text-secondary)",
+                    background: "var(--v2-canvas-deep)", color: "var(--text-secondary)",
                   }}>
                     {tag}
                   </span>
@@ -665,7 +665,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
               target="_blank"
               rel="noopener noreferrer"
               onPointerDown={(e) => e.stopPropagation()}
-              style={{ display: "inline-block", marginTop: 12, fontSize: 12, fontWeight: 700, color: "var(--primary)", textDecoration: "none" }}
+              style={{ display: "inline-block", marginTop: 12, fontSize: 12, fontWeight: 700, color: "var(--v2-ink)", textDecoration: "none" }}
             >
               Googleマップで見る →
             </a>
@@ -706,15 +706,16 @@ const ClockIcon = (
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", maxWidth: 480, margin: "0 auto", position: "relative" }}>
+    <div className="v2-scope service-canvas" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", maxWidth: 480, margin: "0 auto", position: "relative" }}>
       {/* どの状態でもホームに戻れる */}
       <Link
         href="/home"
         style={{
           position: "absolute", top: 16, left: 16, zIndex: 10,
           display: "inline-flex", alignItems: "center", gap: 4,
-          color: "var(--primary)", fontSize: 14, fontWeight: 600, textDecoration: "none",
-          padding: "6px 10px", borderRadius: 100, background: "rgba(255,255,255,0.7)",
+          color: "var(--v2-ink)", fontSize: 14, fontWeight: 600, textDecoration: "none",
+          padding: "6px 10px", borderRadius: 100, background: "var(--v2-surface)",
+          border: "1px solid var(--v2-border)",
         }}
       >
         ← ホーム
@@ -730,7 +731,7 @@ function Spinner({ label }: { label: string }) {
       <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
         <div className="animate-spin-slow" style={{
           width: 32, height: 32, border: "3px solid var(--border)",
-          borderTopColor: "var(--primary)", borderRadius: "50%", margin: "0 auto 12px",
+          borderTopColor: "var(--v2-accent)", borderRadius: "50%", margin: "0 auto 12px",
         }} />
         <div style={{ fontSize: 14 }}>{label}</div>
       </div>

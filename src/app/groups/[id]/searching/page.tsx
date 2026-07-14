@@ -47,8 +47,9 @@ export default function SearchingPage({ params }: { params: Promise<{ id: string
 
   return (
     <div
+      className="v2-scope service-canvas"
       style={{
-        backgroundColor: "var(--bg)",
+        backgroundColor: "var(--v2-canvas)",
         minHeight: "100dvh",
         display: "flex",
         flexDirection: "column",
@@ -80,7 +81,7 @@ export default function SearchingPage({ params }: { params: Promise<{ id: string
             width: 80,
             height: 80,
             borderRadius: "50%",
-            backgroundColor: "rgba(240,90,40,0.12)",
+            backgroundColor: "var(--v2-tint-blush)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

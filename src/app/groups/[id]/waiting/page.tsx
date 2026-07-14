@@ -53,7 +53,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
 
   if (loading) {
     return (
-      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="v2-scope service-canvas" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
           <div className="animate-spin-slow" style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", marginBottom: 12 }} />
           <div style={{ fontSize: 14 }}>{t("common.loading")}</div>
@@ -64,11 +64,11 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
 
   if (!group) {
     return (
-      <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="v2-scope service-canvas" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
           <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-tertiary)", marginBottom: 12 }}>!</div>
           <div style={{ fontSize: 16, fontWeight: 600 }}>{t("waiting.groupNotFound")}</div>
-          <Link href="/home" style={{ color: "var(--primary)", fontSize: 14, marginTop: 8, display: "block" }}>{t("waiting.backToHomeLink")}</Link>
+          <Link href="/home" style={{ color: "var(--v2-ink)", fontSize: 14, marginTop: 8, display: "block" }}>{t("waiting.backToHomeLink")}</Link>
         </div>
       </div>
     );
@@ -90,7 +90,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh" }}>
+    <div className="v2-scope service-canvas" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh" }}>
       {/* Header */}
       <div style={{ padding: "60px 20px 24px" }}>
         <Link
@@ -99,7 +99,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            color: "var(--primary)",
+            color: "var(--v2-ink)",
             textDecoration: "none",
             fontSize: 16,
             fontWeight: 600,
@@ -130,7 +130,7 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "rgba(240,90,40,0.08)",
+              backgroundColor: "var(--v2-tint-blush)",
             }}
           >
             <span style={{ fontSize: 32, fontWeight: 800, color: "var(--primary)" }}>
@@ -161,11 +161,12 @@ export default function WaitingRoomPage({ params }: { params: Promise<{ id: stri
                     width: 36,
                     height: 36,
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
+                    background: "var(--v2-canvas-deep)",
+                    border: "1px solid var(--v2-border)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "white",
+                    color: "var(--v2-ink)",
                     fontWeight: 700,
                     fontSize: 15,
                     flexShrink: 0,

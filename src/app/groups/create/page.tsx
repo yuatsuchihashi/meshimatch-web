@@ -307,6 +307,7 @@ export default function CreateGroupPage() {
   if (showExitConfirm) {
     return (
       <div
+        className="v2-scope service-canvas"
         style={{
           position: "fixed",
           inset: 0,
@@ -320,14 +321,14 @@ export default function CreateGroupPage() {
           style={{
             position: "absolute",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "rgba(34,27,22,0.36)",
           }}
           onClick={() => setShowExitConfirm(false)}
         />
         <div
           style={{
             position: "relative",
-            backgroundColor: "var(--bg)",
+            backgroundColor: "var(--v2-canvas)",
             borderRadius: "24px 24px 0 0",
             padding: "20px 20px 48px",
           }}
@@ -1070,7 +1071,7 @@ function PageShell({
   onExit?: () => void;
 }) {
   return (
-    <div style={{ backgroundColor: "var(--bg)", minHeight: "100dvh", position: "relative" }}>
+    <div className="v2-scope service-canvas" style={{ backgroundColor: "var(--v2-canvas)", minHeight: "100dvh", position: "relative" }}>
       {showExit && onExit && (
         <button
           onClick={onExit}
@@ -1090,7 +1091,7 @@ function PageShell({
             cursor: "pointer",
             color: "var(--text-secondary)",
             fontSize: 18,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            boxShadow: "var(--v2-shadow)",
           }}
         >
           ✕
@@ -1161,7 +1162,7 @@ function CalendarSheet({
         style={{
           position: "absolute",
           inset: 0,
-          backgroundColor: "rgba(0,0,0,0.5)",
+          backgroundColor: "rgba(34,27,22,0.36)",
           opacity: visible ? 1 : 0,
           transition: "opacity 0.18s ease",
         }}
@@ -1169,7 +1170,7 @@ function CalendarSheet({
       <div
         style={{
           position: "relative",
-          backgroundColor: "var(--bg)",
+          backgroundColor: "var(--v2-canvas)",
           borderRadius: "24px 24px 0 0",
           padding: "18px 20px 40px",
           transform: visible ? "translateY(0)" : "translateY(100%)",
@@ -1349,7 +1350,7 @@ function BackButton({ onClick, label }: { onClick: () => void; label: string }) 
           background: "none",
           border: "none",
           cursor: "pointer",
-          color: "var(--primary)",
+          color: "var(--v2-ink)",
           fontSize: 16,
           fontWeight: 600,
           padding: 0,
