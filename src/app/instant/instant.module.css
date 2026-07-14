@@ -153,6 +153,12 @@
   letter-spacing: 0;
 }
 
+.questionMeta {
+  color: var(--v2-muted, #8a7d72);
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .personPill {
   border-radius: 999px;
   background: var(--v2-ink, #221b16);
@@ -193,6 +199,59 @@
   border-color: var(--v2-accent, #f05a28);
   background: #fff0df;
   box-shadow: inset 0 0 0 2px rgba(240, 90, 40, 0.18);
+}
+
+.choiceGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.choiceButton {
+  min-height: 74px;
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 24px;
+  background: var(--v2-surface-soft, #fbf8f2);
+  color: var(--v2-ink, #221b16);
+  padding: 14px 16px;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.choiceButtonSelected {
+  border-color: var(--v2-accent, #f05a28);
+  background: #fff0df;
+  box-shadow: inset 0 0 0 2px rgba(240, 90, 40, 0.18);
+}
+
+.dietaryToggle {
+  min-height: 48px;
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 999px;
+  background: var(--v2-surface, #fff);
+  color: var(--v2-ink, #221b16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.dietaryPicker {
+  border-radius: 22px;
+  background: var(--v2-surface-soft, #fbf8f2);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.dietaryGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .ngRow {
@@ -313,6 +372,70 @@
   font-size: clamp(44px, 15vw, 72px);
   line-height: 1.02;
   letter-spacing: 0;
+}
+
+.revealChoiceTitle {
+  margin: 0;
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: clamp(36px, 12vw, 58px);
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.proposalGrid,
+.proposalGridSingle {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+}
+
+.proposalGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.proposalGridSingle {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.proposalCard {
+  min-height: 230px;
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 28px;
+  background: var(--v2-surface, #fff);
+  color: var(--v2-ink, #221b16);
+  box-shadow: var(--v2-shadow, 0 12px 32px rgba(34, 27, 22, 0.07));
+  padding: 18px 12px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.proposalEmoji {
+  font-size: clamp(56px, 18vw, 86px);
+  line-height: 1;
+}
+
+.proposalImage {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 22px;
+  background-size: cover;
+  background-position: center;
+}
+
+.proposalName {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+@media (max-width: 360px) {
+  .proposalGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .todo {
