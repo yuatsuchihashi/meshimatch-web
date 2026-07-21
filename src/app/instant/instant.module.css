@@ -455,7 +455,8 @@
   margin-bottom: 14px;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 150px 1fr;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 4px;
   align-items: center;
   isolation: isolate;
 }
@@ -1292,11 +1293,9 @@
   isolation: isolate;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 12% 16%, rgba(255, 242, 175, 0.84) 0 2px, transparent 3px),
-    radial-gradient(circle at 84% 30%, rgba(255, 255, 255, 0.74) 0 2px, transparent 3px),
-    radial-gradient(circle at 28% 72%, rgba(255, 210, 220, 0.66) 0 2px, transparent 3px),
-    linear-gradient(138deg, #a9d879 0%, #8cca69 48%, #73b85e 100%);
-  background-size: 86px 86px, 118px 118px, 132px 132px, auto;
+    linear-gradient(rgba(116, 192, 73, 0.12), rgba(65, 143, 49, 0.16)),
+    url("/img/dining-plaza-meadow-v1.webp") center top / cover no-repeat,
+    #7bc550;
 }
 
 .gardenScreen::before,
@@ -1330,6 +1329,7 @@
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
+  display: none;
 }
 
 .gardenFence,
@@ -1471,11 +1471,12 @@
 }
 
 .summonScene.gardenPanel {
-  min-height: 212px;
+  min-height: 226px;
   border-color: rgba(78, 122, 48, 0.3);
   background:
-    radial-gradient(circle at 25% 38%, rgba(255, 247, 176, 0.62), transparent 21%),
-    linear-gradient(154deg, #b9df81, #74ba5f);
+    linear-gradient(112deg, rgba(147, 207, 94, 0.24), rgba(72, 155, 60, 0.3)),
+    url("/img/dining-plaza-meadow-v1.webp") center 38% / cover no-repeat,
+    #83c863;
 }
 
 .summonScene::after {
@@ -1484,24 +1485,37 @@
   box-shadow: inset 0 8px rgba(255, 255, 255, 0.08);
 }
 
-.summonFence {
-  position: absolute;
-  left: -15px;
-  right: -15px;
-  top: 18px;
-  height: 28px;
-  z-index: -1;
-  transform: rotate(1deg);
+.summonArt {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 190px;
+  filter: drop-shadow(0 14px 10px rgba(46, 89, 35, 0.24));
 }
 
-.summonFlowers {
+.summonArtImage {
+  object-fit: contain;
+  object-position: center;
+}
+
+.summonCount {
   position: absolute;
-  left: 18px;
-  bottom: 17px;
-  color: #fff5c4;
-  font-size: 23px;
-  letter-spacing: 7px;
-  text-shadow: 0 2px #e79c79, 0 5px 7px rgba(54, 94, 43, 0.2);
+  z-index: 3;
+  top: 31%;
+  left: 50%;
+  min-width: 42px;
+  padding: 3px 7px 4px;
+  border: 2px solid rgba(123, 75, 41, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 247, 207, 0.94);
+  box-shadow: inset 0 2px white, 0 5px 0 rgba(117, 74, 42, 0.13);
+  color: #a35b39;
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  transform: translate(-50%, -50%) rotate(-1deg);
 }
 
 .picnicBlanket,
@@ -1581,7 +1595,7 @@
   position: relative;
   z-index: 2;
   border-radius: 20px;
-  background: rgba(255, 252, 230, 0.85);
+  background: rgba(255, 252, 230, 0.92);
   box-shadow: inset 0 2px white, 0 8px 16px rgba(52, 91, 42, 0.14);
   padding: 13px;
   backdrop-filter: blur(5px);
@@ -1600,10 +1614,9 @@
 .roomGardenScreen {
   padding-top: 24px;
   background:
-    radial-gradient(circle at 11% 22%, #fff7c7 0 2px, transparent 3px),
-    radial-gradient(circle at 87% 64%, #f6bbb0 0 2px, transparent 3px),
-    linear-gradient(140deg, #aedb7c, #75bd60 60%, #64aa56);
-  background-size: 94px 94px, 126px 126px, auto;
+    linear-gradient(rgba(116, 192, 73, 0.1), rgba(65, 143, 49, 0.18)),
+    url("/img/dining-plaza-meadow-v1.webp") center top / cover no-repeat,
+    #7bc550;
 }
 
 .roomTableScene {
@@ -1678,9 +1691,34 @@
 
 .roomTable {
   top: 47%;
-  width: 166px;
-  height: 130px;
+  width: 190px;
+  height: 154px;
   z-index: 2;
+}
+
+.roomTableImage {
+  object-fit: contain;
+  filter: drop-shadow(0 11px 9px rgba(47, 89, 35, 0.24));
+}
+
+.roomTableValue {
+  position: absolute;
+  z-index: 3;
+  top: 37%;
+  left: 50%;
+  width: 43px;
+  height: 43px;
+  border: 2px solid rgba(112, 58, 30, 0.2);
+  border-radius: 50%;
+  background: rgba(255, 244, 201, 0.95);
+  box-shadow: inset 0 2px white, 0 5px 0 rgba(104, 59, 31, 0.13);
+  color: #b45338;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 22px;
+  font-weight: 900;
+  transform: translate(-50%, -50%);
 }
 
 .roomTableSurface span {
@@ -1698,7 +1736,27 @@
 .seatAvatar {
   width: 42px;
   height: 57px;
-  filter: saturate(0.64);
+  filter: saturate(0.82);
+}
+
+.seatAvatar:has(.avatarGenerated) {
+  opacity: 0.9;
+}
+
+.seatAvatar:has(.emptySeatImage) {
+  opacity: 0.64;
+}
+
+.avatarGenerated,
+.emptySeatImage {
+  z-index: 2;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 5px 4px rgba(48, 82, 37, 0.2));
+}
+
+.emptySeatImage {
+  object-position: center 72%;
 }
 
 .avatarShadow {
@@ -2003,7 +2061,7 @@
   }
 
   .summonScene.gardenPanel {
-    min-height: 205px;
+    min-height: 220px;
   }
 
   .scenePicnicRug {

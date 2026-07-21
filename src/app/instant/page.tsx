@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LocateFixed, Minus, Plus, UsersRound } from "lucide-react";
@@ -135,15 +136,16 @@ export default function InstantStartPage() {
         </header>
 
         <section className={`${styles.summonScene} ${styles.panel} ${styles.gardenPanel}`}>
-          <div className={styles.summonFence} aria-hidden />
-          <div className={styles.summonFlowers} aria-hidden>✿ · ✿</div>
-          <div className={styles.picnicBlanket} aria-hidden />
-          <div className={styles.summonGlow} aria-hidden />
-          <div className={styles.miniTable} aria-hidden>
-            <span className={styles.miniTableTop}>30</span>
-            <span className={styles.miniTableFoot} />
-            <span className={styles.miniChairLeft} />
-            <span className={styles.miniChairRight} />
+          <div className={styles.summonArt} aria-hidden>
+            <Image
+              src="/img/instant-summon-table-v1.webp"
+              alt=""
+              fill
+              sizes="(max-width: 480px) 56vw, 220px"
+              className={styles.summonArtImage}
+              priority
+            />
+            <span className={styles.summonCount}>30</span>
           </div>
           <div className={styles.summonCopy}>
             <Chip variant="selected" icon="⚡">

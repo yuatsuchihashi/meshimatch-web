@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { Check, Clock3, Copy, MapPin, Share2, Sparkles } from "lucide-react";
@@ -105,10 +106,15 @@ function TableScene({
       <div className={styles.scenePicnicRug} aria-hidden />
       <div className={styles.roomFloor} aria-hidden />
       <div className={styles.roomTable} aria-hidden>
-        <span className={styles.roomTableSurface}>
-          <span>{room.proposal ? "!" : room.answeredCount}</span>
-        </span>
-        <span className={styles.roomTableBase} />
+        <Image
+          src="/img/instant-room-table-v2.webp"
+          alt=""
+          fill
+          sizes="190px"
+          className={styles.roomTableImage}
+          priority
+        />
+        <span className={styles.roomTableValue}>{room.proposal ? "!" : room.answeredCount}</span>
       </div>
       <div className={styles.seatRing}>
         {seats.map((member, index) => (
@@ -120,8 +126,23 @@ function TableScene({
             style={{ "--seat-index": index, "--seat-count": room.partySize } as React.CSSProperties}
             title={member?.displayName ?? ""}
           >
-            <span className={styles.avatarHead} />
-            <span className={styles.avatarBody} />
+            {member ? (
+              <Image
+                src="/img/dining-objects/garden-avatar.webp"
+                alt=""
+                fill
+                sizes="48px"
+                className={styles.avatarGenerated}
+              />
+            ) : (
+              <Image
+                src="/img/instant-empty-stool-v1.webp"
+                alt=""
+                fill
+                sizes="48px"
+                className={styles.emptySeatImage}
+              />
+            )}
             <span className={styles.avatarShadow} aria-hidden />
             {member?.hasSurvey && (
               <span className={styles.readySpark}>
