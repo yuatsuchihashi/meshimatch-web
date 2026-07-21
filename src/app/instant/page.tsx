@@ -2,97 +2,165 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus } from "lucide-react";
+import { ArrowRight, LocateFixed, Minus, Plus, UsersRound } from "lucide-react";
 import { Chip, PillButton } from "@/components/v2";
+import { useUser } from "@/lib/hooks/useUser";
 import { useLocale } from "@/lib/i18n";
+import { INITIAL_ZONES, SURVEY_AREAS } from "@/lib/areas";
 import { nearestInstantZoneFromCoordinates } from "@/lib/instant/zones";
-import type { InstantStartState, InstantZoneSelection } from "@/lib/instant/types";
+import type { InstantZoneSelection } from "@/lib/instant/types";
 import styles from "./instant.module.css";
 
-const START_KEY = "meshimatch_instant_start";
+type CreatedRoom = {
+  room: {
+    code: string;
+    groupId: string;
+    partySize: number;
+  };
+  member: {
+    id: string;
+    displayName: string;
+  };
+};
+
+function storeRoomMember(code: string, room: CreatedRoom) {
+  sessionStorage.setItem(
+    `meshimatch_instant_room_${code}`,
+    JSON.stringify({
+      groupId: room.room.groupId,
+      memberId: room.member.id,
+      displayName: room.member.displayName,
+    })
+  );
+}
 
 export default function InstantStartPage() {
   const router = useRouter();
   const { t } = useLocale();
+  const { user, userId } = useUser();
   const [partySize, setPartySize] = useState(3);
+  const [displayName, setDisplayName] = useState("");
+  const [joinCode, setJoinCode] = useState("");
   const [zone, setZone] = useState<InstantZoneSelection | null>(null);
-  const [needsLocationless, setNeedsLocationless] = useState(false);
+  const [needsAreaPick, setNeedsAreaPick] = useState(false);
   const [locating, setLocating] = useState(false);
-  const [locationTried, setLocationTried] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
 
-  function persistAndGo(selectedZone: InstantZoneSelection | null) {
-    const state: InstantStartState = {
-      zone: selectedZone,
-      partySize,
-      createdAt: new Date().toISOString(),
-    };
-    localStorage.setItem(START_KEY, JSON.stringify(state));
-    router.push("/instant/round");
+  const effectiveName = displayName.trim() || user?.displayName || t("instant.defaultGuestName");
+
+  function resolveLocation(): Promise<InstantZoneSelection | null> {
+    if (zone) return Promise.resolve(zone);
+    if (!("geolocation" in navigator)) return Promise.resolve(null);
+
+    setLocating(true);
+    return new Promise((resolve) => {
+      const finish = (selection: InstantZoneSelection | null) => {
+        setLocating(false);
+        if (selection) setZone(selection);
+        resolve(selection);
+      };
+      const fallbackTimer = window.setTimeout(() => finish(null), 4500);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          window.clearTimeout(fallbackTimer);
+          finish(
+            nearestInstantZoneFromCoordinates({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            })
+          );
+        },
+        () => {
+          window.clearTimeout(fallbackTimer);
+          finish(null);
+        },
+        { enableHighAccuracy: false, timeout: 4000, maximumAge: 60_000 }
+      );
+    });
   }
 
-  function startFromCurrentLocation() {
-    if (locationTried || locating) {
-      if (zone) persistAndGo(zone);
-      else setNeedsLocationless(true);
-      return;
+  async function createRoom() {
+    setCreating(true);
+    setError("");
+    try {
+      const selectedZone = await resolveLocation();
+      if (!selectedZone) {
+        setNeedsAreaPick(true);
+        return;
+      }
+      const response = await fetch("/instant/api/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          partySize,
+          zone: selectedZone,
+          displayName: effectiveName,
+          profileId: userId,
+        }),
+      });
+      const data = (await response.json()) as CreatedRoom & { error?: string };
+      if (!response.ok) throw new Error(data.error || t("instant.roomCreateFailed"));
+      storeRoomMember(data.room.code, data);
+      router.push(`/instant/room/${data.room.code}`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t("instant.roomCreateFailed"));
+    } finally {
+      setCreating(false);
     }
+  }
 
-    setLocationTried(true);
-    setLocating(true);
-    if (!("geolocation" in navigator)) {
-      setNeedsLocationless(true);
-      setLocating(false);
-      return;
-    }
-
-    // 端末がコールバックを一切返さないケース(権限ダイアログ放置など)への保険。
-    // options.timeout だけに頼らず、JS側でも必ずフォールバックさせる (レビューP1)
-    const fallbackTimer = window.setTimeout(() => {
-      setNeedsLocationless(true);
-      setLocating(false);
-    }, 5000);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        window.clearTimeout(fallbackTimer);
-        const resolved = nearestInstantZoneFromCoordinates({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-        setZone(resolved);
-        setLocating(false);
-        persistAndGo(resolved);
-      },
-      () => {
-        window.clearTimeout(fallbackTimer);
-        setNeedsLocationless(true);
-        setLocating(false);
-      },
-      { enableHighAccuracy: false, timeout: 4500, maximumAge: 0 }
-    );
+  function joinRoom() {
+    const normalized = joinCode.trim().toUpperCase();
+    if (!normalized) return;
+    router.push(`/instant/room/${normalized}`);
   }
 
   return (
-    <main className={styles.screen}>
-      <div className={styles.shell}>
-        <header className={styles.header}>
+    <main className={`${styles.screen} ${styles.gardenScreen} ${styles.startGardenScreen}`}>
+      <div className={styles.gardenBackdrop} aria-hidden>
+        <span className={styles.gardenFence} />
+        <span className={styles.gardenBush} />
+        <span className={styles.gardenFlowers} />
+      </div>
+      <div className={`${styles.shell} ${styles.gardenShell}`}>
+        <header className={`${styles.header} ${styles.gardenHeader}`}>
           <span className={styles.eyebrow}>{t("instant.startEyebrow")}</span>
-          <h1 className={styles.title}>{t("instant.startTitle")}</h1>
-          <p className={styles.desc}>{t("instant.startDesc")}</p>
+          <h1 className={styles.title}>{t("instant.gatherStartTitle")}</h1>
+          <p className={styles.desc}>{t("instant.gatherStartDesc")}</p>
         </header>
 
-        <section className={`${styles.panel} ${styles.stack}`}>
-          {zone && (
-            <div className={styles.chipGrid}>
-              <Chip variant="sage" icon="◎">
-                {t("instant.locationReady", { zone: zone.name })}
-              </Chip>
-            </div>
-          )}
+        <section className={`${styles.summonScene} ${styles.panel} ${styles.gardenPanel}`}>
+          <div className={styles.summonFence} aria-hidden />
+          <div className={styles.summonFlowers} aria-hidden>✿ · ✿</div>
+          <div className={styles.picnicBlanket} aria-hidden />
+          <div className={styles.summonGlow} aria-hidden />
+          <div className={styles.miniTable} aria-hidden>
+            <span className={styles.miniTableTop}>30</span>
+            <span className={styles.miniTableFoot} />
+            <span className={styles.miniChairLeft} />
+            <span className={styles.miniChairRight} />
+          </div>
+          <div className={styles.summonCopy}>
+            <Chip variant="selected" icon="⚡">
+              {t("instant.quickFastFun")}
+            </Chip>
+            <strong>{t("instant.summonTable")}</strong>
+            <span>{t("instant.everyPhonePlayer")}</span>
+          </div>
+        </section>
 
-          {needsLocationless && (
-            <p className={styles.desc}>{t("instant.locationDenied")}</p>
-          )}
+        <section className={`${styles.panel} ${styles.stack} ${styles.gardenPanel} ${styles.setupPanel}`}>
+          <label className={styles.stack}>
+            <span className={styles.sectionTitle}>{t("instant.yourName")}</span>
+            <input
+              className={styles.input}
+              value={displayName}
+              maxLength={18}
+              placeholder={user?.displayName || t("instant.defaultGuestName")}
+              onChange={(event) => setDisplayName(event.target.value)}
+            />
+          </label>
 
           <div className={styles.stack}>
             <p className={styles.sectionTitle}>{t("instant.partySize")}</p>
@@ -101,11 +169,12 @@ export default function InstantStartPage() {
                 className={styles.iconButton}
                 type="button"
                 aria-label={t("instant.minus")}
-                onClick={() => setPartySize((value) => Math.max(2, value - 1))}
+                onClick={() => setPartySize((value) => Math.max(1, value - 1))}
               >
                 <Minus size={18} />
               </button>
               <div className={styles.count}>
+                <UsersRound size={20} />
                 {t("instant.people", { count: partySize })}
               </div>
               <button
@@ -119,21 +188,89 @@ export default function InstantStartPage() {
             </div>
           </div>
 
-          <div className={styles.actions}>
-            {needsLocationless ? (
-              <PillButton variant="cta" onClick={() => persistAndGo(null)}>
-                {t("instant.locationlessButton")}
-              </PillButton>
-            ) : (
-              <PillButton variant="cta" disabled={locating} onClick={startFromCurrentLocation}>
-                {locating ? t("common.processing") : t("instant.locationGpsButton")}
-              </PillButton>
-            )}
-            {zone && (
-              <PillButton variant="ghost" onClick={() => persistAndGo(zone)}>
-                {t("instant.startRound")}
-              </PillButton>
-            )}
+          {zone && (
+            <div className={styles.chipGrid}>
+              <Chip variant="sage" icon="◎">
+                {t("instant.locationReady", { zone: zone.name })}
+              </Chip>
+            </div>
+          )}
+
+          {needsAreaPick && !zone && (
+            <div className={styles.manualAreaPicker}>
+              <div>
+                <strong>{t("instant.pickNearbyArea")}</strong>
+                <span>{t("instant.pickNearbyAreaDesc")}</span>
+              </div>
+              <div className={styles.areaChoiceGrid}>
+                {INITIAL_ZONES.filter((item) =>
+                  (SURVEY_AREAS as readonly string[]).includes(item.name)
+                ).map((item) => (
+                  <button
+                    type="button"
+                    className={styles.areaChoice}
+                    key={item.id}
+                    onClick={() => {
+                      setZone({
+                        zoneId: item.id,
+                        name: item.name,
+                        station: item.station,
+                        source: "manual",
+                      });
+                      setNeedsAreaPick(false);
+                    }}
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <PillButton
+            variant="cta"
+            icon={<LocateFixed size={17} />}
+            disabled={creating || locating}
+            onClick={() => void createRoom()}
+          >
+            {creating || locating
+              ? t("common.processing")
+              : zone?.source === "manual"
+                ? t("instant.createFromSelectedArea")
+                : t("instant.createGathering")}
+          </PillButton>
+
+          {error && <p className={styles.formError}>{error}</p>}
+        </section>
+
+        <section className={`${styles.panel} ${styles.joinStrip} ${styles.gardenPanel} ${styles.joinGardenPanel}`}>
+          <div>
+            <span className={styles.sectionTitle}>{t("instant.alreadyInvited")}</span>
+            <p className={styles.desc}>{t("instant.enterRoomCode")}</p>
+          </div>
+          <div className={styles.joinControls}>
+            <input
+              className={styles.codeInput}
+              value={joinCode}
+              maxLength={8}
+              inputMode="text"
+              autoCapitalize="characters"
+              placeholder="ABC123"
+              aria-label={t("instant.roomCode")}
+              onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") joinRoom();
+              }}
+            />
+            <button
+              type="button"
+              className={styles.codeGo}
+              aria-label={t("instant.joinRoom")}
+              disabled={!joinCode.trim()}
+              onClick={joinRoom}
+            >
+              <ArrowRight size={19} />
+            </button>
           </div>
         </section>
       </div>

@@ -2,24 +2,24 @@
 
 :root {
   /* ── MeshiMatch palette (DESIGN.md 準拠) ── */
-  --primary: #F05A28;          /* Primary Orange – CTA, brand, selected */
-  --primary-light: #FF8A5B;    /* Coral – hover/pressed */
-  --secondary: #4A352A;        /* Espresso – strong text, dark surfaces */
-  --accent: #F05A28;
-  --accent-light: #FF8A5B;
+  --primary: #F06486;          /* Garden pink – CTA, brand, selected */
+  --primary-light: #FF88A4;    /* Petal pink – hover/pressed */
+  --secondary: #59452F;        /* Walnut – strong text, dark surfaces */
+  --accent: #F06486;
+  --accent-light: #FF88A4;
 
-  --bg: #FFF5EC;               /* Cream – page canvas */
-  --bg-secondary: #FDEBDC;     /* warm tinted surface */
-  --surface: #FFFFFF;
-  --surface-hover: #FFFAF5;
+  --bg: #F7F4DC;               /* picnic cloth cream */
+  --bg-secondary: #EDF3D2;     /* spring grass tint */
+  --surface: #FFFDF5;
+  --surface-hover: #FFF7E8;
 
-  --text-primary: #4A352A;     /* Espresso */
-  --text-secondary: #8A7568;   /* warm grey */
-  --text-tertiary: #B8A99E;    /* light warm grey */
+  --text-primary: #59452F;     /* Walnut */
+  --text-secondary: #7C6A50;   /* warm bark */
+  --text-tertiary: #A79A7D;    /* dry grass */
 
-  --border: #F0E2D6;
-  --border-light: #F7ECE2;
-  --border-strong: #E2CFC0;
+  --border: #E8DCB8;
+  --border-light: #F1E8CE;
+  --border-strong: #D7C79D;
 
   --warning: #F3C96B;          /* Honey – ratings, badges, highlights */
   --danger: #D64545;           /* × votes, errors, destructive */
@@ -29,27 +29,27 @@
 
 :root {
   /* DESIGN v2 tokens (D1 additive; consumed only by v2 components) */
-  --v2-canvas: #F7F2EA;
-  --v2-canvas-deep: #EFE7DB;
-  --v2-greige: #E3D9CE;
-  --v2-surface: #FFFFFF;
-  --v2-surface-soft: #FBF8F2;
+  --v2-canvas: #F7F4DC;
+  --v2-canvas-deep: #EAF1CD;
+  --v2-greige: #E4E0BA;
+  --v2-surface: #FFFDF5;
+  --v2-surface-soft: #FFF8E9;
 
-  --v2-ink: #221B16;
-  --v2-muted: #8A7D72;
-  --v2-faint: #B5AA9E;
+  --v2-ink: #59452F;
+  --v2-muted: #7C6A50;
+  --v2-faint: #A79A7D;
 
-  --v2-accent: #F05A28;
-  --v2-accent-press: #D64A1E;
-  --v2-tint-sage: #E7EFD9;
-  --v2-tint-sage-text: #4F6B35;
-  --v2-tint-honey: #F8EEDA;
-  --v2-tint-honey-text: #8A6A2F;
-  --v2-tint-blush: #FBE7DD;
+  --v2-accent: #F06486;
+  --v2-accent-press: #D94D71;
+  --v2-tint-sage: #E1EEBE;
+  --v2-tint-sage-text: #4E6D32;
+  --v2-tint-honey: #FFF0B9;
+  --v2-tint-honey-text: #846424;
+  --v2-tint-blush: #FCE0E8;
   --v2-tint-blush-text: var(--v2-accent);
 
-  --v2-border: #EAE0D3;
-  --v2-shadow: 0 2px 4px rgba(34,27,22,0.04), 0 12px 32px rgba(34,27,22,0.07);
+  --v2-border: #E8DCB8;
+  --v2-shadow: 0 3px 0 rgba(111,86,50,0.08), 0 14px 34px rgba(65,88,29,0.12);
 
   --v2-radius-pill: 999px;
   --v2-radius-card: 24px;
@@ -203,7 +203,7 @@ body {
 .v2-pill-button--cta {
   background: var(--v2-accent);
   color: #fff;
-  box-shadow: 0 8px 20px rgba(240,90,40,0.30);
+  box-shadow: 0 7px 0 #C94C6B, 0 13px 24px rgba(192,70,100,0.25);
 }
 .v2-pill-button--cta:hover {
   background: var(--v2-accent-press);
@@ -349,9 +349,11 @@ body {
   min-width: 0;
 }
 .v2-ticket-stub__route-main {
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 19px;
   font-weight: 800;
   line-height: 1.3;
@@ -447,10 +449,11 @@ body {
   justify-content: space-around;
   gap: 4px;
   min-height: 56px;
-  border: 1px solid var(--v2-border);
+  border: 2px solid rgba(255, 255, 255, 0.82);
   border-radius: var(--v2-radius-pill);
-  background: var(--v2-surface);
-  box-shadow: var(--v2-shadow);
+  background: rgba(255, 253, 245, 0.92);
+  box-shadow: 0 4px 0 rgba(116, 91, 54, 0.12), 0 16px 32px rgba(40, 70, 18, 0.18);
+  backdrop-filter: blur(14px);
   padding: 6px;
 }
 .v2-nav-bar__item {
@@ -507,18 +510,123 @@ h3,
 }
 
 .service-canvas {
-  background-color: var(--bg);
+  background-color: #EAF1CD;
   background-image:
-    linear-gradient(rgba(255, 245, 236, 0.52), rgba(255, 245, 236, 0.52)),
-    url("/img/service/01-service-bg-pattern-768.webp");
-  background-size: auto, 440px 440px;
+    linear-gradient(rgba(247, 244, 220, 0.88), rgba(241, 246, 216, 0.90)),
+    url("/img/dining-plaza-meadow-v1.webp");
+  background-size: auto, min(100vw, 720px) auto;
   background-position: 0 0, center top;
-  background-attachment: scroll, scroll;
+  background-attachment: scroll, fixed;
 }
 
 .v2-scope.service-canvas,
 .v2-scope .service-canvas {
-  background: var(--v2-canvas);
+  background-color: #EAF1CD;
+  background-image:
+    linear-gradient(rgba(247, 244, 220, 0.88), rgba(241, 246, 216, 0.90)),
+    url("/img/dining-plaza-meadow-v1.webp");
+  background-size: auto, min(100vw, 720px) auto;
+  background-position: 0 0, center top;
+}
+
+/* Garden world shell: keeps the existing home data flow while turning the
+   first viewport into the interactive meadow from the new visual reference. */
+.meadow-home {
+  position: relative;
+  overflow-x: hidden;
+  background-color: #7ec84b;
+  background-image: url("/img/dining-plaza-meadow-v1.webp");
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: min(100vw, 720px) auto;
+}
+
+.meadow-home__topbar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: calc(16px + env(safe-area-inset-top)) 18px 10px;
+  pointer-events: none;
+}
+
+.meadow-home__topbar > * {
+  pointer-events: auto;
+}
+
+.meadow-home__topbar > div:first-child {
+  max-width: min(68vw, 280px);
+  padding: 9px 16px 10px;
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  border-radius: 22px;
+  background: rgba(255, 253, 239, 0.9);
+  box-shadow: 0 4px 0 rgba(104, 76, 41, 0.14), 0 12px 24px rgba(36, 75, 18, 0.18);
+  backdrop-filter: blur(12px);
+}
+
+.meadow-home__greeting {
+  overflow: hidden;
+  color: #8b7855;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meadow-home__title {
+  margin-top: 2px;
+  overflow: hidden;
+  color: #59452f;
+  font-family: var(--v2-family-play), var(--v2-family-quiet), sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meadow-home__topbar button > div {
+  border: 2px solid rgba(255, 255, 255, 0.78) !important;
+  background: rgba(255, 253, 239, 0.92) !important;
+  box-shadow: 0 4px 0 rgba(104, 76, 41, 0.14), 0 12px 24px rgba(36, 75, 18, 0.18);
+}
+
+.meadow-home__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.meadow-home__details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 14px 96px;
+  padding: 22px 16px 28px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 34px;
+  background: rgba(255, 253, 239, 0.94);
+  box-shadow: 0 8px 0 rgba(93, 104, 46, 0.14), 0 22px 44px rgba(37, 76, 21, 0.2);
+  backdrop-filter: blur(16px);
+}
+
+.meadow-home__details:empty {
+  display: none;
+}
+
+@media (min-width: 720px) {
+  .meadow-home {
+    background-size: 720px auto;
+  }
+
+  .meadow-home__topbar,
+  .meadow-home__content {
+    width: 720px;
+    margin-inline: auto;
+  }
 }
 
 .v2-scope .service-deco {
@@ -552,7 +660,7 @@ h3,
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0;
-  box-shadow: 0 8px 20px rgba(240,90,40,0.30);
+  box-shadow: 0 8px 20px rgba(240,100,134,0.30);
 }
 .v2-scope .btn-primary:hover {
   background: var(--v2-accent-press);
@@ -633,7 +741,7 @@ h3,
 .service-create-card {
   position: relative;
   overflow: hidden;
-  border-color: rgba(240,90,40,0.18);
+  border-color: rgba(240,100,134,0.20);
   background:
     radial-gradient(circle at 82% 20%, rgba(243,201,107,0.26), transparent 32%),
     linear-gradient(135deg, #fffdf9 0%, #fff3ea 100%);
@@ -696,7 +804,7 @@ h3,
 
 .group-ticket-action-delete {
   justify-content: flex-start;
-  background: linear-gradient(135deg, #D64545, #F05A28);
+  background: linear-gradient(135deg, #D64565, #F06486);
 }
 
 .group-ticket-action-archive {

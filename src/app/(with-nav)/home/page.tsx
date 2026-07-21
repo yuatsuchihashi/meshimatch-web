@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/hooks/useUser";
 import { useGroups } from "@/lib/hooks/useGroups";
@@ -11,139 +10,10 @@ import { GroupCard } from "@/components/groups/GroupCard";
 import { RecommendCarousel, type RecommendedRestaurant } from "@/components/home/RecommendCarousel";
 import { RestaurantDetailModal } from "@/components/restaurants/RestaurantDetailModal";
 import { MemberAvatar } from "@/components/groups/MemberAvatar";
-import { Chip } from "@/components/v2";
+import { HomeDiningPlaza } from "@/components/home/HomeDiningPlaza";
 import { useLocale } from "@/lib/i18n";
 import { track, AnalyticsEvent } from "@/lib/analytics";
 import type { Invitation } from "@/lib/types";
-
-function ModeCards({
-  compact = false,
-  t,
-}: {
-  compact?: boolean;
-  t: (key: string) => string;
-}) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: compact ? 10 : 12 }}>
-      <Link href="/instant" style={{ textDecoration: "none", color: "inherit" }}>
-        <div
-          className="card"
-          style={{
-            position: "relative",
-            overflow: "hidden",
-            padding: compact ? "18px 18px 16px" : "22px 20px 18px",
-            borderColor: "rgba(240,90,40,0.22)",
-            background: "var(--v2-surface)",
-          }}
-        >
-          <div
-            aria-hidden
-            style={{
-              position: "absolute",
-              top: compact ? 14 : 18,
-              right: 16,
-              fontSize: compact ? 34 : 42,
-              lineHeight: 1,
-              transform: "rotate(8deg)",
-            }}
-          >
-            🍜
-          </div>
-          <Chip variant="selected" label={t("home.instantEyebrow")} />
-          <div
-            style={{
-              marginTop: compact ? 9 : 11,
-              maxWidth: compact ? "calc(100% - 44px)" : "calc(100% - 58px)",
-              fontSize: compact ? 20 : 24,
-              fontWeight: 800,
-              lineHeight: 1.34,
-              letterSpacing: "var(--v2-tracking-display)",
-              color: "var(--v2-ink)",
-            }}
-          >
-            {t("home.instantTitle")}
-          </div>
-          {!compact && (
-            <div
-              style={{
-                marginTop: 6,
-                color: "var(--v2-muted)",
-                fontSize: 13,
-                lineHeight: 1.75,
-              }}
-            >
-              {t("home.instantDesc")}
-            </div>
-          )}
-          <div
-            className="v2-pill-button v2-pill-button--cta"
-            style={{
-              marginTop: compact ? 12 : 15,
-              minHeight: compact ? 44 : 52,
-              textDecoration: "none",
-            }}
-          >
-            <span>{t("home.instantCta")}</span>
-          </div>
-          {!compact && (
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", marginTop: 11 }}>
-              <Chip label={t("home.instantStepNg")} />
-              <Chip label={t("home.instantStepMood")} />
-              <Chip label={t("home.instantStepStyle")} />
-            </div>
-          )}
-        </div>
-      </Link>
-
-      <Link href="/groups/create" style={{ textDecoration: "none", color: "inherit" }}>
-        <div
-          className="card"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 13,
-            padding: compact ? "14px 16px" : "16px 18px",
-          }}
-        >
-          <div
-            aria-hidden
-            style={{
-              width: compact ? 42 : 48,
-              height: compact ? 42 : 48,
-              borderRadius: 16,
-              background: "var(--v2-tint-honey)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: compact ? 22 : 24,
-              flex: "0 0 auto",
-            }}
-          >
-            🗓️
-          </div>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: compact ? 15 : 16, fontWeight: 800, color: "var(--v2-ink)", lineHeight: 1.35 }}>
-              {t("home.planTitle")}
-            </div>
-            <div style={{ marginTop: 2, fontSize: 12, lineHeight: 1.55, color: "var(--v2-muted)" }}>
-              {t("home.planDesc")}
-            </div>
-          </div>
-          <Image
-            src="/icons/arrow_right_line.svg"
-            alt=""
-            width={18}
-            height={18}
-            style={{
-              flex: "0 0 auto",
-              filter: "brightness(0) saturate(100%) invert(52%) sepia(10%) saturate(512%) hue-rotate(345deg) brightness(91%)",
-            }}
-          />
-        </div>
-      </Link>
-    </div>
-  );
-}
 
 function timeAgo(date: Date, locale: string): string {
   const diff = Date.now() - date.getTime();
@@ -369,21 +239,13 @@ export default function HomePage() {
   }
 
   return (
-    <div className="v2-scope service-canvas" style={{ minHeight: "100dvh" }}>
-      <div
-        style={{
-          padding: "54px 20px 16px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 16,
-        }}
-      >
+    <div className="v2-scope meadow-home" style={{ minHeight: "100dvh" }}>
+      <div className="meadow-home__topbar">
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 14, color: "var(--v2-muted)", marginBottom: 4 }}>
+          <div className="meadow-home__greeting">
             {t("home.greeting")}{user?.displayName ?? "ユーザー"}{t("home.greetingSuffix")}
           </div>
-          <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.35, color: "var(--v2-ink)", letterSpacing: "var(--v2-tracking-display)" }}>
+          <div className="meadow-home__title">
             {primaryActiveGroup ? t("home.activeHeroTitle") : t("home.defaultHeroTitle")}
           </div>
         </div>
@@ -441,7 +303,14 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="meadow-home__content">
+        <HomeDiningPlaza
+          groups={visibleActiveGroups}
+          userName={user?.displayName}
+        />
+
+        <div className="meadow-home__details">
+
         {primaryActiveGroup ? (
           <>
             <section>
@@ -454,11 +323,8 @@ export default function HomePage() {
                 onSwipeDelete={() => void handleSwipeDeleteGroup(primaryActiveGroup.id)}
               />
             </section>
-            <ModeCards compact t={t} />
           </>
-        ) : (
-          <ModeCards t={t} />
-        )}
+        ) : null}
 
         <RecommendCarousel userId={userId} onSelect={setSelectedRecommend} />
 
@@ -605,6 +471,7 @@ export default function HomePage() {
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* 通知シート */}

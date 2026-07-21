@@ -113,6 +113,7 @@
   font-family: var(--font-play, "Zen Maru Gothic");
   font-size: 24px;
   font-weight: 900;
+  gap: 8px;
 }
 
 .iconButton {
@@ -446,4 +447,1586 @@
   padding: 12px 14px;
   font-size: 12px;
   font-weight: 800;
+}
+
+.summonScene {
+  position: relative;
+  min-height: 190px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+  isolation: isolate;
+}
+
+.summonScene::after {
+  content: "";
+  position: absolute;
+  inset: auto -45px -80px 40px;
+  height: 150px;
+  border-radius: 50%;
+  background: #efe7db;
+  transform: rotate(-8deg);
+  z-index: -2;
+}
+
+.summonGlow {
+  position: absolute;
+  left: 34px;
+  top: 30px;
+  width: 124px;
+  height: 124px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(240, 90, 40, 0.2), transparent 68%);
+  animation: summonPulse 2.6s ease-in-out infinite;
+  z-index: -1;
+}
+
+.miniTable {
+  position: relative;
+  width: 126px;
+  height: 116px;
+  transform: translateY(-4px);
+}
+
+.miniTableTop {
+  position: absolute;
+  left: 8px;
+  top: 24px;
+  width: 112px;
+  height: 64px;
+  border: 1px solid #cdbfae;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #fff, #eee4d7);
+  box-shadow: 0 14px 0 #d8cabb, 0 23px 28px rgba(34, 27, 22, 0.14);
+  display: grid;
+  place-items: center;
+  color: var(--v2-accent, #f05a28);
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 28px;
+  font-weight: 900;
+  transform: rotateX(58deg) rotateZ(-8deg);
+}
+
+.miniTableFoot {
+  position: absolute;
+  left: 52px;
+  top: 75px;
+  width: 30px;
+  height: 29px;
+  border-radius: 0 0 12px 12px;
+  background: #b6a28d;
+  z-index: -1;
+}
+
+.summonCopy {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+}
+
+.summonCopy strong {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.summonCopy > span:last-child {
+  color: var(--v2-muted, #8a7d72);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.joinStrip {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.joinControls {
+  display: flex;
+  gap: 6px;
+}
+
+.codeInput {
+  width: 106px;
+  min-height: 46px;
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 999px;
+  background: var(--v2-surface-soft, #fbf8f2);
+  color: var(--v2-ink, #221b16);
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.codeGo {
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--v2-ink, #221b16);
+  color: white;
+  display: grid;
+  place-items: center;
+}
+
+.codeGo:disabled {
+  opacity: 0.35;
+}
+
+.formError {
+  margin: 0;
+  color: #a44428;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.manualAreaPicker {
+  border-radius: 20px;
+  background: var(--v2-tint-honey, #f8eeda);
+  display: grid;
+  gap: 11px;
+  padding: 13px;
+}
+
+.manualAreaPicker > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.manualAreaPicker strong {
+  font-size: 13px;
+}
+
+.manualAreaPicker span {
+  color: #8a6a2f;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.areaChoiceGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.areaChoice {
+  min-height: 34px;
+  border: 1px solid rgba(138, 106, 47, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--v2-ink, #221b16);
+  padding: 0 5px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+@keyframes summonPulse {
+  0%,
+  100% {
+    transform: scale(0.94);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 380px) {
+  .summonScene {
+    grid-template-columns: 126px 1fr;
+  }
+
+  .miniTable {
+    transform: translate(-9px, -4px) scale(0.9);
+  }
+
+  .joinStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .joinControls,
+  .codeInput {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summonGlow {
+    animation: none;
+  }
+}
+
+.roomHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.roomHeader > div:first-child {
+  display: grid;
+  gap: 6px;
+}
+
+.shareCircle {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 50%;
+  background: white;
+  color: var(--v2-ink, #221b16);
+  display: grid;
+  place-items: center;
+}
+
+.roomTableScene {
+  --scene-size: min(92vw, 420px);
+  position: relative;
+  width: 100%;
+  height: min(80vw, 350px);
+  margin: 4px 0 16px;
+  overflow: hidden;
+  border: 1px solid rgba(205, 191, 174, 0.8);
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 52% 40%, rgba(255, 255, 255, 0.94) 0 8%, transparent 44%),
+    linear-gradient(145deg, #f4ecdf, #e9dfd0);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.8), var(--v2-shadow);
+  isolation: isolate;
+}
+
+.roomFloor {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: 18%;
+  bottom: -26%;
+  border: 1px solid rgba(181, 170, 158, 0.32);
+  border-radius: 48%;
+  background:
+    linear-gradient(30deg, transparent 49.5%, rgba(181, 170, 158, 0.14) 50%, transparent 50.5%) 0 0 / 36px 36px,
+    linear-gradient(150deg, transparent 49.5%, rgba(181, 170, 158, 0.14) 50%, transparent 50.5%) 0 0 / 36px 36px,
+    #f2eadf;
+  transform: rotateX(62deg) rotateZ(-1deg);
+  z-index: -1;
+}
+
+.roomTable {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 158px;
+  height: 124px;
+  transform: translate(-50%, -50%);
+}
+
+.roomTableSurface {
+  position: absolute;
+  inset: 2px 0 34px;
+  border: 1px solid #cdbfae;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #fff 10%, #f2e9dd 72%);
+  box-shadow: 0 16px 0 #d7c9b9, 0 29px 34px rgba(34, 27, 22, 0.15);
+  display: grid;
+  place-items: center;
+  transform: rotateX(58deg);
+}
+
+.roomTableSurface span {
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(240, 90, 40, 0.22);
+  border-radius: 50%;
+  background: #fff7f1;
+  color: var(--v2-accent, #f05a28);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 24px;
+  font-weight: 900;
+  transform: rotateX(-30deg);
+}
+
+.roomTableBase {
+  position: absolute;
+  left: 58px;
+  top: 74px;
+  width: 42px;
+  height: 40px;
+  border-radius: 0 0 16px 16px;
+  background: linear-gradient(90deg, #a9947f, #c0ad99);
+  z-index: -1;
+}
+
+.seatRing {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: 238px;
+  height: 190px;
+  transform: translate(-50%, -50%);
+}
+
+.seatAvatar {
+  --angle: calc(360deg / var(--seat-count) * var(--seat-index) - 90deg);
+  position: absolute;
+  left: calc(50% + cos(var(--angle)) * 108px);
+  top: calc(50% + sin(var(--angle)) * 80px);
+  width: 36px;
+  height: 50px;
+  transform: translate(-50%, -50%);
+  filter: saturate(0.5);
+  opacity: 0.33;
+  transition: opacity 240ms ease, filter 240ms ease, transform 240ms ease;
+}
+
+.seatAvatar:has(.avatarHead) {
+  opacity: 0.78;
+}
+
+.seatAvatarMe {
+  opacity: 1;
+  filter: none;
+  transform: translate(-50%, -54%) scale(1.12);
+}
+
+.seatAvatarReady {
+  opacity: 1;
+  filter: none;
+}
+
+.avatarHead {
+  position: absolute;
+  left: 9px;
+  top: 0;
+  width: 19px;
+  height: 19px;
+  border: 2px solid white;
+  border-radius: 50% 50% 45% 45%;
+  background: #765f50;
+  box-shadow: 0 3px 6px rgba(34, 27, 22, 0.18);
+}
+
+.avatarBody {
+  position: absolute;
+  left: 4px;
+  top: 17px;
+  width: 29px;
+  height: 30px;
+  border: 2px solid white;
+  border-radius: 14px 14px 10px 10px;
+  background: #d7c2a5;
+  box-shadow: 0 5px 8px rgba(34, 27, 22, 0.16);
+}
+
+.seatAvatar:nth-child(3n + 2) .avatarBody {
+  background: #bad0b1;
+}
+
+.seatAvatar:nth-child(3n + 3) .avatarBody {
+  background: #e6b8a6;
+}
+
+.seatAvatarMe .avatarBody {
+  background: var(--v2-accent, #f05a28);
+}
+
+.readySpark {
+  position: absolute;
+  right: -3px;
+  top: -4px;
+  width: 19px;
+  height: 19px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #58723f;
+  color: white;
+  display: grid;
+  place-items: center;
+  animation: readyPop 320ms ease-out both;
+}
+
+.tableSceneCaption {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.tableSceneCaption strong {
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 20px;
+}
+
+.tableSceneCaption span {
+  color: var(--v2-muted, #8a7d72);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.roundCountdown {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  border: 4px solid var(--v2-accent, #f05a28);
+  border-radius: 50%;
+  background: white;
+  color: var(--v2-ink, #221b16);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 20px;
+  font-weight: 900;
+  box-shadow: 0 6px 18px rgba(240, 90, 40, 0.14);
+}
+
+.roundCountdownUrgent {
+  animation: urgentPulse 800ms ease-in-out infinite;
+}
+
+.opinionSection {
+  display: grid;
+  gap: 10px;
+}
+
+.opinionSection > div:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.opinionSection small {
+  color: var(--v2-faint, #b5aa9e);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.opinionKicker {
+  color: var(--v2-accent, #f05a28);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.opinionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.opinionChip {
+  min-height: 52px;
+  border: 1px solid var(--v2-border, #eae0d3);
+  border-radius: 18px;
+  background: var(--v2-surface-soft, #fbf8f2);
+  color: var(--v2-ink, #221b16);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.opinionChip span {
+  font-size: 20px;
+}
+
+.opinionChip:disabled {
+  opacity: 0.3;
+}
+
+.opinionChipWish {
+  border-color: var(--v2-accent, #f05a28);
+  background: #fff0df;
+  box-shadow: inset 0 0 0 1px rgba(240, 90, 40, 0.25);
+}
+
+.opinionChipAvoid {
+  border-color: #b5aa9e;
+  background: #efe7db;
+  box-shadow: inset 0 0 0 1px rgba(34, 27, 22, 0.1);
+}
+
+.profileConditionNote {
+  margin: 0;
+  border-radius: 16px;
+  background: var(--v2-tint-sage, #e7efd9);
+  color: #4f6b35;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.progressTrack {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--v2-canvas-deep, #efe7db);
+  overflow: hidden;
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--v2-accent, #f05a28);
+  transition: width 360ms ease;
+}
+
+.waitingCount {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.waitingCount strong {
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 30px;
+}
+
+.waitingCount span {
+  color: var(--v2-muted, #8a7d72);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.floatingOpinions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+}
+
+.floatingOpinions span {
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.wishBubble {
+  background: #fff0df;
+  color: #a64220;
+}
+
+.avoidBubble {
+  background: #efe7db;
+  color: #6c5d51;
+}
+
+.qrInvite {
+  border-radius: 22px;
+  background: var(--v2-surface-soft, #fbf8f2);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 13px;
+}
+
+.qrInvite svg {
+  padding: 7px;
+  border-radius: 12px;
+  background: white;
+}
+
+.qrInvite > div {
+  display: grid;
+  justify-items: start;
+  gap: 3px;
+}
+
+.qrInvite span {
+  color: var(--v2-muted, #8a7d72);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.qrInvite strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 23px;
+  letter-spacing: 0.12em;
+}
+
+.qrInvite button {
+  margin-top: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--v2-accent, #f05a28);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.restaurantAnswer {
+  display: grid;
+  gap: 14px;
+}
+
+.answerPhoto,
+.answerPhotoFallback {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 22px;
+  object-fit: cover;
+  background: linear-gradient(145deg, #efe7db, #e3d9ce);
+}
+
+.answerPhotoFallback {
+  display: grid;
+  place-items: center;
+  font-size: 58px;
+}
+
+.answerMeta {
+  display: grid;
+  gap: 4px;
+}
+
+.answerMeta strong {
+  font-size: 20px;
+}
+
+.answerMeta span {
+  color: var(--v2-muted, #8a7d72);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.objectionWindow {
+  border-radius: 20px;
+  background: var(--v2-canvas-deep, #efe7db);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+}
+
+.objectionTimer {
+  width: 54px;
+  height: 54px;
+  border: 3px solid var(--v2-accent, #f05a28);
+  border-radius: 50%;
+  background: white;
+  display: grid;
+  grid-template-columns: auto auto;
+  place-content: center;
+  gap: 3px;
+}
+
+.objectionTimer strong {
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 19px;
+}
+
+.objectionWindow > div:last-child {
+  display: grid;
+  gap: 3px;
+}
+
+.objectionWindow p {
+  margin: 0;
+  color: var(--v2-muted, #8a7d72);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ticketStrikeScreen {
+  overflow: hidden;
+}
+
+.ticketStrike {
+  position: fixed;
+  left: 50%;
+  top: -44vh;
+  width: min(86vw, 390px);
+  height: 65vh;
+  border-radius: 24px;
+  background: linear-gradient(150deg, #fff, #f9f3e9);
+  box-shadow: 0 32px 80px rgba(34, 27, 22, 0.24);
+  transform: translateX(-50%) rotate(-5deg);
+  animation: ticketStrike 760ms cubic-bezier(0.18, 0.9, 0.25, 1) both;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.ticketStrike::before {
+  content: "MESHIMATCH";
+  position: absolute;
+  inset: auto 0 20px;
+  color: var(--v2-accent, #f05a28);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-align: center;
+}
+
+.ticketArrive {
+  animation: contentAfterStrike 720ms 380ms ease both;
+}
+
+.loadingOrb {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  border: 5px solid var(--v2-border, #eae0d3);
+  border-top-color: var(--v2-accent, #f05a28);
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes readyPop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes urgentPulse {
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 8px 24px rgba(240, 90, 40, 0.3);
+  }
+}
+
+@keyframes ticketStrike {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10vh) rotate(-8deg) scale(0.9);
+  }
+  58% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(75vh) rotate(2deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(140vh) rotate(5deg) scale(1);
+  }
+}
+
+@keyframes contentAfterStrike {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 360px) {
+  .roomTableScene {
+    height: 300px;
+  }
+
+  .seatRing {
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+
+  .qrInvite {
+    grid-template-columns: 94px 1fr;
+  }
+
+  .qrInvite svg {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .readySpark,
+  .roundCountdownUrgent,
+  .ticketStrike,
+  .ticketArrive,
+  .loadingOrb {
+    animation: none;
+  }
+
+  .ticketStrike {
+    display: none;
+  }
+}
+
+/* Shared-dining garden world: scoped to the start and synced-room routes. */
+.gardenScreen {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 12% 16%, rgba(255, 242, 175, 0.84) 0 2px, transparent 3px),
+    radial-gradient(circle at 84% 30%, rgba(255, 255, 255, 0.74) 0 2px, transparent 3px),
+    radial-gradient(circle at 28% 72%, rgba(255, 210, 220, 0.66) 0 2px, transparent 3px),
+    linear-gradient(138deg, #a9d879 0%, #8cca69 48%, #73b85e 100%);
+  background-size: 86px 86px, 118px 118px, 132px 132px, auto;
+}
+
+.gardenScreen::before,
+.gardenScreen::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.gardenScreen::before {
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% -8%, rgba(255, 255, 225, 0.6), transparent 46%),
+    linear-gradient(90deg, rgba(45, 111, 55, 0.08), transparent 18% 82%, rgba(45, 111, 55, 0.08));
+}
+
+.gardenScreen::after {
+  left: -12vw;
+  right: -12vw;
+  bottom: -70px;
+  height: 150px;
+  border-radius: 50% 50% 0 0;
+  background: #68aa56;
+  box-shadow: 0 -10px 28px rgba(54, 108, 48, 0.16);
+}
+
+.gardenBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gardenFence,
+.sceneFence,
+.summonFence {
+  background:
+    linear-gradient(90deg, transparent 0 12px, rgba(108, 69, 38, 0.2) 12px 15px, transparent 15px 48px),
+    repeating-linear-gradient(90deg, #d6a163 0 22px, #bd824b 22px 26px, #e2b171 26px 48px);
+  border: 2px solid rgba(116, 75, 39, 0.35);
+  box-shadow:
+    inset 0 3px rgba(255, 240, 194, 0.45),
+    0 8px 0 rgba(91, 104, 42, 0.14),
+    0 12px 18px rgba(54, 80, 40, 0.12);
+}
+
+.gardenFence {
+  position: absolute;
+  left: -28px;
+  right: -28px;
+  top: 66px;
+  height: 38px;
+  transform: rotate(-1.5deg);
+}
+
+.gardenBush {
+  position: absolute;
+  right: -46px;
+  top: 96px;
+  width: 168px;
+  height: 74px;
+  border-radius: 70% 45% 60% 40%;
+  background:
+    radial-gradient(circle at 25% 64%, #5ca953 0 24px, transparent 25px),
+    radial-gradient(circle at 54% 36%, #76bf62 0 34px, transparent 35px),
+    radial-gradient(circle at 82% 65%, #4f9c4c 0 29px, transparent 30px);
+  filter: drop-shadow(0 10px 8px rgba(51, 99, 42, 0.18));
+}
+
+.gardenFlowers {
+  position: absolute;
+  left: 5vw;
+  top: 120px;
+  width: 72px;
+  height: 34px;
+  background:
+    radial-gradient(circle, #ffe082 0 3px, #fff 4px 8px, transparent 9px) 0 8px / 28px 28px,
+    radial-gradient(circle, #f4aa98 0 3px, #fff3ed 4px 8px, transparent 9px) 28px 0 / 30px 30px;
+  filter: drop-shadow(0 4px 2px rgba(54, 94, 43, 0.14));
+}
+
+.gardenShell {
+  position: relative;
+  z-index: 1;
+}
+
+.gardenHeader {
+  position: relative;
+  border-radius: 26px;
+  background: rgba(255, 251, 230, 0.86);
+  box-shadow:
+    inset 0 2px rgba(255, 255, 255, 0.78),
+    0 11px 0 rgba(66, 115, 53, 0.12),
+    0 18px 28px rgba(47, 91, 42, 0.13);
+  padding: 18px 20px;
+  backdrop-filter: blur(9px);
+}
+
+.gardenHeader .eyebrow {
+  width: fit-content;
+  border-radius: 999px;
+  background: #d98b52;
+  color: #fffbea;
+  box-shadow: inset 0 -3px rgba(113, 64, 31, 0.18), 0 4px 8px rgba(76, 78, 34, 0.12);
+  padding: 5px 11px;
+  letter-spacing: 0.04em;
+}
+
+.gardenHeader .desc {
+  color: #675d4a;
+}
+
+.gardenPanel {
+  border: 2px solid rgba(132, 103, 68, 0.2);
+  background:
+    radial-gradient(circle at 18px 15px, rgba(255, 255, 255, 0.82), transparent 42px),
+    linear-gradient(145deg, #fffdf0, #f7ebcf);
+  box-shadow:
+    inset 0 3px rgba(255, 255, 255, 0.8),
+    inset 0 -4px rgba(184, 147, 94, 0.1),
+    0 9px 0 rgba(72, 108, 48, 0.16),
+    0 18px 28px rgba(47, 91, 42, 0.14);
+}
+
+.gardenPanel .input,
+.gardenPanel .codeInput,
+.gardenPanel .count {
+  border: 2px solid rgba(151, 114, 72, 0.2);
+  background: #fffaf0;
+  box-shadow: inset 0 3px 8px rgba(128, 94, 52, 0.08), 0 3px rgba(255, 255, 255, 0.7);
+}
+
+.gardenPanel .iconButton,
+.gardenPanel .codeGo,
+.shareCircle,
+.anchorPill {
+  border: 2px solid rgba(126, 87, 53, 0.2);
+  box-shadow: inset 0 2px rgba(255, 255, 255, 0.6), 0 5px 0 rgba(96, 103, 51, 0.17);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.gardenPanel .iconButton:active,
+.gardenPanel .codeGo:active,
+.shareCircle:active,
+.anchorPill:active,
+.opinionChip:active {
+  transform: translateY(3px);
+  box-shadow: inset 0 2px rgba(255, 255, 255, 0.5), 0 2px 0 rgba(96, 103, 51, 0.17);
+}
+
+.startGardenScreen {
+  padding-top: 34px;
+}
+
+.setupPanel {
+  position: relative;
+}
+
+.setupPanel::before {
+  content: "";
+  position: absolute;
+  right: 22px;
+  top: -9px;
+  width: 54px;
+  height: 18px;
+  border-radius: 4px;
+  background: rgba(224, 150, 115, 0.46);
+  transform: rotate(3deg);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.summonScene.gardenPanel {
+  min-height: 212px;
+  border-color: rgba(78, 122, 48, 0.3);
+  background:
+    radial-gradient(circle at 25% 38%, rgba(255, 247, 176, 0.62), transparent 21%),
+    linear-gradient(154deg, #b9df81, #74ba5f);
+}
+
+.summonScene::after {
+  inset: auto -55px -78px 20px;
+  background: #65a955;
+  box-shadow: inset 0 8px rgba(255, 255, 255, 0.08);
+}
+
+.summonFence {
+  position: absolute;
+  left: -15px;
+  right: -15px;
+  top: 18px;
+  height: 28px;
+  z-index: -1;
+  transform: rotate(1deg);
+}
+
+.summonFlowers {
+  position: absolute;
+  left: 18px;
+  bottom: 17px;
+  color: #fff5c4;
+  font-size: 23px;
+  letter-spacing: 7px;
+  text-shadow: 0 2px #e79c79, 0 5px 7px rgba(54, 94, 43, 0.2);
+}
+
+.picnicBlanket,
+.scenePicnicRug {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.32) 50%, transparent 50%) 0 0 / 18px 18px,
+    linear-gradient(rgba(255, 255, 255, 0.32) 50%, transparent 50%) 0 0 / 18px 18px,
+    #df8f8b;
+  border: 3px solid rgba(255, 248, 225, 0.76);
+  box-shadow: 0 10px 14px rgba(58, 92, 41, 0.2);
+}
+
+.picnicBlanket {
+  position: absolute;
+  left: 23px;
+  top: 75px;
+  width: 130px;
+  height: 91px;
+  border-radius: 16px;
+  transform: rotate(-7deg) skewX(-5deg);
+}
+
+.summonGlow {
+  left: 31px;
+  top: 52px;
+  background: radial-gradient(circle, rgba(255, 249, 171, 0.78), transparent 68%);
+}
+
+.miniTable {
+  z-index: 2;
+}
+
+.miniTableTop,
+.roomTableSurface {
+  border-color: #96623e;
+  background:
+    repeating-linear-gradient(90deg, rgba(101, 57, 29, 0.09) 0 2px, transparent 2px 18px),
+    linear-gradient(145deg, #e1a763, #b97542);
+  box-shadow:
+    inset 0 4px rgba(255, 230, 176, 0.45),
+    0 13px 0 #925a38,
+    0 23px 26px rgba(45, 72, 34, 0.24);
+  color: #fff9dc;
+  text-shadow: 0 2px rgba(93, 47, 24, 0.26);
+}
+
+.miniTableFoot,
+.roomTableBase {
+  background: linear-gradient(90deg, #815033, #b87645 50%, #75482f);
+  box-shadow: inset 4px 0 rgba(255, 222, 169, 0.13);
+}
+
+.miniChairLeft,
+.miniChairRight {
+  position: absolute;
+  top: 54px;
+  width: 31px;
+  height: 42px;
+  border: 2px solid #8c593b;
+  border-radius: 13px 13px 9px 9px;
+  background: linear-gradient(145deg, #dca061, #a9673e);
+  box-shadow: inset 0 3px rgba(255, 230, 183, 0.38), 0 8px 10px rgba(54, 78, 36, 0.22);
+  z-index: -1;
+}
+
+.miniChairLeft {
+  left: -7px;
+  transform: rotate(-10deg);
+}
+
+.miniChairRight {
+  right: -10px;
+  transform: rotate(11deg);
+}
+
+.summonCopy {
+  position: relative;
+  z-index: 2;
+  border-radius: 20px;
+  background: rgba(255, 252, 230, 0.85);
+  box-shadow: inset 0 2px white, 0 8px 16px rgba(52, 91, 42, 0.14);
+  padding: 13px;
+  backdrop-filter: blur(5px);
+}
+
+.summonCopy > span:last-child {
+  color: #625b45;
+}
+
+.joinGardenPanel {
+  background:
+    radial-gradient(circle at 90% 16%, rgba(255, 255, 255, 0.68), transparent 32%),
+    linear-gradient(145deg, #fff7db, #f2d79f);
+}
+
+.roomGardenScreen {
+  padding-top: 24px;
+  background:
+    radial-gradient(circle at 11% 22%, #fff7c7 0 2px, transparent 3px),
+    radial-gradient(circle at 87% 64%, #f6bbb0 0 2px, transparent 3px),
+    linear-gradient(140deg, #aedb7c, #75bd60 60%, #64aa56);
+  background-size: 94px 94px, 126px 126px, auto;
+}
+
+.roomTableScene {
+  height: min(82vw, 364px);
+  border: 3px solid rgba(74, 128, 57, 0.42);
+  background:
+    radial-gradient(circle at 14% 77%, #fff5ca 0 3px, #fff 4px 7px, transparent 8px),
+    radial-gradient(circle at 84% 20%, #ffd4ce 0 3px, #fff8e1 4px 7px, transparent 8px),
+    linear-gradient(145deg, #b8df80, #75bc5e);
+  box-shadow:
+    inset 0 3px rgba(255, 255, 255, 0.42),
+    inset 0 -8px rgba(57, 117, 51, 0.12),
+    0 10px 0 rgba(62, 108, 48, 0.2),
+    0 18px 28px rgba(45, 86, 40, 0.18);
+}
+
+.roomFloor {
+  left: -18%;
+  right: -18%;
+  top: 17%;
+  bottom: -33%;
+  border-color: rgba(71, 126, 56, 0.18);
+  background:
+    radial-gradient(circle, rgba(255, 247, 199, 0.54) 0 2px, transparent 3px) 0 0 / 44px 44px,
+    linear-gradient(35deg, rgba(255, 255, 255, 0.05) 25%, transparent 25% 75%, rgba(255, 255, 255, 0.05) 75%) 0 0 / 32px 32px,
+    #83c766;
+}
+
+.sceneFence {
+  position: absolute;
+  left: -12px;
+  right: -12px;
+  top: 17px;
+  height: 31px;
+  z-index: 1;
+  transform: rotate(-1deg);
+}
+
+.sceneBunting {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  top: 44px;
+  z-index: 2;
+  height: 15px;
+  border-top: 2px solid rgba(99, 72, 42, 0.55);
+  background:
+    conic-gradient(from 45deg at 50% 0, #f4b7a6 90deg, transparent 0) 0 0 / 34px 14px repeat-x;
+  transform: rotate(1deg);
+}
+
+.sceneFlowerPatch {
+  position: absolute;
+  right: 23px;
+  bottom: 25px;
+  z-index: 2;
+  color: #fff7c7;
+  font-size: 27px;
+  text-shadow: -15px 3px #f4a39c, 15px -4px #f5d36d, 0 4px 5px rgba(52, 89, 40, 0.2);
+}
+
+.scenePicnicRug {
+  position: absolute;
+  left: 50%;
+  top: 51%;
+  width: 235px;
+  height: 170px;
+  border-radius: 26px;
+  transform: translate(-50%, -50%) rotate(-4deg);
+  opacity: 0.78;
+}
+
+.roomTable {
+  top: 47%;
+  width: 166px;
+  height: 130px;
+  z-index: 2;
+}
+
+.roomTableSurface span {
+  border: 2px solid rgba(112, 58, 30, 0.24);
+  background: #fff4c9;
+  color: #b45338;
+  box-shadow: inset 0 2px white, 0 4px 0 rgba(104, 59, 31, 0.13);
+  text-shadow: none;
+}
+
+.seatRing {
+  z-index: 3;
+}
+
+.seatAvatar {
+  width: 42px;
+  height: 57px;
+  filter: saturate(0.64);
+}
+
+.avatarShadow {
+  position: absolute;
+  left: 4px;
+  bottom: 0;
+  width: 35px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(50, 88, 38, 0.22);
+  filter: blur(2px);
+  transform: translateY(5px);
+  z-index: -1;
+}
+
+.avatarHead {
+  left: 8px;
+  width: 27px;
+  height: 25px;
+  border: 3px solid #fff6dc;
+  border-radius: 48% 48% 44% 44%;
+  background: linear-gradient(145deg, #8e694f, #644737);
+  box-shadow: inset 3px 3px rgba(255, 255, 255, 0.12), 0 4px 6px rgba(51, 75, 37, 0.2);
+  z-index: 2;
+}
+
+.avatarHead::after {
+  content: "••";
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  color: #2f251f;
+  font-size: 8px;
+  letter-spacing: 3px;
+}
+
+.avatarBody {
+  left: 3px;
+  top: 20px;
+  width: 37px;
+  height: 35px;
+  border: 3px solid #fff6dc;
+  border-radius: 18px 18px 12px 12px;
+  background: linear-gradient(145deg, #ebca8e, #cfa76e);
+  box-shadow: inset 4px 3px rgba(255, 255, 255, 0.28), 0 6px 8px rgba(50, 78, 38, 0.2);
+}
+
+.seatAvatar:nth-child(3n + 2) .avatarBody {
+  background: linear-gradient(145deg, #bfe0ae, #8fbd83);
+}
+
+.seatAvatar:nth-child(3n + 3) .avatarBody {
+  background: linear-gradient(145deg, #f3b9ad, #d88d82);
+}
+
+.seatAvatarMe .avatarBody {
+  background: linear-gradient(145deg, #ff9d71, #e46d46);
+}
+
+.seatAvatarReady {
+  animation: avatarBob 2.2s ease-in-out infinite;
+}
+
+.readySpark {
+  right: -1px;
+  background: #5d9a4c;
+  box-shadow: 0 3px 0 rgba(64, 105, 48, 0.24);
+}
+
+.tableSceneCaption {
+  z-index: 4;
+  border-radius: 999px;
+  background: rgba(255, 250, 223, 0.88);
+  box-shadow: inset 0 2px white, 0 4px 8px rgba(50, 89, 38, 0.14);
+  padding: 7px 12px;
+}
+
+.tableSceneCaption span {
+  color: #726349;
+}
+
+.roundCountdown {
+  position: relative;
+  border: 3px solid #9a653e;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #e3aa69, #bd7c49);
+  color: #fff9db;
+  box-shadow: inset 0 3px rgba(255, 229, 178, 0.4), 0 7px 0 #805033, 0 11px 15px rgba(48, 78, 37, 0.2);
+  text-shadow: 0 2px rgba(89, 47, 25, 0.3);
+}
+
+.opinionGardenPanel {
+  position: relative;
+  background:
+    linear-gradient(90deg, rgba(238, 172, 166, 0.09) 50%, transparent 50%) 0 0 / 24px 24px,
+    linear-gradient(rgba(238, 172, 166, 0.09) 50%, transparent 50%) 0 0 / 24px 24px,
+    linear-gradient(145deg, #fffdf1, #faeccd);
+}
+
+.opinionSection {
+  border-radius: 22px;
+  background: rgba(255, 250, 230, 0.72);
+  padding: 12px;
+  box-shadow: inset 0 2px rgba(255, 255, 255, 0.7);
+}
+
+.opinionKicker {
+  border-radius: 999px;
+  background: #dc875e;
+  color: #fff8e9;
+  padding: 4px 8px;
+}
+
+.opinionSection + .opinionSection .opinionKicker {
+  background: #77856e;
+}
+
+.opinionChip {
+  min-height: 58px;
+  border: 2px solid rgba(142, 105, 67, 0.17);
+  background: linear-gradient(145deg, #fffdf5, #f3e6ca);
+  box-shadow: inset 0 2px white, 0 5px 0 rgba(114, 102, 58, 0.17);
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.opinionChip:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.opinionChipWish {
+  border-color: #d8785e;
+  background: linear-gradient(145deg, #fff3dc, #f6b99b);
+  box-shadow: inset 0 2px rgba(255, 255, 255, 0.72), 0 6px 0 #c9795f, 0 9px 14px rgba(130, 78, 55, 0.16);
+  transform: translateY(-2px) rotate(-1deg);
+}
+
+.opinionChipAvoid {
+  border-color: #80907a;
+  background: linear-gradient(145deg, #edf2e6, #c7d0bd);
+  box-shadow: inset 0 2px rgba(255, 255, 255, 0.7), 0 5px 0 #8d9c84;
+  transform: translateY(-1px) rotate(1deg);
+}
+
+.profileConditionNote {
+  border: 1px solid rgba(82, 129, 64, 0.2);
+  background: #e6f1d5;
+  box-shadow: inset 0 2px rgba(255, 255, 255, 0.65);
+}
+
+.progressTrack {
+  height: 12px;
+  border: 2px solid rgba(85, 122, 60, 0.2);
+  background: #dce8bf;
+  box-shadow: inset 0 2px 4px rgba(63, 101, 51, 0.15);
+}
+
+.progressTrack span {
+  background: linear-gradient(90deg, #78b95b, #e8b65c 62%, #ed9276);
+  box-shadow: inset 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.wishBubble,
+.avoidBubble {
+  border: 1px solid rgba(129, 93, 57, 0.14);
+  box-shadow: 0 3px 0 rgba(91, 104, 50, 0.13);
+}
+
+.qrInvite {
+  border: 2px solid rgba(131, 91, 53, 0.18);
+  background:
+    linear-gradient(90deg, rgba(223, 143, 139, 0.18) 50%, transparent 50%) 0 0 / 18px 18px,
+    linear-gradient(rgba(223, 143, 139, 0.18) 50%, transparent 50%) 0 0 / 18px 18px,
+    #fff6df;
+  box-shadow: inset 0 2px white, 0 5px 0 rgba(103, 101, 50, 0.15);
+}
+
+.qrInvite svg {
+  border: 2px solid rgba(123, 84, 49, 0.16);
+  box-shadow: 0 4px 8px rgba(75, 85, 40, 0.12);
+}
+
+.proposalGardenPanel {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(255, 235, 168, 0.7), transparent 24%),
+    linear-gradient(145deg, #fffdf0, #f3e3be);
+}
+
+.answerPhoto,
+.answerPhotoFallback {
+  border: 3px solid #fff5d5;
+  box-shadow: 0 7px 0 rgba(125, 82, 49, 0.18), 0 12px 18px rgba(63, 91, 42, 0.13);
+}
+
+.objectionWindow {
+  border: 2px solid rgba(137, 91, 53, 0.18);
+  background: linear-gradient(145deg, #f6dba9, #e8bd7e);
+  box-shadow: inset 0 2px rgba(255, 255, 255, 0.45), 0 5px 0 rgba(111, 83, 46, 0.16);
+}
+
+.objectionTimer {
+  border-color: #d66f50;
+  background: #fff8dc;
+  box-shadow: inset 0 2px white, 0 4px 0 rgba(118, 72, 40, 0.17);
+}
+
+.ticketStrike {
+  height: 57vh;
+  border: 4px solid #b87b4a;
+  border-radius: 30px 30px 22px 22px;
+  background:
+    radial-gradient(circle at 0 50%, transparent 0 12px, #fff2c8 13px),
+    linear-gradient(145deg, #fff8dc, #eed4a0);
+  box-shadow:
+    inset 0 4px rgba(255, 255, 255, 0.76),
+    inset 0 -7px rgba(155, 101, 60, 0.1),
+    0 18px 0 #865432,
+    0 38px 70px rgba(36, 69, 31, 0.3);
+}
+
+.ticketStrike::after {
+  content: "✿   TABLE TICKET   ✿";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 42%;
+  border-top: 2px dashed rgba(132, 81, 46, 0.35);
+  border-bottom: 2px dashed rgba(132, 81, 46, 0.35);
+  color: #b95e47;
+  padding: 16px 0;
+  font-family: var(--font-play, "Zen Maru Gothic");
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.ticketLandingGarden {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 0;
+  height: 190px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ticketLandingPost {
+  position: absolute;
+  right: max(5vw, calc(50% - 260px));
+  bottom: -57px;
+  width: 118px;
+  height: 184px;
+  border: 4px solid #9a613b;
+  border-radius: 18px 18px 10px 10px;
+  background:
+    linear-gradient(90deg, transparent 0 48%, rgba(164, 102, 56, 0.16) 48% 52%, transparent 52%),
+    linear-gradient(145deg, #fff3c8, #e7c58b);
+  box-shadow: inset 0 3px white, 0 12px 0 #724a31, 0 18px 28px rgba(42, 76, 35, 0.22);
+  transform: rotate(8deg);
+}
+
+.ticketLandingPost::before {
+  content: "TABLE\A TICKET";
+  white-space: pre;
+  position: absolute;
+  inset: 28px 8px auto;
+  color: #b85d48;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.ticketLandingFlowers {
+  position: absolute;
+  right: max(8px, calc(50% - 286px));
+  bottom: 15px;
+  color: #fff7c8;
+  font-size: 28px;
+  letter-spacing: 33px;
+  text-shadow: 0 3px #ef9a84, 0 6px 8px rgba(46, 82, 37, 0.2);
+}
+
+.gardenScreen :is(button, input, a):focus-visible {
+  outline: 4px solid rgba(255, 246, 177, 0.92);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7px rgba(77, 126, 57, 0.42);
+}
+
+@keyframes avatarBob {
+  0%,
+  100% {
+    margin-top: 0;
+  }
+  50% {
+    margin-top: -4px;
+  }
+}
+
+@media (max-width: 380px) {
+  .gardenHeader {
+    padding: 16px;
+  }
+
+  .summonScene.gardenPanel {
+    min-height: 205px;
+  }
+
+  .scenePicnicRug {
+    width: 215px;
+    height: 155px;
+  }
+
+  .opinionChip {
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seatAvatarReady {
+    animation: none;
+  }
+
+  .gardenPanel .iconButton,
+  .gardenPanel .codeGo,
+  .shareCircle,
+  .anchorPill,
+  .opinionChip {
+    transition: none;
+  }
 }

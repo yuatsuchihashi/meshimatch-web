@@ -6,7 +6,15 @@ import { isLocalMode, LOCAL_AUTH_COOKIE } from "@/lib/local-mode";
 // /api はクライアント fetch の宛先なので HTML リダイレクトさせない
 // /groups はゲスト (招待リンク参加者) が投票・待機室にアクセスするため公開
 // (グループIDは推測不能な UUID で、招待リンクと同等の扱い)
-const PUBLIC_PATHS = ["/login", "/signup", "/callback", "/invite", "/api", "/groups"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/signup",
+  "/callback",
+  "/invite",
+  "/api",
+  "/groups",
+  "/instant",
+];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

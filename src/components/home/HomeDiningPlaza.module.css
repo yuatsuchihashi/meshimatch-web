@@ -1,0 +1,1040 @@
+.plaza {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: calc(100dvh - 60px);
+  margin: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(114, 197, 57, 0.04), rgba(55, 147, 42, 0.1)),
+    url("/img/dining-plaza-meadow-v1.webp") center / cover no-repeat,
+    #70c942;
+  box-shadow:
+    inset 0 18px 36px rgba(31, 107, 37, 0.16),
+    inset 0 -24px 38px rgba(32, 98, 27, 0.18);
+}
+
+.plaza::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255, 255, 209, 0.23), transparent 46%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 23%, rgba(255, 255, 255, 0.09) 51%, transparent 76%);
+  mix-blend-mode: screen;
+}
+
+.plaza::after {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 124px;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(transparent, rgba(39, 116, 34, 0.16));
+}
+
+.gardenDecor {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fence {
+  position: absolute;
+  top: 17px;
+  left: -18px;
+  width: 176px;
+  height: 58px;
+  border-top: 9px solid #f1e2b7;
+  border-bottom: 9px solid #e9d39c;
+  filter: drop-shadow(0 6px 4px rgba(47, 104, 35, 0.18));
+  opacity: 0.94;
+  transform: rotate(-8deg);
+}
+
+.fence i {
+  position: absolute;
+  top: -23px;
+  width: 15px;
+  height: 77px;
+  border-radius: 8px 8px 3px 3px;
+  background: linear-gradient(90deg, #e5cb8d, #fff0c5 45%, #dcc081);
+}
+
+.fence i:nth-child(1) {
+  left: 12px;
+}
+
+.fence i:nth-child(2) {
+  left: 58px;
+}
+
+.fence i:nth-child(3) {
+  left: 105px;
+}
+
+.fence i:nth-child(4) {
+  left: 151px;
+}
+
+.bush {
+  position: absolute;
+  width: 150px;
+  height: 95px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 22% 41%, #83c958 0 20px, transparent 21px),
+    radial-gradient(circle at 47% 29%, #70bd49 0 30px, transparent 31px),
+    radial-gradient(circle at 70% 45%, #4e9e3b 0 31px, transparent 32px),
+    radial-gradient(circle at 52% 68%, #3d9135 0 38px, transparent 39px);
+  filter: drop-shadow(0 9px 8px rgba(32, 88, 27, 0.2));
+}
+
+.bush::before,
+.bush::after {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50% 0 50% 0;
+  background: #aadd70;
+  content: "";
+  box-shadow:
+    20px 9px #94d562,
+    40px -2px #b0e27d,
+    62px 14px #88c95a,
+    89px -6px #9edc6e,
+    112px 10px #77be4e;
+  transform: rotate(38deg);
+}
+
+.bush::before {
+  top: 24px;
+  left: 18px;
+}
+
+.bush::after {
+  top: 56px;
+  left: 8px;
+}
+
+.bushLeft {
+  top: -32px;
+  left: -48px;
+}
+
+.bushRight {
+  top: -28px;
+  right: -40px;
+  transform: scaleX(-1);
+}
+
+.flowerPatch {
+  position: absolute;
+  z-index: 2;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffef8b;
+  box-shadow:
+    -7px 0 #fff,
+    7px 0 #fff,
+    0 -7px #fff,
+    0 7px #fff,
+    31px 16px 0 -1px #ffcb67,
+    25px 16px #fff,
+    37px 16px #fff,
+    31px 10px #fff,
+    31px 22px #fff,
+    -23px 30px 0 -1px #f7aaac,
+    -29px 30px #ffd9df,
+    -17px 30px #ffd9df,
+    -23px 24px #ffd9df,
+    -23px 36px #ffd9df;
+  filter: drop-shadow(0 3px 2px rgba(40, 111, 32, 0.16));
+}
+
+.flowersOne {
+  top: 100px;
+  left: 12%;
+}
+
+.flowersTwo {
+  top: 244px;
+  right: 10%;
+  transform: rotate(22deg) scale(0.75);
+}
+
+.flowersThree {
+  top: 421px;
+  left: 8%;
+  transform: rotate(-17deg) scale(0.85);
+}
+
+.flowersFour {
+  right: 14%;
+  bottom: 110px;
+  transform: rotate(14deg) scale(1.1);
+}
+
+.scene {
+  position: relative;
+  z-index: 3;
+  width: min(100%, 540px);
+  height: 535px;
+  margin: 0 auto;
+  perspective: 900px;
+  perspective-origin: 50% 28%;
+  transform-style: preserve-3d;
+}
+
+.picnicLink {
+  position: absolute;
+  z-index: 4;
+  width: 156px;
+  min-height: 158px;
+  color: inherit;
+  text-decoration: none;
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 220ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.picnicLink:hover {
+  z-index: 10;
+  filter: drop-shadow(0 14px 8px rgba(37, 95, 28, 0.2));
+  transform: translate(-50%, -55%) scale(1.035);
+}
+
+.picnicLink:active {
+  transform: translate(-50%, -50%) scale(0.97);
+}
+
+.picnicLink:focus-visible {
+  z-index: 11;
+  border-radius: 26px;
+  outline: 4px solid #fff8df;
+  outline-offset: 4px;
+  box-shadow: 0 0 0 7px #f27691;
+}
+
+.groupLeft {
+  top: 142px;
+  left: 27%;
+}
+
+.groupRight {
+  top: 143px;
+  left: 73%;
+}
+
+.groupBottom {
+  top: 348px;
+  left: 28%;
+}
+
+.createSpot {
+  top: 348px;
+  left: 72%;
+}
+
+.picnicObject {
+  position: relative;
+  display: block;
+  width: 142px;
+  height: 102px;
+  margin: 0 auto;
+  transform-style: preserve-3d;
+  animation: objectFloat 4.4s ease-in-out infinite;
+}
+
+.groupRight .picnicObject {
+  animation-delay: -1.2s;
+}
+
+.groupBottom .picnicObject {
+  animation-delay: -2.4s;
+}
+
+.objectShadow {
+  position: absolute;
+  z-index: 0;
+  right: 13px;
+  bottom: 3px;
+  left: 13px;
+  height: 31px;
+  border-radius: 50%;
+  background: rgba(32, 87, 27, 0.25);
+  filter: blur(6px);
+  transform: rotateX(64deg) translateZ(-10px);
+}
+
+.roundTableLeg {
+  position: absolute;
+  z-index: 1;
+  top: 51px;
+  left: 58px;
+  width: 27px;
+  height: 38px;
+  border-radius: 4px 4px 12px 12px;
+  background: linear-gradient(90deg, #a7652b, #db9850 48%, #945423);
+  box-shadow: 18px 12px 0 -7px #8d4f24;
+}
+
+.roundTableTop {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  left: 15px;
+  width: 112px;
+  height: 70px;
+  border: 3px solid #ae692d;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(ellipse, transparent 0 12px, rgba(126, 68, 24, 0.17) 13px 14px),
+    linear-gradient(150deg, #e8ae69, #c98036 72%);
+  box-shadow:
+    inset 0 -10px 0 rgba(133, 74, 29, 0.24),
+    0 11px 0 #975725,
+    0 18px 14px rgba(43, 93, 29, 0.23);
+  transform: rotateX(56deg) translateZ(18px);
+  transform-style: preserve-3d;
+}
+
+.teaPot {
+  position: absolute;
+  top: 19px;
+  left: 39px;
+  width: 26px;
+  height: 27px;
+  border: 2px solid #dcbd4d;
+  border-radius: 48% 48% 43% 43%;
+  background: linear-gradient(135deg, #fff19b, #e7c84d);
+  box-shadow: inset -5px -4px 0 rgba(166, 130, 30, 0.14);
+}
+
+.teaPot::before {
+  position: absolute;
+  top: 5px;
+  left: -12px;
+  width: 14px;
+  height: 9px;
+  border-bottom: 5px solid #e7c84d;
+  border-radius: 50%;
+  content: "";
+  transform: rotate(16deg);
+}
+
+.teaPot::after {
+  position: absolute;
+  top: 5px;
+  right: -11px;
+  width: 11px;
+  height: 13px;
+  border: 4px solid #d2ad38;
+  border-left: 0;
+  border-radius: 0 50% 50% 0;
+  content: "";
+}
+
+.teaCup {
+  position: absolute;
+  top: 27px;
+  right: 13px;
+  width: 21px;
+  height: 16px;
+  border: 2px solid #fff1c9;
+  border-radius: 4px 4px 8px 8px;
+  background: #f7d778;
+  box-shadow: 8px 1px 0 -5px #fff1c9;
+}
+
+.vase {
+  position: absolute;
+  top: 25px;
+  left: 13px;
+  width: 17px;
+  height: 21px;
+  border-radius: 45% 45% 38% 38%;
+  background: linear-gradient(100deg, #e8f2dc, #fff 52%, #c6ddb7);
+}
+
+.vaseFlowerOne,
+.vaseFlowerTwo,
+.vaseFlowerThree {
+  position: absolute;
+  top: -13px;
+  left: 3px;
+  width: 9px;
+  height: 9px;
+  border: 3px dotted #fff;
+  border-radius: 50%;
+  background: #ffd15a;
+}
+
+.vaseFlowerTwo {
+  top: -9px;
+  left: -4px;
+  transform: scale(0.8);
+}
+
+.vaseFlowerThree {
+  top: -10px;
+  left: 10px;
+  transform: scale(0.72);
+}
+
+.blanket {
+  position: absolute;
+  z-index: 1;
+  top: 26px;
+  left: 5px;
+  width: 131px;
+  height: 74px;
+  border: 3px solid #fff5d8;
+  border-radius: 9px 12px 8px 12px;
+  background:
+    linear-gradient(90deg, transparent 48%, rgba(255, 255, 255, 0.72) 48% 54%, transparent 54%),
+    linear-gradient(0deg, transparent 45%, rgba(255, 255, 255, 0.72) 45% 53%, transparent 53%),
+    #f5d77e;
+  box-shadow: 0 13px 13px rgba(38, 93, 29, 0.2);
+  transform: rotateX(54deg) rotateZ(-3deg);
+}
+
+.blanket::after {
+  position: absolute;
+  right: -4px;
+  bottom: -5px;
+  left: 6px;
+  height: 6px;
+  border-radius: 0 0 6px 6px;
+  background: repeating-linear-gradient(90deg, #fff4ca 0 4px, #dfb953 4px 8px);
+  content: "";
+}
+
+.basket {
+  position: absolute;
+  z-index: 4;
+  top: 14px;
+  left: 40px;
+  width: 58px;
+  height: 52px;
+  border: 3px solid #966026;
+  border-radius: 12px 12px 16px 16px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 8px, rgba(103, 56, 20, 0.2) 8px 11px),
+    repeating-linear-gradient(90deg, #d59a50 0 7px, #e9b96e 7px 13px);
+  box-shadow:
+    inset 0 7px 0 rgba(255, 236, 183, 0.45),
+    0 8px 8px rgba(48, 87, 27, 0.2);
+}
+
+.basketHandle {
+  position: absolute;
+  top: -25px;
+  left: 10px;
+  width: 34px;
+  height: 31px;
+  border: 6px solid #ad7333;
+  border-bottom: 0;
+  border-radius: 50% 50% 0 0;
+}
+
+.basketRibbon {
+  position: absolute;
+  right: -7px;
+  bottom: 10px;
+  width: 17px;
+  height: 24px;
+  border-radius: 50% 50% 40% 40%;
+  background: #f6cf4f;
+  transform: rotate(-12deg);
+}
+
+.picnicBook {
+  position: absolute;
+  z-index: 3;
+  right: 11px;
+  bottom: 13px;
+  width: 34px;
+  height: 27px;
+  border: 2px solid #7294aa;
+  border-radius: 4px;
+  background: #a9c9d7;
+  box-shadow: inset 0 -5px 0 rgba(56, 101, 123, 0.14);
+  transform: rotate(8deg);
+}
+
+.picnicDrink {
+  position: absolute;
+  z-index: 3;
+  bottom: 10px;
+  left: 13px;
+  width: 18px;
+  height: 35px;
+  border: 3px solid #ffd8c7;
+  border-radius: 5px 5px 9px 9px;
+  background: linear-gradient(#fff5ec 0 24%, #ed9d82 25%);
+  transform: rotate(-5deg);
+}
+
+.benchBack {
+  position: absolute;
+  z-index: 3;
+  top: 10px;
+  left: 14px;
+  width: 113px;
+  height: 49px;
+  transform: skewY(-3deg);
+}
+
+.benchBack span {
+  display: block;
+  height: 11px;
+  margin-bottom: 5px;
+  border: 2px solid #9c5f29;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #e1a65e, #be7936);
+  box-shadow: 0 3px 0 rgba(108, 58, 22, 0.22);
+}
+
+.benchSeat {
+  position: absolute;
+  z-index: 4;
+  top: 56px;
+  left: 8px;
+  width: 126px;
+  height: 27px;
+  border: 3px solid #925724;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #dda157, #b86d30);
+  box-shadow:
+    inset 0 -7px 0 rgba(104, 54, 20, 0.18),
+    0 7px 7px rgba(40, 84, 29, 0.2);
+  transform: rotateX(46deg);
+}
+
+.benchLegLeft,
+.benchLegRight {
+  position: absolute;
+  z-index: 1;
+  top: 72px;
+  width: 13px;
+  height: 28px;
+  border-radius: 0 0 4px 4px;
+  background: #8e5427;
+}
+
+.benchLegLeft {
+  left: 25px;
+}
+
+.benchLegRight {
+  right: 25px;
+}
+
+.benchCup {
+  position: absolute;
+  z-index: 6;
+  top: 45px;
+  left: 34px;
+  width: 17px;
+  height: 24px;
+  border: 2px solid #dfd3b5;
+  border-radius: 4px 4px 7px 7px;
+  background: #fff4db;
+  box-shadow: 0 4px 5px rgba(68, 57, 36, 0.15);
+}
+
+.benchBook {
+  position: absolute;
+  z-index: 6;
+  top: 51px;
+  right: 25px;
+  width: 38px;
+  height: 23px;
+  border: 2px solid #8499b3;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #c2d2df 48%, #fff 49% 52%, #a9c0d1 53%);
+  transform: rotate(4deg);
+}
+
+.friend {
+  position: absolute;
+  z-index: 8;
+  width: 25px;
+  height: 27px;
+  border: 3px solid #fff5d9;
+  border-radius: 48% 48% 45% 45%;
+  background: linear-gradient(145deg, #865b45, #4b3229);
+  box-shadow:
+    0 6px 0 -2px #efb798,
+    0 10px 8px rgba(41, 85, 26, 0.18);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.friend0 {
+  top: 1px;
+  left: 7px;
+}
+
+.friend1 {
+  top: 4px;
+  right: 5px;
+  background: linear-gradient(145deg, #7c624f, #302721);
+}
+
+.friend2 {
+  bottom: 3px;
+  left: 3px;
+  background: linear-gradient(145deg, #b56f52, #6f3e31);
+}
+
+.friend3 {
+  right: 1px;
+  bottom: 1px;
+  background: linear-gradient(145deg, #5f6e4a, #303d29);
+}
+
+.ticket {
+  position: absolute;
+  z-index: 10;
+  top: -25px;
+  right: 5px;
+  width: 49px;
+  height: 60px;
+  border: 3px solid #fff3cf;
+  border-radius: 11px 11px 5px 5px;
+  background:
+    linear-gradient(90deg, #ee7890 0 9px, transparent 9px),
+    repeating-linear-gradient(0deg, transparent 0 10px, rgba(147, 94, 55, 0.17) 10px 12px),
+    #fff6d9;
+  box-shadow: 7px 10px 12px rgba(50, 82, 25, 0.25);
+  color: #7e593b;
+  display: grid;
+  place-items: center;
+  font-family: var(--v2-family-play);
+  font-size: 14px;
+  font-weight: 900;
+  transform: rotate(-7deg) translateZ(26px);
+  transform-origin: 50% 100%;
+  animation: ticketLand 650ms cubic-bezier(0.18, 0.9, 0.36, 1.18) both;
+}
+
+.createObject {
+  opacity: 0.93;
+}
+
+.createObject .objectShadow {
+  opacity: 0.65;
+}
+
+.addMarker {
+  position: absolute;
+  z-index: 11;
+  top: 34px;
+  left: 55px;
+  width: 37px;
+  height: 37px;
+  border: 4px solid #fff5d6;
+  border-radius: 50%;
+  background: #f6cc67;
+  box-shadow: 0 8px 7px rgba(63, 91, 29, 0.18);
+  color: #815737;
+  display: grid;
+  place-items: center;
+  font-family: var(--v2-family-play);
+  font-size: 27px;
+  font-weight: 900;
+}
+
+.woodLabel {
+  position: relative;
+  z-index: 12;
+  display: grid;
+  width: 138px;
+  min-height: 46px;
+  margin: -2px auto 0;
+  border: 3px solid rgba(255, 246, 213, 0.88);
+  border-radius: 13px;
+  background: linear-gradient(180deg, #f7dfaa, #e6bf7a);
+  box-shadow:
+    inset 0 -4px 0 rgba(153, 97, 41, 0.12),
+    0 8px 8px rgba(42, 87, 27, 0.2);
+  padding: 7px 9px 6px;
+  text-align: center;
+  transform: rotate(-1deg);
+}
+
+.woodLabel::before,
+.woodLabel::after {
+  position: absolute;
+  top: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(127, 78, 38, 0.32);
+  content: "";
+}
+
+.woodLabel::before {
+  left: 7px;
+}
+
+.woodLabel::after {
+  right: 7px;
+}
+
+.labelTone1 {
+  background: linear-gradient(180deg, #f7c9d2, #eaa9b7);
+  transform: rotate(1.3deg);
+}
+
+.labelTone2 {
+  background: linear-gradient(180deg, #d9eab5, #b8d58d);
+  transform: rotate(-0.5deg);
+}
+
+.woodLabel b,
+.woodLabel small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.woodLabel b {
+  color: #714a30;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-shadow: 0 1px rgba(255, 255, 255, 0.42);
+}
+
+.woodLabel small {
+  color: rgba(99, 68, 47, 0.75);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.player {
+  position: absolute;
+  z-index: 7;
+  top: 235px;
+  left: 50%;
+  width: 52px;
+  height: 76px;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transform-style: preserve-3d;
+  animation: playerIdle 2.7s ease-in-out infinite;
+}
+
+.playerShadow {
+  position: absolute;
+  bottom: 0;
+  left: 6px;
+  width: 42px;
+  height: 15px;
+  border-radius: 50%;
+  background: rgba(35, 87, 25, 0.28);
+  filter: blur(3px);
+  transform: rotateX(60deg);
+}
+
+.playerHead,
+.playerHair {
+  position: absolute;
+  z-index: 3;
+  top: 3px;
+  left: 9px;
+  width: 35px;
+  height: 37px;
+  border: 4px solid #fff2d4;
+  border-radius: 48% 48% 46% 46%;
+  background: #efbd91;
+  box-shadow: 0 7px 8px rgba(46, 91, 25, 0.2);
+  color: #6c432f;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.playerHair {
+  z-index: 4;
+  top: 0;
+  height: 20px;
+  border: 0;
+  border-radius: 52% 52% 34% 20%;
+  background: #704633;
+  box-shadow: none;
+}
+
+.playerBody {
+  position: absolute;
+  z-index: 2;
+  top: 36px;
+  left: 8px;
+  width: 38px;
+  height: 34px;
+  border: 4px solid #fff2d4;
+  border-radius: 16px 16px 12px 12px;
+  background: #f39aaa;
+  box-shadow: 0 7px 8px rgba(45, 87, 27, 0.2);
+}
+
+.playerBody::before,
+.playerBody::after {
+  position: absolute;
+  top: 7px;
+  width: 12px;
+  height: 22px;
+  border-radius: 8px;
+  background: #f39aaa;
+  content: "";
+}
+
+.playerBody::before {
+  left: -10px;
+  transform: rotate(16deg);
+}
+
+.playerBody::after {
+  right: -10px;
+  transform: rotate(-16deg);
+}
+
+.playerFoot {
+  position: absolute;
+  z-index: 1;
+  bottom: 2px;
+  width: 16px;
+  height: 13px;
+  border: 3px solid #fff2d4;
+  border-radius: 8px;
+  background: #7e563f;
+}
+
+.playerFootLeft {
+  left: 9px;
+}
+
+.playerFootRight {
+  right: 9px;
+}
+
+.instantButton {
+  position: absolute;
+  z-index: 8;
+  right: 22px;
+  bottom: 20px;
+  left: 22px;
+  min-height: 74px;
+  border: 7px solid #fff3d5;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff91aa 0%, #f46f8e 58%, #dc5679 100%);
+  box-shadow:
+    inset 0 6px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -7px 0 rgba(165, 51, 83, 0.22),
+    0 10px 0 #d9c49e,
+    0 17px 16px rgba(36, 79, 26, 0.31);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--v2-family-play), var(--v2-family-quiet), sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-shadow: 0 3px 0 rgba(162, 47, 77, 0.3);
+  transition:
+    transform 170ms ease,
+    filter 170ms ease,
+    box-shadow 170ms ease;
+}
+
+.instantButton:hover {
+  filter: brightness(1.04) saturate(1.05);
+  transform: translateY(-3px);
+}
+
+.instantButton:active {
+  box-shadow:
+    inset 0 5px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -5px 0 rgba(165, 51, 83, 0.2),
+    0 5px 0 #d9c49e,
+    0 10px 10px rgba(36, 79, 26, 0.24);
+  transform: translateY(5px) scale(0.99);
+}
+
+.instantButton:focus-visible {
+  outline: 4px solid #724832;
+  outline-offset: 4px;
+}
+
+.buttonRays {
+  position: relative;
+  width: 37px;
+  height: 30px;
+  margin-right: 8px;
+}
+
+.buttonRays i {
+  position: absolute;
+  top: 14px;
+  left: 12px;
+  width: 11px;
+  height: 3px;
+  border-radius: 999px;
+  background: #fff7dc;
+  transform-origin: 7px 1px;
+}
+
+.buttonRays i:nth-child(1) {
+  transform: rotate(-64deg) translateX(12px);
+}
+
+.buttonRays i:nth-child(2) {
+  transform: rotate(-22deg) translateX(13px);
+}
+
+.buttonRays i:nth-child(3) {
+  transform: rotate(22deg) translateX(13px);
+}
+
+.buttonRays i:nth-child(4) {
+  transform: rotate(64deg) translateX(12px);
+}
+
+.buttonFlower {
+  position: absolute;
+  right: 14px;
+  bottom: -5px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #ffd866;
+  box-shadow:
+    -9px 0 #fff6d8,
+    9px 0 #fff6d8,
+    0 -9px #fff6d8,
+    0 9px #fff6d8;
+  transform: rotate(14deg);
+}
+
+@keyframes objectFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0.001deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(0.001deg);
+  }
+}
+
+@keyframes ticketLand {
+  from {
+    opacity: 0;
+    transform: translateY(-45px) rotate(-14deg) translateZ(26px);
+  }
+}
+
+@keyframes playerIdle {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-4px);
+  }
+}
+
+@media (min-width: 620px) {
+  .plaza {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    border-radius: 36px;
+  }
+}
+
+@media (max-width: 390px) {
+  .scene {
+    height: 508px;
+  }
+
+  .picnicLink {
+    width: 142px;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+
+  .picnicLink:hover {
+    transform: translate(-50%, -54%) scale(0.95);
+  }
+
+  .groupLeft {
+    top: 139px;
+    left: 26%;
+  }
+
+  .groupRight {
+    top: 139px;
+    left: 74%;
+  }
+
+  .groupBottom {
+    top: 336px;
+    left: 27%;
+  }
+
+  .createSpot {
+    top: 336px;
+    left: 73%;
+  }
+
+  .player {
+    top: 226px;
+  }
+
+  .instantButton {
+    right: 17px;
+    bottom: 18px;
+    left: 17px;
+    min-height: 70px;
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picnicLink,
+  .picnicObject,
+  .ticket,
+  .player,
+  .instantButton {
+    animation: none;
+    transition: none;
+  }
+
+  .picnicLink:hover {
+    filter: none;
+    transform: translate(-50%, -50%);
+  }
+
+  .instantButton:hover {
+    transform: none;
+  }
+}

@@ -1,7 +1,7 @@
 import type { DietaryRestrictionInput, GenrePreferenceInput } from "@/lib/types";
 import type { InstantConsensusAnswer } from "./consensus";
 
-export type InstantLocationSource = "gps";
+export type InstantLocationSource = "gps" | "manual";
 export type InstantParticipantSource = "manual" | "profile" | "auto";
 
 export interface InstantZoneSelection {
