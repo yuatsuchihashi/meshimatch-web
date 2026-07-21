@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LocateFixed, Minus, Plus, UsersRound } from "lucide-react";
 import { Chip, PillButton } from "@/components/v2";
+import { LocaleToggle } from "@/components/LocaleToggle";
 import { useUser } from "@/lib/hooks/useUser";
 import { useLocale } from "@/lib/i18n";
 import { INITIAL_ZONES, SURVEY_AREAS } from "@/lib/areas";
@@ -125,6 +126,9 @@ export default function InstantStartPage() {
       </div>
       <div className={`${styles.shell} ${styles.gardenShell}`}>
         <header className={`${styles.header} ${styles.gardenHeader}`}>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <LocaleToggle />
+          </div>
           <span className={styles.eyebrow}>{t("instant.startEyebrow")}</span>
           <h1 className={styles.title}>{t("instant.gatherStartTitle")}</h1>
           <p className={styles.desc}>{t("instant.gatherStartDesc")}</p>

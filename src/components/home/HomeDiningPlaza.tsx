@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { MeshiGroup } from "@/lib/types";
 import { useLocale } from "@/lib/i18n";
@@ -7,11 +8,14 @@ import styles from "./HomeDiningPlaza.module.css";
 
 interface HomeDiningPlazaProps {
   groups: MeshiGroup[];
-  userName?: string | null;
 }
 
 const GROUP_POSITIONS = [styles.groupLeft, styles.groupRight, styles.groupBottom];
-const OBJECT_VARIANTS = [styles.teaPicnic, styles.blanketPicnic, styles.benchPicnic];
+const OBJECT_IMAGES = [
+  "/img/dining-objects/tea-table.webp",
+  "/img/dining-objects/picnic-blanket.webp",
+  "/img/dining-objects/park-bench.webp",
+];
 
 function formatDate(date: Date | null | undefined, locale: string) {
   if (!date) return locale === "en" ? "DATE TBD" : "日程未定";
@@ -39,54 +43,18 @@ function PicnicObject({
 
   return (
     <span
-      className={`${styles.picnicObject} ${OBJECT_VARIANTS[variant]} ${
-        create ? styles.createObject : ""
-      }`}
+      className={`${styles.picnicObject} ${create ? styles.createObject : ""}`}
       aria-hidden="true"
     >
       <span className={styles.objectShadow} />
-
-      {variant === 0 && (
-        <>
-          <span className={styles.roundTableLeg} />
-          <span className={styles.roundTableTop}>
-            <span className={styles.teaPot} />
-            <span className={styles.teaCup} />
-            <span className={styles.vase}>
-              <span className={styles.vaseFlowerOne} />
-              <span className={styles.vaseFlowerTwo} />
-              <span className={styles.vaseFlowerThree} />
-            </span>
-          </span>
-        </>
-      )}
-
-      {variant === 1 && (
-        <>
-          <span className={styles.blanket} />
-          <span className={styles.basket}>
-            <span className={styles.basketHandle} />
-            <span className={styles.basketRibbon} />
-          </span>
-          <span className={styles.picnicBook} />
-          <span className={styles.picnicDrink} />
-        </>
-      )}
-
-      {variant === 2 && (
-        <>
-          <span className={styles.benchBack}>
-            <span />
-            <span />
-            <span />
-          </span>
-          <span className={styles.benchSeat} />
-          <span className={styles.benchLegLeft} />
-          <span className={styles.benchLegRight} />
-          <span className={styles.benchCup} />
-          <span className={styles.benchBook} />
-        </>
-      )}
+      <Image
+        src={create ? "/img/dining-objects/future-picnic.webp" : OBJECT_IMAGES[variant]}
+        alt=""
+        fill
+        sizes="(max-width: 480px) 42vw, 180px"
+        className={styles.generatedObject}
+        priority={create || variant < 2}
+      />
 
       {members.map((member, index) => (
         <span
@@ -108,10 +76,9 @@ function PicnicObject({
   );
 }
 
-export function HomeDiningPlaza({ groups, userName }: HomeDiningPlazaProps) {
+export function HomeDiningPlaza({ groups }: HomeDiningPlazaProps) {
   const { t, locale } = useLocale();
   const visibleGroups = groups.slice(0, 3);
-  const initial = userName?.trim().charAt(0) || "M";
 
   return (
     <section className={styles.plaza} aria-label={t("home.defaultHeroTitle")}>
@@ -154,18 +121,20 @@ export function HomeDiningPlaza({ groups, userName }: HomeDiningPlazaProps) {
         >
           <PicnicObject variant={1} create />
           <span className={`${styles.woodLabel} ${styles.labelTone1}`}>
-            <b>{t("home.planTitle")}</b>
-            <small>{t("home.planDesc")}</small>
+            <b>{t("home.planPlazaLabel")}</b>
           </span>
         </Link>
 
         <div className={styles.player} aria-hidden="true">
           <span className={styles.playerShadow} />
-          <span className={styles.playerHair} />
-          <span className={styles.playerHead}>{initial}</span>
-          <span className={styles.playerBody} />
-          <span className={`${styles.playerFoot} ${styles.playerFootLeft}`} />
-          <span className={`${styles.playerFoot} ${styles.playerFootRight}`} />
+          <Image
+            src="/img/dining-objects/garden-avatar.webp"
+            alt=""
+            fill
+            sizes="96px"
+            className={styles.playerImage}
+            priority
+          />
         </div>
       </div>
 

@@ -249,11 +249,19 @@
 .picnicObject {
   position: relative;
   display: block;
-  width: 142px;
-  height: 102px;
-  margin: 0 auto;
+  width: 166px;
+  height: 116px;
+  margin: -8px auto 0;
   transform-style: preserve-3d;
   animation: objectFloat 4.4s ease-in-out infinite;
+}
+
+.generatedObject {
+  z-index: 2;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 10px 7px rgba(39, 84, 24, 0.26));
+  transform: translateY(-2px) scale(1.02);
 }
 
 .groupRight .picnicObject {
@@ -267,10 +275,10 @@
 .objectShadow {
   position: absolute;
   z-index: 0;
-  right: 13px;
-  bottom: 3px;
-  left: 13px;
-  height: 31px;
+  right: 18px;
+  bottom: -1px;
+  left: 18px;
+  height: 25px;
   border-radius: 50%;
   background: rgba(32, 87, 27, 0.25);
   filter: blur(6px);
@@ -644,8 +652,8 @@
 .addMarker {
   position: absolute;
   z-index: 11;
-  top: 34px;
-  left: 55px;
+  top: 38px;
+  left: 64px;
   width: 37px;
   height: 37px;
   border: 4px solid #fff5d6;
@@ -732,10 +740,10 @@
 .player {
   position: absolute;
   z-index: 7;
-  top: 235px;
+  top: 204px;
   left: 50%;
-  width: 52px;
-  height: 76px;
+  width: 68px;
+  height: 135px;
   pointer-events: none;
   transform: translateX(-50%);
   transform-style: preserve-3d;
@@ -745,13 +753,20 @@
 .playerShadow {
   position: absolute;
   bottom: 0;
-  left: 6px;
-  width: 42px;
-  height: 15px;
+  left: 8px;
+  width: 52px;
+  height: 16px;
   border-radius: 50%;
   background: rgba(35, 87, 25, 0.28);
   filter: blur(3px);
   transform: rotateX(60deg);
+}
+
+.playerImage {
+  z-index: 2;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 8px 6px rgba(38, 83, 24, 0.24));
 }
 
 .playerHead,
@@ -997,22 +1012,22 @@
   }
 
   .groupBottom {
-    top: 336px;
-    left: 27%;
+    top: 365px;
+    left: 23%;
   }
 
   .createSpot {
-    top: 336px;
-    left: 73%;
+    top: 365px;
+    left: 77%;
   }
 
   .player {
-    top: 226px;
+    top: 218px;
   }
 
   .instantButton {
     right: 17px;
-    bottom: 18px;
+    bottom: 38px;
     left: 17px;
     min-height: 70px;
     font-size: 22px;

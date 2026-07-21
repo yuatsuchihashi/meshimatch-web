@@ -32,7 +32,7 @@ function timeAgo(date: Date, locale: string): string {
 
 export default function HomePage() {
   const router = useRouter();
-  const { t, locale } = useLocale();
+  const { t, locale, setLocale } = useLocale();
   const { user, userId, loading: userLoading } = useUser();
   const {
     groups,
@@ -76,8 +76,8 @@ export default function HomePage() {
           (data as InvitationRow[]).map((inv) => ({
             id: inv.id,
             groupId: inv.group_id,
-            groupName: inv.groups?.name ?? "不明",
-            inviterName: inv.inviter?.display_name ?? "不明",
+            groupName: inv.groups?.name ?? t("common.unknown"),
+            inviterName: inv.inviter?.display_name ?? t("common.unknown"),
             areaNames: [],
             memberCount: 0,
             createdAt: new Date(inv.created_at),
@@ -86,7 +86,7 @@ export default function HomePage() {
       }
     }
     fetchInvitations();
-  }, [userId]);
+  }, [userId, t]);
 
   const loading = userLoading || groupsLoading;
 
@@ -217,7 +217,7 @@ export default function HomePage() {
     await supabase.from("group_members").insert({
       group_id: inv.groupId,
       profile_id: userId,
-      display_name: user?.displayName ?? "ゲスト",
+      display_name: user?.displayName ?? t("common.guest"),
       role: "member",
     });
 
@@ -243,18 +243,27 @@ export default function HomePage() {
       <div className="meadow-home__topbar">
         <div style={{ minWidth: 0 }}>
           <div className="meadow-home__greeting">
-            {t("home.greeting")}{user?.displayName ?? "ユーザー"}{t("home.greetingSuffix")}
+            {t("home.greeting")}{user?.displayName ?? t("common.user")}{t("home.greetingSuffix")}
           </div>
           <div className="meadow-home__title">
             {primaryActiveGroup ? t("home.activeHeroTitle") : t("home.defaultHeroTitle")}
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button
-          onClick={openNotifications}
-          style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer" }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            type="button"
+            className="meadow-home__language"
+            onClick={() => setLocale(locale === "ja" ? "en" : "ja")}
+            aria-label={locale === "ja" ? t("home.switchToEnglish") : t("home.switchToJapanese")}
+          >
+            {locale === "ja" ? "EN" : "JA"}
+          </button>
+          <button
+            onClick={openNotifications}
+            style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+            aria-label={t("home.notifications")}
+          >
           <div
             style={{
               width: 44,
@@ -306,7 +315,6 @@ export default function HomePage() {
       <div className="meadow-home__content">
         <HomeDiningPlaza
           groups={visibleActiveGroups}
-          userName={user?.displayName}
         />
 
         <div className="meadow-home__details">

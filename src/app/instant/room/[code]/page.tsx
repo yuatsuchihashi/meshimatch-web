@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Check, Clock3, Copy, MapPin, Share2, Sparkles } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { PillButton, TicketStub } from "@/components/v2";
+import { LocaleToggle } from "@/components/LocaleToggle";
 import { useUser } from "@/lib/hooks/useUser";
 import { useLocale } from "@/lib/i18n";
 import {
@@ -428,6 +429,9 @@ export default function InstantRoomPage() {
       <main className={`${styles.screen} ${styles.gardenScreen} ${styles.roomGardenScreen}`}>
         <div className={`${styles.shell} ${styles.gardenShell}`}>
           <header className={`${styles.header} ${styles.gardenHeader}`}>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <LocaleToggle />
+            </div>
             <span className={styles.eyebrow}>{t("instant.invitedEyebrow")}</span>
             <h1 className={styles.title}>{t("instant.takeASeat")}</h1>
             <p className={styles.desc}>{t("instant.takeASeatDesc")}</p>
@@ -469,6 +473,9 @@ export default function InstantRoomPage() {
         </div>
         <div className={`${styles.shell} ${styles.gardenShell}`}>
           <header className={`${styles.header} ${styles.gardenHeader} ${styles.ticketArrive}`}>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <LocaleToggle />
+            </div>
             <span className={styles.eyebrow}>{t("instant.ticketEyebrow")}</span>
             <h1 className={styles.title}>{room.decision.restaurantName}</h1>
             <p className={styles.desc}>{t("instant.everyoneGotTicket")}</p>
@@ -518,6 +525,9 @@ export default function InstantRoomPage() {
       <main className={`${styles.screen} ${styles.gardenScreen} ${styles.roomGardenScreen}`}>
         <div className={`${styles.shell} ${styles.gardenShell}`}>
           <header className={`${styles.header} ${styles.gardenHeader}`}>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <LocaleToggle />
+            </div>
             <span className={styles.eyebrow}>
               {room.proposal.revision === 0 ? t("instant.oneAnswer") : t("instant.reconsideredOnce")}
             </span>
@@ -570,9 +580,12 @@ export default function InstantRoomPage() {
               <span className={styles.eyebrow}>{t("instant.answersGathering")}</span>
               <h1 className={styles.title}>{t("instant.tableBecomingOne")}</h1>
             </div>
-            <button type="button" className={styles.shareCircle} onClick={() => void shareRoom()}>
-              {copied ? <Check size={18} /> : <Share2 size={18} />}
-            </button>
+            <div style={{ display: "grid", justifyItems: "end", gap: 8 }}>
+              <LocaleToggle />
+              <button type="button" className={styles.shareCircle} onClick={() => void shareRoom()}>
+                {copied ? <Check size={18} /> : <Share2 size={18} />}
+              </button>
+            </div>
           </header>
           <TableScene room={room} myMemberId={member.memberId} />
           <section className={`${styles.panel} ${styles.stack} ${styles.gardenPanel}`}>
@@ -626,8 +639,11 @@ export default function InstantRoomPage() {
             </span>
             <h1 className={styles.title}>{t("instant.throwYourFeeling")}</h1>
           </div>
-          <div className={`${styles.roundCountdown} ${seconds <= 5 ? styles.roundCountdownUrgent : ""}`}>
-            {seconds}
+          <div style={{ display: "grid", justifyItems: "end", gap: 8 }}>
+            <LocaleToggle />
+            <div className={`${styles.roundCountdown} ${seconds <= 5 ? styles.roundCountdownUrgent : ""}`}>
+              {seconds}
+            </div>
           </div>
         </header>
         <TableScene room={room} myMemberId={member.memberId} />
