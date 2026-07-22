@@ -11,6 +11,8 @@ MeshiMatch turns the awkward question “Where should we eat?” into a shared s
 
 The Build Week implementation lives on the [`codex/3d-gathered-instant`](https://github.com/yuatsuchihashi/meshimatch-web/tree/codex/3d-gathered-instant) branch.
 
+Demo video: [MeshiMatch — OpenAI Build Week](https://www.youtube.com/watch?v=4fqKzZwRC-s) (1:54, English narration and captions)
+
 ### Run the Build Week experience
 
 ```bash
