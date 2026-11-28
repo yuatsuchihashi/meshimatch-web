@@ -1,35 +1,23 @@
 "use client";
 
+import { InstantDiscoveryBoundary } from "@/components/instant/DiscoveryFlow";
+
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, RotateCcw, Utensils } from "lucide-react";
-import { Chip, PillButton, TimerRing } from "@/components/v2";
+import { Eye, ShieldCheck, Utensils } from "lucide-react";
+import { PillButton } from "@/components/v2";
+import { AnalyticsEvent, track } from "@/lib/analytics";
 import { DIETARY_PRESETS } from "@/lib/dietary-presets";
 import { useLocale } from "@/lib/i18n";
-import {
-  buildInstantParticipantFromConsensus,
-  emptyInstantConsensusAnswerDraft,
-  toggleInstantDietaryRestriction,
-  type InstantConsensusAnswerDraft,
-} from "@/lib/instant/answers";
-import { type InstantConsensusNg } from "@/lib/instant/consensus";
-import {
-  INSTANT_CONSENSUS_CONFIG,
-  type InstantConsensusMood,
-  type InstantConsensusStyle,
-} from "@/lib/instant/consensus-config";
-import {
-  aggregateInstantParticipants,
-  shouldAutoAdvanceInstantTimeout,
-  shouldRetryInstantFinalize,
-} from "@/lib/instant/round";
+import { buildInstantParticipantFromWishAvoid } from "@/lib/instant/answers";
+import { aggregateInstantParticipants } from "@/lib/instant/round";
 import type {
   InstantAggregate,
   InstantParticipantInput,
   InstantStartState,
   InstantZoneSelection,
 } from "@/lib/instant/types";
-import { instantTurnAccent } from "@/lib/instant/winner";
+import type { DietaryRestrictionInput } from "@/lib/types";
 import styles from "../instant.module.css";
 
 const START_KEY = "meshimatch_instant_start";
@@ -37,6 +25,7 @@ const GROUP_KEY = "meshimatch_instant_group";
 const ROUND_KEY = "meshimatch_instant_round";
 const TICKET_KEY = "meshimatch_instant_ticket";
 const MAX_INSTANT_PARTY_SIZE = 8;
+const OMAKASE = "__omakase__";
 
 type StoredRound = {
   participants: InstantParticipantInput[];
@@ -51,32 +40,57 @@ type StoredGroup = {
   aggregate: InstantAggregate;
 };
 
-type QuestionIndex = 0 | 1 | 2;
+const WISH_OPTIONS = [
+  { value: "G004", labelKey: "instant.wishJapanese", icon: "🍚" },
+  { value: "G013", labelKey: "instant.wishNoodles", icon: "🍜" },
+  { value: "G009", labelKey: "instant.wishCurry", icon: "🍛" },
+  { value: "G008", labelKey: "instant.wishMeat", icon: "🥩" },
+  { value: "G014", labelKey: "instant.wishLight", icon: "🥗" },
+  { value: OMAKASE, labelKey: "instant.wishOmakase", icon: "✨" },
+] as const;
 
 const AVOID_OPTIONS = [
-  { value: "none", labelKey: "instant.avoidNone" },
-  { value: "no_heavy", labelKey: "instant.avoidHeavy" },
-  { value: "no_spicy", labelKey: "instant.avoidSpicy" },
-] as const satisfies readonly {
-  value: InstantConsensusNg;
-  labelKey: string;
-}[];
+  {
+    value: "none",
+    labelKey: "instant.avoidNone",
+    restrictionId: null,
+    genreIds: [],
+  },
+  {
+    value: "no_heavy",
+    labelKey: "instant.avoidHeavy",
+    restrictionId: null,
+    genreIds: ["G008", "G005"],
+  },
+  {
+    value: "no_spicy",
+    labelKey: "instant.avoidSpicy",
+    restrictionId: null,
+    genreIds: ["G009", "G017"],
+  },
+  {
+    value: "no_alcohol",
+    labelKey: "instant.avoidAlcoholCentered",
+    restrictionId: "no_alcohol",
+    genreIds: ["G001", "G002", "G012"],
+  },
+] as const;
 
 function idFor(index: number) {
   return `instant-${Date.now()}-${index}`;
 }
 
-export default function InstantRoundPage() {
+function InstantRoundPageLegacy() {
   const router = useRouter();
   const { t } = useLocale();
   const [start, setStart] = useState<InstantStartState | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [questionIndex, setQuestionIndex] = useState<QuestionIndex>(0);
-  const [seconds, setSeconds] = useState(10);
-  const [draft, setDraft] = useState<InstantConsensusAnswerDraft>(() =>
-    emptyInstantConsensusAnswerDraft()
-  );
-  const [dietaryOpen, setDietaryOpen] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const [wishChoices, setWishChoices] = useState<string[]>([]);
+  const [avoidChoices, setAvoidChoices] = useState<string[]>([]);
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<
+    DietaryRestrictionInput[]
+  >([]);
   const [participants, setParticipants] = useState<InstantParticipantInput[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,83 +132,41 @@ export default function InstantRoundPage() {
     setStart({ ...parsed, partySize: existingParticipants.length + 1 });
   }, [router, t]);
 
-  useEffect(() => {
-    setSeconds(10);
-    setQuestionIndex(0);
-    setDraft(emptyInstantConsensusAnswerDraft());
-    setDietaryOpen(false);
-  }, [currentIndex]);
-
-  useEffect(() => {
-    if (!start || saving) return;
-    const shouldAutoAdvance = shouldAutoAdvanceInstantTimeout({
-      seconds,
-      participantsLength: participants.length,
-      partySize: start.partySize,
-      dietaryOpen,
-    });
-    if (shouldAutoAdvance) {
-      advanceCurrentDraft({ draft, source: "auto" });
-      return;
-    }
-    if (dietaryOpen || seconds <= 0 || participants.length >= start.partySize) return;
-    const timer = window.setTimeout(() => setSeconds((value) => value - 1), 1000);
-    return () => window.clearTimeout(timer);
-    // The expiry path intentionally captures the visible draft for this one turn.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seconds, start, saving, dietaryOpen, participants.length]);
-
-  const aggregate: InstantAggregate = useMemo(
+  const aggregate = useMemo(
     () => aggregateInstantParticipants(participants),
     [participants]
   );
 
-  function ngLabelFor(value: InstantConsensusNg | null) {
-    if (!value || value === "none") return null;
-    const option = AVOID_OPTIONS.find((item) => item.value === value);
-    return option ? t(option.labelKey) : null;
+  function resetDraft() {
+    setWishChoices([]);
+    setAvoidChoices([]);
+    setDietaryRestrictions([]);
+    setError(null);
   }
 
-  function advanceCurrentDraft(params: {
-    draft: InstantConsensusAnswerDraft;
-    source?: InstantParticipantInput["source"];
-  }) {
-    advance(
-      buildInstantParticipantFromConsensus({
-        id: idFor(currentIndex),
-        label: t("instant.personLabel", { number: currentIndex + 1 }),
-        draft: params.draft,
-        source: params.source,
-        ngLabel: ngLabelFor(params.draft.ng),
-      })
-    );
+  function toggleWish(value: string) {
+    setWishChoices((current) => {
+      if (current.includes(value)) return current.filter((item) => item !== value);
+      if (value === OMAKASE) return [OMAKASE];
+      return [...current.filter((item) => item !== OMAKASE), value];
+    });
   }
 
-  function resetCurrentDraft() {
-    setDraft(emptyInstantConsensusAnswerDraft());
-    setQuestionIndex(0);
-    setDietaryOpen(false);
-    setSeconds(10);
-  }
-
-  function answerAvoid(value: InstantConsensusNg) {
-    setDraft((current) => ({ ...current, ng: value }));
-    setQuestionIndex(1);
-  }
-
-  function answerMood(value: InstantConsensusMood) {
-    setDraft((current) => ({ ...current, mood: value }));
-    setQuestionIndex(2);
-  }
-
-  function answerStyle(value: InstantConsensusStyle) {
-    const nextDraft = { ...draft, style: value };
-    setDraft(nextDraft);
-    advanceCurrentDraft({ draft: nextDraft });
+  function toggleAvoid(value: string) {
+    setAvoidChoices((current) => {
+      if (current.includes(value)) return current.filter((item) => item !== value);
+      if (value === "none") return ["none"];
+      return [...current.filter((item) => item !== "none"), value];
+    });
   }
 
   function toggleDietary(restrictionId: string) {
-    setDraft((current) => toggleInstantDietaryRestriction(current, restrictionId));
+    setDietaryRestrictions((current) => {
+      const selected = current.some((item) => item.restrictionId === restrictionId);
+      return selected
+        ? current.filter((item) => item.restrictionId !== restrictionId)
+        : [...current, { restrictionId, priority: "must" }];
+    });
   }
 
   async function finalize(nextParticipants: InstantParticipantInput[]) {
@@ -216,10 +188,7 @@ export default function InstantRoundPage() {
       if (!res.ok) throw new Error(data.error ?? "failed");
       localStorage.setItem(
         ROUND_KEY,
-        JSON.stringify({
-          participants: nextParticipants,
-          aggregate: nextAggregate,
-        })
+        JSON.stringify({ participants: nextParticipants, aggregate: nextAggregate })
       );
       localStorage.setItem(
         GROUP_KEY,
@@ -232,48 +201,54 @@ export default function InstantRoundPage() {
         })
       );
       localStorage.removeItem(TICKET_KEY);
-      router.push("/instant/reveal");
+      track(AnalyticsEvent.INSTANT_ANSWERS_COMPLETED, {
+        groupId: data.group.id,
+        partySize: nextParticipants.length,
+        locationMode: start.zone ? "gps_zone" : "locationless",
+      });
+      router.push("/instant/top3");
     } catch {
       setError(t("instant.saveFailed"));
-      setSeconds(10);
       setSaving(false);
     }
   }
 
-  function advance(participant: InstantParticipantInput) {
-    if (!start || saving) return;
-    if (
-      shouldRetryInstantFinalize({
-        participantsLength: participants.length,
-        partySize: start.partySize,
-      })
-    ) {
+  function submitAnswer() {
+    if (!start || saving || wishChoices.length === 0 || avoidChoices.length === 0) {
+      return;
+    }
+    if (participants.length >= start.partySize) {
       void finalize(participants);
       return;
     }
+
+    const selectedAvoids = AVOID_OPTIONS.filter((option) =>
+      avoidChoices.includes(option.value)
+    );
+    const participant = buildInstantParticipantFromWishAvoid({
+      id: idFor(currentIndex),
+      label: t("instant.personLabel", { number: currentIndex + 1 }),
+      wishGenreIds: wishChoices.filter((value) => value !== OMAKASE),
+      avoidLabels: selectedAvoids
+        .filter((option) => option.value !== "none")
+        .map((option) => t(option.labelKey)),
+      avoidGenreIds: selectedAvoids.flatMap((option) => option.genreIds),
+      avoidRestrictionIds: selectedAvoids.flatMap((option) =>
+        option.restrictionId ? [option.restrictionId] : []
+      ),
+      dietaryRestrictions,
+    });
     const nextParticipants = [...participants, participant];
     setParticipants(nextParticipants);
+
     if (nextParticipants.length >= start.partySize) {
       void finalize(nextParticipants);
       return;
     }
+
     setCurrentIndex((value) => value + 1);
-  }
-
-  function submitManual() {
-    advanceCurrentDraft({ draft });
-  }
-
-  function consensusOptionLabel(axisId: string, value: string, fallback: string) {
-    const key = `instant.consensusOptions.${axisId}.${value}`;
-    const translated = t(key);
-    return translated === key ? fallback : translated;
-  }
-
-  function aggregateNgLabel(label: string) {
-    const key = `instant.dietaryPreset.${label}`;
-    const translated = t(key);
-    return translated === key ? label : translated;
+    resetDraft();
+    setRevealed(false);
   }
 
   if (blockedMessage) {
@@ -288,26 +263,55 @@ export default function InstantRoundPage() {
     );
   }
 
-  if (!start) {
-    return <main className={styles.screen} />;
-  }
+  if (!start) return <main className={styles.screen} />;
 
   const total = start.partySize;
-  const hasAggregate = aggregate.ng.length > 0 || aggregate.genres.length > 0;
   const personLabel = t("instant.personLabel", { number: currentIndex + 1 });
-  const accentClass = styles[instantTurnAccent(currentIndex)];
   const selectedRestrictions = new Set(
-    draft.dietaryRestrictions.map((item) => item.restrictionId)
+    dietaryRestrictions.map((item) => item.restrictionId)
   );
-  const questionTitle =
-    questionIndex === 0
-      ? t("instant.avoidQuestion")
-      : questionIndex === 1
-      ? t(INSTANT_CONSENSUS_CONFIG.moodAxis.questionKey)
-      : t(INSTANT_CONSENSUS_CONFIG.secondaryAxis.questionKey);
+  const canSubmit = wishChoices.length > 0 && avoidChoices.length > 0;
+  const completedPercent = Math.round((participants.length / total) * 100);
+
+  if (!revealed) {
+    return (
+      <main className={styles.screen}>
+        <div className={styles.shell}>
+          <header className={styles.header}>
+            <span className={styles.eyebrow}>
+              {t("instant.roundEyebrow", {
+                current: Math.min(currentIndex + 1, total),
+                total,
+              })}
+            </span>
+            <h1 className={styles.title}>{t("instant.handoffTitle")}</h1>
+          </header>
+          <section className={`${styles.panel} ${styles.stack}`}>
+            <div className={styles.privateCover}>
+              <span className={styles.privateIcon} aria-hidden="true">
+                <ShieldCheck size={30} />
+              </span>
+              <h2>{t("instant.handoffPerson", { person: personLabel })}</h2>
+              <p className={styles.desc}>{t("instant.handoffDesc")}</p>
+            </div>
+            <div className={styles.roundProgress} aria-label={`${participants.length}/${total}`}>
+              <span style={{ width: `${completedPercent}%` }} />
+            </div>
+            <PillButton
+              variant="cta"
+              icon={<Eye size={18} />}
+              onClick={() => setRevealed(true)}
+            >
+              {t("instant.openPrivateAnswer")}
+            </PillButton>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main className={`${styles.screen} ${accentClass}`}>
+    <main className={styles.screen}>
       <div className={styles.shell}>
         <header className={styles.header}>
           <span className={styles.eyebrow}>
@@ -317,150 +321,104 @@ export default function InstantRoundPage() {
             })}
           </span>
           <h1 className={styles.title}>{t("instant.roundTitle")}</h1>
-          <p className={styles.desc}>
-            {start.zone
-              ? t("instant.locationReady", { zone: start.zone.name })
-              : t("instant.locationlessReady")}
-          </p>
+          <p className={styles.desc}>{t("instant.roundPrivateDesc")}</p>
         </header>
 
         <section className={`${styles.panel} ${styles.stack}`}>
-          <div className={styles.timerWrap}>
-            <TimerRing seconds={seconds} totalSeconds={10} label="SECONDS" />
-          </div>
-
-          <div className={styles.heroQuestion}>
-            <span className={styles.personPill}>{personLabel}</span>
-            <span className={styles.questionMeta}>
-              {t("instant.questionProgress", { current: questionIndex + 1, total: 3 })}
-            </span>
-            <h2>{questionTitle}</h2>
-          </div>
-
-          {questionIndex === 0 && (
-            <>
-              <div className={styles.choiceGrid}>
-                {AVOID_OPTIONS.map((option) => (
+          <div className={styles.answerSection}>
+            <div className={styles.answerHeading}>
+              <h2>{t("instant.safetyQuestion")}</h2>
+              <span>{t("instant.safetyOptional")}</span>
+            </div>
+            <p className={styles.desc}>{t("instant.dietaryPickerHint")}</p>
+            <div className={styles.choiceChipGrid}>
+              {DIETARY_PRESETS.map((preset) => {
+                const selected = selectedRestrictions.has(preset.id);
+                return (
                   <button
-                    key={option.value}
+                    key={preset.id}
                     type="button"
-                    className={`${styles.choiceButton} ${
-                      draft.ng === option.value ? styles.choiceButtonSelected : ""
+                    aria-pressed={selected}
+                    className={`${styles.answerChip} ${
+                      selected ? styles.answerChipSelected : ""
                     }`}
-                    onClick={() => answerAvoid(option.value)}
+                    onClick={() => toggleDietary(preset.id)}
                   >
-                    {t(option.labelKey)}
+                    {t(`instant.dietaryPreset.${preset.id}`)}
                   </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                className={styles.dietaryToggle}
-                onClick={() => setDietaryOpen((value) => !value)}
-              >
-                <Utensils size={18} />
-                {t("instant.dietaryPickerButton")}
-              </button>
-
-              {dietaryOpen && (
-                <div className={styles.dietaryPicker}>
-                  <p className={styles.desc}>{t("instant.dietaryPickerHint")}</p>
-                  <div className={styles.dietaryGrid}>
-                    {DIETARY_PRESETS.map((preset) => {
-                      const selected = selectedRestrictions.has(preset.id);
-                      return (
-                        <button
-                          key={preset.id}
-                          type="button"
-                          className={`${styles.ngButton} ${
-                            selected ? styles.ngButtonSelected : ""
-                          }`}
-                          onClick={() => toggleDietary(preset.id)}
-                        >
-                          {t(`instant.dietaryPreset.${preset.id}`)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {questionIndex === 1 && (
-            <div className={styles.choiceGrid}>
-              {INSTANT_CONSENSUS_CONFIG.moodAxis.options.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={`${styles.choiceButton} ${
-                    draft.mood === option.value ? styles.choiceButtonSelected : ""
-                  }`}
-                  onClick={() => answerMood(option.value)}
-                >
-                  {consensusOptionLabel("mood", option.value, option.label)}
-                </button>
-              ))}
+                );
+              })}
             </div>
-          )}
-
-          {questionIndex === 2 && (
-            <div className={styles.choiceGrid}>
-              {INSTANT_CONSENSUS_CONFIG.secondaryAxis.options.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={`${styles.choiceButton} ${
-                    draft.style === option.value ? styles.choiceButtonSelected : ""
-                  }`}
-                  onClick={() => answerStyle(option.value)}
-                >
-                  {consensusOptionLabel("style", option.value, option.label)}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className={styles.actions}>
-            <PillButton
-              variant="ink"
-              icon={<ChevronRight size={18} />}
-              disabled={saving}
-              onClick={submitManual}
-            >
-              {saving ? t("instant.saving") : t("instant.nextPerson")}
-            </PillButton>
-            <PillButton
-              variant="ghost"
-              icon={<RotateCcw size={18} />}
-              disabled={saving}
-              onClick={resetCurrentDraft}
-            >
-              {t("instant.resetTurn")}
-            </PillButton>
           </div>
 
-          <div className={styles.aggregate}>
-            <p className={styles.sectionTitle}>{t("instant.aggregateTitle")}</p>
-            {hasAggregate ? (
-              <div className={styles.aggregateList}>
-                {aggregate.ng.map((item) => (
-                  <Chip key={`ng-${item.label}`} variant="honey">
-                    {t("instant.aggregateNg", {
-                      label: aggregateNgLabel(item.label),
-                      count: item.count,
-                    })}
-                  </Chip>
-                ))}
-              </div>
-            ) : (
-              <p className={styles.desc}>{t("instant.aggregateEmpty")}</p>
-            )}
+          <div className={styles.answerSection}>
+            <div className={styles.answerHeading}>
+              <h2>{t("instant.wishQuestion")}</h2>
+              <span>{t("instant.chooseMultiple")}</span>
+            </div>
+            <div className={styles.choiceChipGrid}>
+              {WISH_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={wishChoices.includes(option.value)}
+                  className={`${styles.answerChip} ${
+                    wishChoices.includes(option.value) ? styles.answerChipSelected : ""
+                  }`}
+                  onClick={() => toggleWish(option.value)}
+                >
+                  <span aria-hidden="true">{option.icon}</span>
+                  {t(option.labelKey)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.answerSection}>
+            <div className={styles.answerHeading}>
+              <h2>{t("instant.avoidQuestion")}</h2>
+              <span>{t("instant.chooseMultiple")}</span>
+            </div>
+            <div className={styles.choiceChipGrid}>
+              {AVOID_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={avoidChoices.includes(option.value)}
+                  className={`${styles.answerChip} ${
+                    avoidChoices.includes(option.value) ? styles.answerChipSelected : ""
+                  }`}
+                  onClick={() => toggleAvoid(option.value)}
+                >
+                  {t(option.labelKey)}
+                </button>
+              ))}
+            </div>
           </div>
 
           {error && <p className={styles.desc}>{error}</p>}
+          <PillButton
+            variant="cta"
+            icon={<Utensils size={18} />}
+            disabled={!canSubmit || saving}
+            onClick={submitAnswer}
+          >
+            {saving
+              ? t("instant.saving")
+              : currentIndex + 1 >= total
+                ? t("instant.finishAnswers")
+                : t("instant.hideAndPass")}
+          </PillButton>
+
+          {aggregate.ng.length > 0 && (
+            <p className={styles.privateMemo}>{t("instant.privateAggregateMemo")}</p>
+          )}
         </section>
       </div>
     </main>
   );
+}
+
+export default function InstantRoundPage() {
+  return <InstantDiscoveryBoundary screen="round"><InstantRoundPageLegacy /></InstantDiscoveryBoundary>;
 }

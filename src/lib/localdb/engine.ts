@@ -148,6 +148,8 @@ function applyDefaults(table: string, values: Row): Row {
       row.nearest_area ??= null;
       row.url ??= null;
       row.photo_url ??= null;
+      row.phone_number ??= null;
+      row.access_note ??= null;
       row.closed ??= false;
       row.place_id ??= null;    // Google Places ID (一度取得したら再callしない)
       row.rating ??= null;      // Google の評価 (キャッシュ)

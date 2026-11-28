@@ -1,9 +1,12 @@
 "use client";
 
+import { InstantDiscoveryBoundary } from "@/components/instant/DiscoveryFlow";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { Chip, PillButton } from "@/components/v2";
+import { AnalyticsEvent, track } from "@/lib/analytics";
 import { useLocale } from "@/lib/i18n";
 import { nearestInstantZoneFromCoordinates } from "@/lib/instant/zones";
 import type { InstantStartState, InstantZoneSelection } from "@/lib/instant/types";
@@ -11,7 +14,7 @@ import styles from "./instant.module.css";
 
 const START_KEY = "meshimatch_instant_start";
 
-export default function InstantStartPage() {
+function InstantStartPageLegacy() {
   const router = useRouter();
   const { t } = useLocale();
   const [partySize, setPartySize] = useState(3);
@@ -26,6 +29,11 @@ export default function InstantStartPage() {
       partySize,
       createdAt: new Date().toISOString(),
     };
+    track(AnalyticsEvent.INSTANT_STARTED, {
+      partySize,
+      locationMode: selectedZone ? "gps_zone" : "locationless",
+      zoneId: selectedZone?.zoneId ?? null,
+    });
     localStorage.setItem(START_KEY, JSON.stringify(state));
     router.push("/instant/round");
   }
@@ -125,9 +133,14 @@ export default function InstantStartPage() {
                 {t("instant.locationlessButton")}
               </PillButton>
             ) : (
-              <PillButton variant="cta" disabled={locating} onClick={startFromCurrentLocation}>
-                {locating ? t("common.processing") : t("instant.locationGpsButton")}
-              </PillButton>
+              <>
+                <PillButton variant="cta" disabled={locating} onClick={startFromCurrentLocation}>
+                  {locating ? t("common.processing") : t("instant.locationGpsButton")}
+                </PillButton>
+                <PillButton variant="ghost" onClick={() => persistAndGo(null)}>
+                  {t("instant.locationlessButton")}
+                </PillButton>
+              </>
             )}
             {zone && (
               <PillButton variant="ghost" onClick={() => persistAndGo(zone)}>
@@ -139,4 +152,8 @@ export default function InstantStartPage() {
       </div>
     </main>
   );
+}
+
+export default function InstantStartPage() {
+  return <InstantDiscoveryBoundary screen="start"><InstantStartPageLegacy /></InstantDiscoveryBoundary>;
 }

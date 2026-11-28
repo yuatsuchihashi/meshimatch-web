@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run && node --test scripts/pilot-pool.node-test.mjs",
+    "pilot:validate": "node scripts/pilot-pool.mjs",
+    "pilot:import-local": "node scripts/pilot-pool.mjs --write-local"
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",

@@ -3,6 +3,7 @@ import {
   EMPTY_CANDIDATE_POOL,
   composePool,
   computeTrust,
+  toRestaurant,
   type RestaurantRow,
   type SourceRow,
 } from "@/lib/restaurants/pool";
@@ -150,5 +151,19 @@ describe("trust-ring pool", () => {
       reason: "no_trust_ring_candidates",
       prompt: "このグループのおすすめがまだ足りません。行きたい店を追加してください。",
     });
+  });
+
+  it("maps pilot contact, access, genre, and opening-hours facts to cards", () => {
+    const restaurant = toRestaurant({
+      ...row("pilot"),
+      phone_number: "03-0000-0000",
+      access_note: "渋谷駅徒歩5分",
+      opening_hours: { openNow: true, text: "11:30〜22:00" },
+    });
+
+    expect(restaurant.genre).toBe("和食");
+    expect(restaurant.phoneNumber).toBe("03-0000-0000");
+    expect(restaurant.access).toBe("渋谷駅徒歩5分");
+    expect(restaurant.openHours).toBe("11:30〜22:00");
   });
 });

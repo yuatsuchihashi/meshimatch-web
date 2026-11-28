@@ -20,6 +20,13 @@ export const AnalyticsEvent = {
   RESTAURANT_DECIDED: "restaurant_decided",
   VISIT_CONFIRMED: "visit_confirmed",
   PARTICIPANT_CONVERTED: "participant_converted",
+  INSTANT_STARTED: "instant_started",
+  INSTANT_ANSWERS_COMPLETED: "instant_answers_completed",
+  INSTANT_CANDIDATES_SHOWN: "instant_candidates_shown",
+  INSTANT_REDRAWN: "instant_redrawn",
+  INSTANT_BALLOT_COMPLETED: "instant_ballot_completed",
+  INSTANT_DECIDED: "instant_decided",
+  INSTANT_MAP_OPENED: "instant_map_opened",
 } as const;
 
 export type AnalyticsEventName = (typeof AnalyticsEvent)[keyof typeof AnalyticsEvent];

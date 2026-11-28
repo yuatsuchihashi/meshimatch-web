@@ -1,0 +1,5 @@
+.personal { margin:24px 0 10px; }
+.personal h2 { font-size:18px; margin:0 0 12px; }
+.answer { display:flex; align-items:center; justify-content:center; gap:8px; min-height:46px; padding:8px 16px; text-decoration:none; border:1px solid #b9c9b3; color:#31533b; background:#fffefa; border-radius:24px; font-size:15px; font-weight:700; }
+.answer:focus-visible { outline:3px solid #527852; outline-offset:3px; }
+.localNote { color:#586956; text-align:center; font-size:12px; line-height:1.6; margin:8px 0 0; }

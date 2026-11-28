@@ -9,6 +9,8 @@
 // ============================================================
 
 import { createServiceClient } from "@/lib/supabase/server";
+import { includePilotCurator } from "@/lib/pilot-pool";
+import { GENRE_NAMES } from "@/lib/restaurant-taxonomy";
 import type { Restaurant, RestaurantMetadataSource } from "@/lib/types";
 
 export interface RestaurantRow {
@@ -23,6 +25,8 @@ export interface RestaurantRow {
   address: string | null;
   url: string | null;
   photo_url: string | null;
+  phone_number?: string | null;
+  access_note?: string | null;
   closed: boolean;
   place_id?: string | null;
   rating?: number | null;
@@ -87,18 +91,24 @@ export const EMPTY_CANDIDATE_POOL = {
 } as const;
 
 export function toRestaurant(row: RestaurantRow): Restaurant {
+  const openingHoursText =
+    row.opening_hours && typeof row.opening_hours.text === "string"
+      ? row.opening_hours.text
+      : undefined;
   return {
     id: row.id,
     name: row.name,
-    genre: "",
+    genre: GENRE_NAMES[row.genre_id ?? ""] ?? "",
     genreId: row.genre_id ?? "",
     budget: row.price_band ?? "",
     photoUrl: row.photo_url ?? undefined,
     matchScore: 0,
-    rating: 0,
-    access: row.address ?? "",
+    rating: row.rating ?? 0,
+    access: row.access_note ?? row.address ?? "",
     hasPrivateRoom: false,
     address: row.address ?? "",
+    openHours: openingHoursText,
+    phoneNumber: row.phone_number ?? undefined,
     area: row.nearest_area ?? "",
     lat: row.lat,
     lng: row.lng,
@@ -357,6 +367,7 @@ export async function fetchCandidatePool(params: {
         .filter((id): id is string => Boolean(id))
     );
   }
+  followedProfileIds = includePilotCurator(followedProfileIds);
 
   let verifiedOfficialProfileIds: string[] = [];
   if (followedProfileIds.length > 0) {

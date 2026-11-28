@@ -1,0 +1,16 @@
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr)); gap:14px; }
+.card { display:flex; flex-direction:column; gap:16px; min-width:0; padding:20px; border:1px solid #d6dfcc; border-radius:18px; background:#fffefa; color:#314b37; }
+.card header h3 { margin:0; font-size:25px; font-weight:800; }
+.card header p { margin:3px 0 0; font-size:13px; color:#53694f; }
+.travel { display:flex; gap:22px; background:#eff4e9; padding:11px 14px; border-radius:11px; }
+.travel span { display:grid; gap:2px; font-size:12px; color:#4e654a; }
+.travel strong { font-size:18px; color:#2d5137; }
+.venue { display:grid; gap:2px; overflow-wrap:anywhere; }
+.venue small { color:#5c6759; font-size:12px; }
+.venue span,.venue a { font-size:14px; }
+.venue a { text-decoration:underline; }
+.card button { display:flex; gap:6px; justify-content:center; align-items:center; margin-top:auto; border:1px solid #9bb191; border-radius:12px; padding:12px; font-weight:650; color:#355539; background:white; }
+.calculation { color:#51614e; font-size:13px; margin-top:16px; }
+.calculation summary { cursor:pointer; padding:8px 0; }
+.calculation ul { padding:0; list-style:none; max-width:420px; }
+.calculation li { display:flex; justify-content:space-between; gap:10px; padding:4px 0; }

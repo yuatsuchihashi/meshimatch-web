@@ -10,7 +10,8 @@ const PUBLIC_PATHS = ["/login", "/signup", "/callback", "/invite", "/api", "/gro
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
+    (isLocalMode() && (["/", "/home", "/profile", "/instant", "/instant/round", "/instant/top3", "/instant/ticket"].includes(pathname) || pathname === '/schedule' || pathname.startsWith('/schedule/') || pathname.startsWith('/area/') || pathname.startsWith('/shop/') || pathname.startsWith('/share/schedule/') || pathname.startsWith('/share/area/')));
 
   if (isLocalMode()) {
     // ローカルモード: httpOnly クッキーの有無だけで判定する

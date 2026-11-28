@@ -1,0 +1,20 @@
+.nextAction { display:grid; justify-items:start; gap:14px; padding:22px 24px; border:1px solid #d9e0cf; border-radius:20px; background:#fffefa; }
+.progressInfo { width:min(100%,280px); }
+.progressInfo strong { color:#3a573c; font-size:15px; }
+.progressInfo > div { margin-top:8px; }
+.nextAction p,.shareContent p { margin:0; color:#5f705d; font-size:14px; line-height:1.65; }
+.inlineLink { display:inline-flex; align-items:center; gap:8px; min-height:42px; color:#426c3e; font-size:14px; font-weight:650; text-decoration:underline; text-underline-offset:3px; }
+.editActions { display:flex; gap:8px 20px; flex-wrap:wrap; align-items:center; margin:7px 0 15px; }
+.editActions button { min-height:42px; color:#506e47; }
+.share { margin:16px 0 22px; padding:12px 0; border-top:1px solid #d9dfd1; }
+.share summary { color:#475e49; cursor:pointer; padding:8px 0; font-size:14px; font-weight:650; }
+.shareContent { display:grid; gap:8px; margin:5px 0; }
+.demo { color:#6b7467; font-size:12px; margin:22px 0 0; }
+@media(max-width:480px) {
+  .nextAction { padding:18px; }
+  .nextAction > a,.nextAction > button { width:100%; }
+}
+
+.resultHelp { color:#52634f; font-size:14px; line-height:1.65; margin:0 0 14px; }
+
+.savedChoice { display:inline-flex; align-items:center; gap:6px; font-weight:650; font-size:14px; color:#365839; }

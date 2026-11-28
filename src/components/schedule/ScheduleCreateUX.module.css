@@ -1,0 +1,18 @@
+.times { scroll-margin-top:12px; }
+.scope { margin:0 0 8px; font-size:14px; font-weight:650; color:#3e5648; }
+.scope small { padding-left:5px; font-size:12px; font-weight:400; color:#617061; }
+.times fieldset { margin-top:0; }
+.times fieldset > div:first-of-type { gap:6px; }
+.times fieldset > div:first-of-type > button { min-height:56px; padding:8px 4px; gap:2px; border-style:solid; border-radius:12px; }
+.times fieldset > div:first-of-type > button > span:first-child { width:20px; height:20px; }
+.individual { margin-top:12px; border-top:1px solid #dce2d5; }
+.individual summary { padding:13px 0; cursor:pointer; font-size:14px; color:#476348; font-weight:600; }
+.dayRow { border-top:1px solid #e6e9df; padding:1px 0; }
+.dayToggle { width:100%; display:flex; align-items:center; gap:10px; padding:12px 0; min-height:44px; background:transparent; color:#385442; border:0; text-align:left; font-size:14px; }
+.dayToggle strong { white-space:nowrap; }
+.dayToggle span { margin-left:auto; }
+.dayToggle svg { flex-shrink:0; }
+.dayToggle[aria-expanded=true] svg { transform:rotate(90deg); }
+.dayRow:has([aria-expanded=true]) { padding-bottom:10px; }
+.hint { color:#62715e; font-size:13px; line-height:1.7; margin:9px 0; }
+.hint button { font:inherit; border:0; padding:3px 0; color:#416244; background:transparent; text-decoration:underline; }

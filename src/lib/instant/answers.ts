@@ -69,3 +69,40 @@ export function buildInstantParticipantFromConsensus(params: {
     dietaryRestrictions: params.draft.dietaryRestrictions,
   };
 }
+
+export function buildInstantParticipantFromWishAvoid(params: {
+  id: string;
+  label: string;
+  wishGenreIds: readonly string[];
+  avoidLabels: readonly string[];
+  avoidGenreIds?: readonly string[];
+  avoidRestrictionIds?: readonly string[];
+  dietaryRestrictions: DietaryRestrictionInput[];
+}): InstantParticipantInput {
+  const restrictions = [...params.dietaryRestrictions];
+  for (const restrictionId of params.avoidRestrictionIds ?? []) {
+    if (!restrictions.some((item) => item.restrictionId === restrictionId)) {
+      restrictions.push({ restrictionId, priority: "must" });
+    }
+  }
+
+  return {
+    id: params.id,
+    nickname: params.label,
+    source: "manual",
+    ngLabels: [...new Set(params.avoidLabels)],
+    allergyNote: null,
+    dietaryNote: null,
+    genrePreferences: [
+      ...params.wishGenreIds.map((genreId) => ({
+        genreId,
+        priority: "prefer" as const,
+      })),
+      ...(params.avoidGenreIds ?? []).map((genreId) => ({
+        genreId,
+        priority: "avoid" as const,
+      })),
+    ],
+    dietaryRestrictions: restrictions,
+  };
+}

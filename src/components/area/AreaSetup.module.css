@@ -1,0 +1,37 @@
+.cityField { border:0; margin:0 0 6px; padding:0; }
+.cityField legend { font-size:15px; font-weight:700; margin-bottom:11px; }
+.cityChoices { display:flex; flex-wrap:wrap; gap:10px; }
+.cityChoices button { display:flex; align-items:center; gap:8px; padding:12px 15px; min-height:46px; border:1px solid #dfe4d7; border-radius:13px; background:#fffefa; color:#667b5d; font-size:14px; cursor:pointer; }
+.cityChoices button[aria-pressed="true"] { background:#eef5e6; border-color:#89a272; color:#45653a; }
+.hint { font-size:12px; line-height:1.8; color:#858778; margin:0; }
+.confirmedArea { display:flex; align-items:center; gap:8px; font-size:13px; color:#557544; padding:10px 0; }
+.confirmedArea > div { flex:1; display:flex; align-items:center; justify-content:space-between; }
+.confirmedArea a { color:inherit; font-size:12px; text-decoration:underline; }
+.cityChoices button:focus-visible { outline:3px solid #ee875e; outline-offset:3px; }
+.statusGrid { display:grid; gap:22px; }
+.statusGrid:empty { display:none; }
+.statusField { margin:0; padding:0; border:0; min-width:0; }
+.statusField legend { font-size:17px; font-weight:750; margin-bottom:10px; }
+.statusField legend svg { display:inline; vertical-align:-3px; margin-right:3px; color:#68825a; }
+.statusButtons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.statusButtons button { display:flex; justify-content:center; align-items:center; gap:5px; font:inherit; font-weight:650; color:#3e5542; background:#fffefa; border:1px solid #cdd4c4; border-radius:14px; padding:13px 5px; min-height:48px; cursor:pointer; }
+.statusButtons button[aria-pressed=true] { background:#eaf2e1; border-color:#668652; box-shadow:inset 0 0 0 1px #668652; }
+.statusButtons button:focus-visible { outline:3px solid #dc8659; outline-offset:2px; }
+.flow { display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 16px; background:#f0f3e9; color:#3a513f; border-radius:14px; padding:14px 16px; }
+.flow strong { font-size:12px; }
+.flow ol { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; list-style:none; font-size:14px; }
+.flow li + li::before { content:'→'; margin-right:6px; color:#738467; }
+
+.setupSummary { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px; padding:10px 0; }
+.setupSummary span { display:inline-flex; align-items:center; gap:7px; font-weight:600; color:#425b40; }
+.setupSummary a { color:#4b674f; text-underline-offset:3px; font-size:13px; }
+.setupCount { margin:0; color:#516052; font-size:14px; }
+
+.complete { display:flex; flex-wrap:wrap; align-items:center; gap:8px 22px; border-radius:14px; background:#f0f3e9; padding:14px 16px; color:#3a513f; }
+.complete p { margin:0; }
+.complete a { display:inline-flex; align-items:center; min-height:44px; color:inherit; text-underline-offset:3px; }
+
+.shopStatusButtons { composes: statusButtons; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 420px) {
+  .shopStatusButtons button { gap: 2px; font-size: 14px; }
+}
